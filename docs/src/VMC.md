@@ -74,6 +74,42 @@ of Flyvbjerg and Petersen [3] is one standard approach.
 Non-finite local energies at isolated singular points are excluded from the
 average and counted in `result.n_discarded`.
 
+## Multiple walkers and equilibration
+
+Thijssen [5, Table 12.1] describes calculations with 300 walkers, 12,000
+attempted displacements per walker, and the first 2,000 states of each walker
+discarded for equilibration. With `thinning=1`, the same sampling counts are
+specified by retaining the remaining 10,000 states per walker:
+
+```julia
+method = VariationalMonteCarlo(
+  n_walkers=300,
+  n_steps=10_000,
+  burn_in=2_000,
+  thinning=1,
+  δ=2.0,
+  r₀=[1.0, 0.0, 0.0],
+)
+
+result = solve(H, ψ, method; rng=MersenneTwister(123), info=0)
+
+result.E        # expectation value of the energy
+result.variance # sample variance of the retained local energies
+result.n_attempted          # 3_600_000 attempted displacements
+result.n_burn_in_discarded  # 600_000 states discarded for equilibration
+```
+
+Each walker performs `burn_in + n_steps * thinning` transitions, so the
+configuration above attempts 12,000 displacements per walker and retains
+3,000,000 samples in total. Samples and local energies are stored consecutively
+by walker; for example, they can be grouped as
+`reshape(result.local_energies, method.n_steps, method.n_walkers)`. Walkers are
+advanced sequentially using separate random draws from the supplied random
+number generator.
+
+`result.n_discarded` has a different meaning: it counts retained samples whose
+local energy was non-finite and therefore excluded from the energy statistics.
+
 ## Bibliography
 
 1. W. M. C. Foulkes, L. Mitas, R. J. Needs, and G. Rajagopal,
@@ -88,6 +124,8 @@ average and counted in `result.n_discarded`.
 4. J. Revels, M. Lubin, and T. Papamarkou,
    ["Forward-Mode Automatic Differentiation in Julia"](https://arxiv.org/abs/1607.07892),
    arXiv:1607.07892 (2016).
+5. J. M. ティッセン 著, 松田和典, 道廣嘉隆, 谷村吉隆, 高須昌子, 吉江友照 訳,
+   『計算物理学』, 丸善出版 (2012).
 
 ## API reference
 

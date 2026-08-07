@@ -8,6 +8,7 @@ struct VariationalMonteCarlo{T<:AbstractFloat,V<:AbstractVector{T}}
   n_steps::Int
   burn_in::Int
   thinning::Int
+  n_walkers::Int
   δ::T
   r₀::V
 
@@ -15,19 +16,28 @@ struct VariationalMonteCarlo{T<:AbstractFloat,V<:AbstractVector{T}}
     n_steps::Int=10^5,
     burn_in::Int=10^3,
     thinning::Int=1,
+    n_walkers::Int=1,
     δ::Real=0.5,
     r₀::AbstractVector{<:Real}=[1.0, 0.0, 0.0],
   )
     0 < n_steps || throw(ArgumentError("n_steps must be positive"))
     0 ≤ burn_in || throw(ArgumentError("burn_in must be nonnegative"))
     0 < thinning || throw(ArgumentError("thinning must be positive"))
+    0 < n_walkers || throw(ArgumentError("n_walkers must be positive"))
     isfinite(δ) && 0 < δ || throw(ArgumentError("δ must be positive and finite"))
     isempty(r₀) && throw(ArgumentError("r₀ must contain at least one coordinate"))
     all(isfinite, r₀) || throw(ArgumentError("r₀ must contain only finite coordinates"))
 
     position = float.(collect(r₀))
     step_size = convert(eltype(position), δ)
-    new{eltype(position),typeof(position)}(n_steps, burn_in, thinning, step_size, position)
+    new{eltype(position),typeof(position)}(
+      n_steps,
+      burn_in,
+      thinning,
+      n_walkers,
+      step_size,
+      position,
+    )
   end
 end
 
@@ -77,39 +87,43 @@ function _metropolis_samples(
   method::VariationalMonteCarlo,
   rng::Random.AbstractRNG,
 )
-  position = copy(method.r₀)
-  probability = _probability_density(wavefunction, position)
-  isfinite(probability) && 0 < probability ||
-    throw(ArgumentError("the probability density at r₀ must be positive and finite"))
-
-  samples = Matrix{eltype(position)}(undef, length(position), method.n_steps)
+  total_samples = method.n_walkers * method.n_steps
+  samples = Matrix{eltype(method.r₀)}(undef, length(method.r₀), total_samples)
   accepted = 0
   attempted = 0
   stored = 0
   n_transitions = method.burn_in + method.n_steps * method.thinning
-  half = eltype(position)(1 // 2)
+  half = eltype(method.r₀)(1 // 2)
 
-  for step in 1:n_transitions
-    proposal = position .+ method.δ .* (rand(rng, eltype(position), length(position)) .- half)
-    proposed_probability = _probability_density(wavefunction, proposal)
-    attempted += 1
+  for _ in 1:method.n_walkers
+    position = copy(method.r₀)
+    probability = _probability_density(wavefunction, position)
+    isfinite(probability) && 0 < probability ||
+      throw(ArgumentError("the probability density at r₀ must be positive and finite"))
 
-    if isfinite(proposed_probability) && 0 ≤ proposed_probability
-      acceptance_probability = min(one(probability), proposed_probability / probability)
-      if rand(rng) < acceptance_probability
-        position = proposal
-        probability = proposed_probability
-        accepted += 1
+    for step in 1:n_transitions
+      proposal =
+        position .+ method.δ .* (rand(rng, eltype(position), length(position)) .- half)
+      proposed_probability = _probability_density(wavefunction, proposal)
+      attempted += 1
+
+      if isfinite(proposed_probability) && 0 ≤ proposed_probability
+        acceptance_probability = min(one(probability), proposed_probability / probability)
+        if rand(rng) < acceptance_probability
+          position = proposal
+          probability = proposed_probability
+          accepted += 1
+        end
       end
-    end
 
-    if method.burn_in < step && (step - method.burn_in) % method.thinning == 0
-      stored += 1
-      samples[:, stored] = position
+      if method.burn_in < step && (step - method.burn_in) % method.thinning == 0
+        stored += 1
+        samples[:, stored] = position
+      end
     end
   end
 
-  return samples, accepted / attempted
+  return samples, accepted, attempted
 end
 
 function _isfinite_number(value::Number)
@@ -123,7 +137,8 @@ function solve(
   rng::Random.AbstractRNG=Random.default_rng(),
   info::Int=1,
 )
-  samples, acceptance_rate = _metropolis_samples(wavefunction, method, rng)
+  samples, n_accepted, n_attempted = _metropolis_samples(wavefunction, method, rng)
+  acceptance_rate = n_accepted / n_attempted
   energies = [local_energy(hamiltonian, wavefunction, samples[:, i]) for i in axes(samples, 2)]
   finite_energies = filter(_isfinite_number, energies)
   isempty(finite_energies) &&
@@ -144,6 +159,9 @@ function solve(
     variance=variance,
     standard_error=standard_error,
     acceptance_rate=acceptance_rate,
+    n_accepted=n_accepted,
+    n_attempted=n_attempted,
+    n_burn_in_discarded=method.n_walkers * method.burn_in,
     n_samples=length(finite_energies),
     n_discarded=length(energies) - length(finite_energies),
     local_energies=energies,
@@ -157,20 +175,22 @@ function solve(
     println("E = $(result.E) ± $(result.standard_error)")
     println("\n# sampling\n")
     println("acceptance rate = $(result.acceptance_rate)")
-    println("finite local energies = $(result.n_samples) / $(method.n_steps)")
+    println("finite local energies = $(result.n_samples) / $(method.n_steps * method.n_walkers)")
   end
 
   return result
 end
 
 @doc raw"""
-`VariationalMonteCarlo(n_steps=10^5, burn_in=10^3, thinning=1, δ=0.5, r₀=[1.0, 0.0, 0.0])`
+`VariationalMonteCarlo(n_steps=10^5, burn_in=10^3, thinning=1, n_walkers=1, δ=0.5, r₀=[1.0, 0.0, 0.0])`
 
 Options for variational Monte Carlo with a symmetric, uniform Metropolis proposal.
 The sampler targets ``|\psi(\mathbf{r})|^2``. `n_steps` is the number of retained
-samples, `burn_in` is the number of discarded initial transitions, `thinning` is
-the number of transitions between retained samples, `δ` is the proposal-box
-width, and `r₀` is the initial position.
+samples per walker, `burn_in` is the number of initial transitions discarded from
+each walker, `thinning` is the number of transitions between retained samples,
+`n_walkers` is the number of Markov chains, `δ` is the proposal-box width, and
+`r₀` is the initial position of every walker. Each walker performs
+`burn_in + n_steps * thinning` transitions.
 """ VariationalMonteCarlo
 
 @doc raw"""
@@ -192,10 +212,13 @@ potential terms with a defined `V` method are supported.
 `solve(hamiltonian, wavefunction, method::VariationalMonteCarlo; rng=Random.default_rng(), info=1)`
 
 Estimate the variational energy by averaging the local energy over Metropolis
-samples from ``|\psi|^2``. A seeded random-number generator can be supplied with
-`rng`. Non-finite local energies, which can occur at a measure-zero singularity
-such as the origin of a Coulomb potential, are excluded and reported as
-`n_discarded` in the result.
+samples from ``|\psi|^2``. Samples from multiple walkers are stored consecutively
+in the columns of `result.samples`. A seeded random-number generator can be
+supplied with `rng`. Non-finite local energies, which can occur at a measure-zero
+singularity such as the origin of a Coulomb potential, are excluded and reported
+as `n_discarded` in the result. The result also reports `n_attempted`, `n_accepted`,
+and the number of equilibration transitions discarded across all walkers as
+`n_burn_in_discarded`.
 """ solve(
   hamiltonian::Hamiltonian,
   wavefunction::Function,
