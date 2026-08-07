@@ -91,6 +91,11 @@
     @test result.n_accepted == round(Int, result.acceptance_rate * result.n_attempted)
     @test result.n_burn_in_discarded == method.n_walkers * method.burn_in
     @test 0 < result.acceptance_rate < 1
+
+    default_result = solve(H, ψ, method)
+    repeated_default_result = solve(H, ψ, method)
+    @test default_result.samples == repeated_default_result.samples
+    @test default_result.E == repeated_default_result.E
   end
 
   @testset "Coulomb singularity" begin

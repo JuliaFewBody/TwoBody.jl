@@ -134,8 +134,8 @@ function solve(
   hamiltonian::Hamiltonian,
   wavefunction::Function,
   method::VariationalMonteCarlo;
-  rng::Random.AbstractRNG=Random.default_rng(),
-  info::Int=1,
+  rng::Random.AbstractRNG=Random.MersenneTwister(123),
+  info::Int=0,
 )
   samples, n_accepted, n_attempted = _metropolis_samples(wavefunction, method, rng)
   acceptance_rate = n_accepted / n_attempted
@@ -209,20 +209,22 @@ potential terms with a defined `V` method are supported.
 """ local_energy
 
 @doc raw"""
-`solve(hamiltonian, wavefunction, method::VariationalMonteCarlo; rng=Random.default_rng(), info=1)`
+`solve(hamiltonian, wavefunction, method::VariationalMonteCarlo; rng=Random.MersenneTwister(123), info=0)`
 
 Estimate the variational energy by averaging the local energy over Metropolis
 samples from ``|\psi|^2``. Samples from multiple walkers are stored consecutively
 in the columns of `result.samples`. A seeded random-number generator can be
-supplied with `rng`. Non-finite local energies, which can occur at a measure-zero
-singularity such as the origin of a Coulomb potential, are excluded and reported
-as `n_discarded` in the result. The result also reports `n_attempted`, `n_accepted`,
+supplied with `rng`; by default, a new `MersenneTwister(123)` is used for a
+reproducible calculation. Set `info` to a positive value to print a result
+summary. Non-finite local energies, which can occur at a measure-zero singularity
+such as the origin of a Coulomb potential, are excluded and reported as
+`n_discarded` in the result. The result also reports `n_attempted`, `n_accepted`,
 and the number of equilibration transitions discarded across all walkers as
 `n_burn_in_discarded`.
 """ solve(
   hamiltonian::Hamiltonian,
   wavefunction::Function,
   method::VariationalMonteCarlo;
-  rng::Random.AbstractRNG=Random.default_rng(),
-  info::Int=1,
+  rng::Random.AbstractRNG=Random.MersenneTwister(123),
+  info::Int=0,
 )

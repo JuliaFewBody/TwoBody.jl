@@ -45,7 +45,6 @@ The following example uses the hydrogen trial wavefunction
 position avoids starting exactly at the Coulomb singularity.
 
 ```@example vmc-hydrogen
-using Random
 using TwoBody
 
 # Hamiltonian
@@ -68,7 +67,7 @@ method = VariationalMonteCarlo(
 )
 
 # Solve
-result = solve(H, ψ, method; rng=MersenneTwister(123), info=0)
+result = solve(H, ψ, method)
 
 # Display
 println("This work: $(result.E)")
@@ -110,7 +109,7 @@ method = VariationalMonteCarlo(
   r₀=[1.0, 0.0, 0.0],
 )
 
-result = solve(H, ψ, method; rng=MersenneTwister(123), info=0)
+result = solve(H, ψ, method)
 
 result.E        # expectation value of the energy
 result.variance # sample variance of the retained local energies
