@@ -24,7 +24,7 @@ The following example uses a one-Gaussian trial wavefunction for the hydrogen
 atom. A nonzero initial position avoids starting exactly at the Coulomb
 singularity.
 
-```julia
+```@example vmc-hydrogen
 using Random
 using TwoBody
 
@@ -37,15 +37,29 @@ H = Hamiltonian(
 ψ(r) = exp(-α * sum(abs2, r))
 
 method = VariationalMonteCarlo(
-  n_steps=100_000,
-  burn_in=1_000,
-  δ=0.5,
+  n_steps=2_000,
+  burn_in=500,
+  δ=2.0,
   r₀=[1.0, 0.0, 0.0],
 )
 
-result = solve(H, ψ, method; rng=MersenneTwister(123))
-result.E
+result = solve(H, ψ, method; rng=MersenneTwister(123), info=0)
+gaussian_expectation = 3α / 2 - 2sqrt(2α / π)
+
+(;
+  VMC_energy=round(result.E; digits=4),
+  gaussian_expectation=round(gaussian_expectation; digits=4),
+  exact_energy=-0.5,
+  acceptance_rate=round(result.acceptance_rate; digits=3),
+)
 ```
+
+The sampled VMC energy is close to the analytical expectation value of the same
+Gaussian trial wavefunction. That expectation value is above the exact hydrogen
+ground-state energy, as required by the variational principle. Increasing the
+number of Monte Carlo samples reduces statistical noise but does not remove the
+variational bias caused by the restricted one-Gaussian trial wavefunction. A
+finite-sample VMC estimate can fluctuate to either side of its expectation value.
 
 The result also contains the sample variance, a naive standard error, the
 acceptance rate, local energies, and sampled positions. Because
