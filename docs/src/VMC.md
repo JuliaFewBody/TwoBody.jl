@@ -28,14 +28,17 @@ singularity.
 using Random
 using TwoBody
 
+# Hamiltonian
 H = Hamiltonian(
   NonRelativisticKinetic(ℏ=1, m=1),
   CoulombPotential(coefficient=-1),
 )
 
+# Trial wave function
 α = 0.2829
 ψ(r) = exp(-α * sum(abs2, r))
 
+# VMC options
 method = VariationalMonteCarlo(
   n_steps=2_000,
   burn_in=500,
@@ -43,6 +46,7 @@ method = VariationalMonteCarlo(
   r₀=[1.0, 0.0, 0.0],
 )
 
+# Solve
 result = solve(H, ψ, method; rng=MersenneTwister(123), info=0)
 gaussian_expectation = 3α / 2 - 2sqrt(2α / π)
 
