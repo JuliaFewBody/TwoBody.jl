@@ -4,19 +4,39 @@ CurrentModule = TwoBody
 
 # Variational Monte Carlo
 
-Variational Monte Carlo estimates the energy of a trial wavefunction from the
-local energy
+Combining the variational energy expectation value with the probability density
+and local energy gives the single expression
 
 ```math
-E_\mathrm{loc}(\mathbf{r}) =
-\frac{\hat{H}\psi(\mathbf{r})}{\psi(\mathbf{r})}
+\begin{aligned}
+\langle E \rangle
+&= \frac{
+  \displaystyle \int \mathrm{d}\mathbf{r}\,
+  \psi^*(\mathbf{r})\hat{H}\psi(\mathbf{r})
+}{
+  \displaystyle \int \mathrm{d}\mathbf{r}\,
+  |\psi(\mathbf{r})|^2
+} \\
+&= \int \mathrm{d}\mathbf{r}\,
+\underbrace{
+  \frac{|\psi(\mathbf{r})|^2}
+  {\displaystyle \int \mathrm{d}\mathbf{r}'\,|\psi(\mathbf{r}')|^2}
+}_{P(\mathbf{r})}
+\underbrace{
+  \frac{\hat{H}\psi(\mathbf{r})}{\psi(\mathbf{r})}
+}_{E_\mathrm{loc}(\mathbf{r})}
+= \int \mathrm{d}\mathbf{r}\,P(\mathbf{r})E_\mathrm{loc}(\mathbf{r})
+\approx \frac{1}{N}\sum_{i=1}^{N}E_\mathrm{loc}(\mathbf{r}_i),
+\qquad \mathbf{r}_i \sim P.
+\end{aligned}
 ```
 
-at positions sampled from ``|\psi(\mathbf{r})|^2``. This local-energy
-formulation and its use in VMC are reviewed by Foulkes *et al.* [1]. Samples are
-generated with a symmetric random-walk proposal and the Metropolis acceptance
-rule [2]. The Laplacian in a non-relativistic kinetic term is evaluated by
-forward-mode automatic differentiation with ForwardDiff.jl [4].
+Thus VMC estimates ``\langle E\rangle`` by averaging the local energy over
+positions sampled from the normalized density ``P(\mathbf{r})``. This
+local-energy formulation and its use in VMC are reviewed by Foulkes *et al.*
+[1]. Samples are generated with a symmetric random-walk proposal and the
+Metropolis acceptance rule [2]. The Laplacian in a non-relativistic kinetic term
+is evaluated by forward-mode automatic differentiation with ForwardDiff.jl [4].
 
 ## Usage
 
