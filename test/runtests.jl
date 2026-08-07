@@ -10,4 +10,5 @@ using ForwardDiff
   include("Basis.jl")
   include("Rayleigh-Ritz.jl")
   include("FDM.jl")
+  include("VMC.jl")
 end
