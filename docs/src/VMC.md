@@ -40,9 +40,9 @@ is evaluated by forward-mode automatic differentiation with ForwardDiff.jl [4].
 
 ## Usage
 
-The following example uses a one-Gaussian trial wavefunction for the hydrogen
-atom. A nonzero initial position avoids starting exactly at the Coulomb
-singularity.
+The following example uses the hydrogen trial wavefunction
+``\psi(r)=\exp(-0.8r)`` from Thijssen [5, Table 12.1]. A nonzero initial
+position avoids starting exactly at the Coulomb singularity.
 
 ```@example vmc-hydrogen
 using Random
@@ -55,35 +55,39 @@ H = Hamiltonian(
 )
 
 # Trial wave function
-α = 0.2829
-ψ(r) = exp(-α * sum(abs2, r))
+α = 0.8
+ψ(r) = exp(-α * sqrt(sum(abs2, r)))
 
 # VMC options
 method = VariationalMonteCarlo(
-  n_steps=2_000,
-  burn_in=500,
+  n_walkers=20,
+  n_steps=100,
+  burn_in=100,
   δ=2.0,
   r₀=[1.0, 0.0, 0.0],
 )
 
 # Solve
 result = solve(H, ψ, method; rng=MersenneTwister(123), info=0)
-gaussian_expectation = 3α / 2 - 2sqrt(2α / π)
+analytical_expectation = α^2 / 2 - α
 
 (;
   VMC_energy=round(result.E; digits=4),
-  gaussian_expectation=round(gaussian_expectation; digits=4),
+  analytical_expectation=round(analytical_expectation; digits=4),
+  thijssen_table_12_1="-0.4813(6)",
   exact_energy=-0.5,
   acceptance_rate=round(result.acceptance_rate; digits=3),
 )
 ```
 
-The sampled VMC energy is close to the analytical expectation value of the same
-Gaussian trial wavefunction. That expectation value is above the exact hydrogen
-ground-state energy, as required by the variational principle. Increasing the
-number of Monte Carlo samples reduces statistical noise but does not remove the
-variational bias caused by the restricted one-Gaussian trial wavefunction. A
-finite-sample VMC estimate can fluctuate to either side of its expectation value.
+For ``\psi(r)=\exp(-\alpha r)``, the analytical expectation value in atomic
+units is ``\alpha^2/2-\alpha=-0.48`` at ``\alpha=0.8``. Thijssen [5, Table 12.1]
+reports ``-0.4813(6)`` using the larger sampling counts described below. The
+expectation value is above the exact hydrogen ground-state energy, as required
+by the variational principle. Increasing the number of Monte Carlo samples
+reduces statistical noise but does not remove the variational bias of the trial
+wavefunction. A finite-sample VMC estimate can fluctuate to either side of its
+expectation value.
 
 The result also contains the sample variance, a naive standard error, the
 acceptance rate, local energies, and sampled positions. Because
