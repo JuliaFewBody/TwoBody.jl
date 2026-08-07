@@ -69,15 +69,10 @@ method = VariationalMonteCarlo(
 
 # Solve
 result = solve(H, ψ, method; rng=MersenneTwister(123), info=0)
-analytical_expectation = α^2 / 2 - α
 
-(;
-  VMC_energy=round(result.E; digits=4),
-  analytical_expectation=round(analytical_expectation; digits=4),
-  thijssen_table_12_1="-0.4813(6)",
-  exact_energy=-0.5,
-  acceptance_rate=round(result.acceptance_rate; digits=3),
-)
+# Display
+println("This work: $(result.E)")
+println("Reference: -0.4813(6)")
 ```
 
 For ``\psi(r)=\exp(-\alpha r)``, the analytical expectation value in atomic
