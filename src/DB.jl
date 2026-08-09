@@ -9,11 +9,20 @@ struct DatabaseEntry{T<:Real}
     energy::T
 end
 
+import Base: put!
+
 # Keeping the registry private makes `db` the single lookup boundary and leaves
 # room for validation, lazy loading, and provenance.
 const _DATABASE = Dict{Symbol,DatabaseEntry}()
 
-function _register!(key::Symbol, hamiltonian::Hamiltonian, energy::T) where {T<:Real}
+"""
+    put!(key, hamiltonian, energy)
+
+Add a benchmark problem to the database. `key` may be a `Symbol` or string,
+`hamiltonian` must be a [`Hamiltonian`](@ref), and `energy` must be real.
+Registering the same key twice throws an `ArgumentError`.
+"""
+function put!(key::Symbol, hamiltonian::Hamiltonian, energy::T) where {T<:Real}
     haskey(_DATABASE, key) &&
         throw(ArgumentError("database key $(repr(key)) is already registered"))
 
@@ -22,33 +31,11 @@ function _register!(key::Symbol, hamiltonian::Hamiltonian, energy::T) where {T<:
     return entry
 end
 
-_register!(key::AbstractString, hamiltonian::Hamiltonian, energy::Real) =
-    _register!(Symbol(key), hamiltonian, energy)
-
-"""
-    @put(key, hamiltonian, energy)
-
-Add a benchmark problem to the database. `key` may be a `Symbol` or string,
-`hamiltonian` must be a [`Hamiltonian`](@ref), and `energy` must be real.
-Registering the same key twice throws an `ArgumentError`.
-
-```julia
-@put(
-    :hydrogen,
-    Hamiltonian(
-        NonRelativisticKinetic(ℏ = 1.0, m = 1.0),
-        CoulombPotential(coefficient = -1.0),
-    ),
-    -0.5,
-)
-```
-"""
-macro put(key, hamiltonian, energy)
-    return :(_register!($(esc(key)), $(esc(hamiltonian)), $(esc(energy))))
-end
+put!(key::AbstractString, hamiltonian::Hamiltonian, energy::Real) =
+    put!(Symbol(key), hamiltonian, energy)
 
 # PoC data in atomic units.
-@put(
+put!(
     :hydrogen,
     Hamiltonian(
         NonRelativisticKinetic(ℏ = 1.0, m = 1.0),
@@ -57,7 +44,7 @@ end
     -0.5,
 )
 
-@put(
+put!(
     :positronium,
     Hamiltonian(
         NonRelativisticKinetic(ℏ = 1.0, m = 0.5),
@@ -66,7 +53,7 @@ end
     -0.25,
 )
 
-@put(
+put!(
     :harmonic_oscillator,
     Hamiltonian(
         NonRelativisticKinetic(ℏ = 1.0, m = 1.0),

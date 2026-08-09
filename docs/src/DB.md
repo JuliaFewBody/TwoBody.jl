@@ -49,11 +49,11 @@ symbols and strings are accepted by `TwoBody.db`.
 
 ## Adding data
 
-Use the internal `TwoBody.@put` macro to register a key, Hamiltonian, and real
+Use the internal `TwoBody.put!` function to register a key, Hamiltonian, and real
 reference energy. Duplicate keys are rejected.
 
 ```julia
-TwoBody.@put(
+TwoBody.put!(
     :example,
     Hamiltonian(
         NonRelativisticKinetic(ℏ = 1.0, m = 1.0),
@@ -70,7 +70,7 @@ entry does not alter the stored benchmark.
 
 ```@docs
 TwoBody.DatabaseEntry
-TwoBody.var"@put"
+TwoBody.put!
 TwoBody.db
 TwoBody.dbkeys
 ```

@@ -24,10 +24,10 @@
     )
 
     try
-        registered = TwoBody.@put(key, hamiltonian, -2.0)
+        registered = TwoBody.put!(key, hamiltonian, -2.0)
         @test registered isa TwoBody.DatabaseEntry{Float64}
         @test TwoBody.db(key).energy == -2.0
-        @test_throws ArgumentError TwoBody.@put(key, hamiltonian, -2.0)
+        @test_throws ArgumentError TwoBody.put!(key, hamiltonian, -2.0)
 
         # Registration also isolates the stored Hamiltonian from the caller.
         pop!(hamiltonian.terms)
