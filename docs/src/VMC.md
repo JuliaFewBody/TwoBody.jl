@@ -21,21 +21,17 @@ and local energy gives the single expression
 \psi^*(\mathbf{r})\hat{H}\psi(\mathbf{r}),
 \qquad
 \left(Z = \int \mathrm{d}\mathbf{r}\,|\psi(\mathbf{r})|^2\right) \\
-&= \frac{1}{Z}\int \mathrm{d}\mathbf{r}\,
-|\psi(\mathbf{r})|^2
-\cdot
-\frac{\hat{H}\psi(\mathbf{r})}{\psi(\mathbf{r})},
-\qquad
-\left(|\psi(\mathbf{r})|^2 =
-\psi^*(\mathbf{r})\psi(\mathbf{r})\right) \\
 &= \int \mathrm{d}\mathbf{r}\,
 \underbrace{
-\frac{|\psi(\mathbf{r})|^2}{Z}
+\frac{1}{Z}|\psi(\mathbf{r})|^2
 }_{P(\mathbf{r})}
 \cdot
 \underbrace{
 \frac{\hat{H}\psi(\mathbf{r})}{\psi(\mathbf{r})}
-}_{E_\mathrm{loc}(\mathbf{r})} \\
+}_{E_\mathrm{loc}(\mathbf{r})},
+\qquad
+\left(|\psi(\mathbf{r})|^2 =
+\psi^*(\mathbf{r})\psi(\mathbf{r})\right) \\
 &= \int \mathrm{d}\mathbf{r}\,P(\mathbf{r})\cdot E_\mathrm{loc}(\mathbf{r}) \\
 &\approx \frac{1}{N}\sum_{i=1}^{N}E_\mathrm{loc}(\mathbf{r}_i),
 \qquad \left(\mathbf{r}_i \sim P\right).
