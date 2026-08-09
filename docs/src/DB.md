@@ -8,6 +8,13 @@ The internal database provides benchmark Hamiltonians and their reference
 energies for developing and testing solvers. Database functionality is not
 exported because it is intended for package development.
 
+The returned Hamiltonian can be passed to a solver, and the calculated energy
+can then be compared with the reference value.
+
+## Usage
+
+Retrieve a benchmark using its key:
+
 ```julia-repl
 julia> entry = TwoBody.db(:hydrogen)
 
@@ -16,55 +23,27 @@ julia> entry.hamiltonian
 julia> entry.energy
 ```
 
-The returned Hamiltonian can be passed to a solver, and the calculated energy
-can then be compared with the reference value.
+Add a benchmark using `TwoBody.put!`:
 
-```mermaid
-flowchart TD
-    B["input"]
-    C["TwoBody.db"]
-    D["solver"]
-    E["test"]
-    F["output"]
+```julia-repl
+julia> hamiltonian = Hamiltonian(
+           NonRelativisticKinetic(ℏ = 1.0, m = 1.0),
+           CoulombPotential(coefficient = -1.0),
+       )
 
-    B -->|"key"| C
-    C -->|"Hamiltonian"| D
-    D -->|"calculated energy"| E
-    C -->|"reference energy"| E
-    E -->|"true / false"| F
+julia> TwoBody.put!(:example, hamiltonian, -0.5)
 ```
 
-## Available data
+Duplicate keys are rejected. Registration and lookup both copy the Hamiltonian
+so that modifying a returned entry does not alter the stored benchmark.
 
-The proof of concept contains three problems in atomic units:
+## Data
 
 | Key | System | Reference energy |
 |:--|:--|--:|
 | `:hydrogen` | Hydrogen ground state | `-0.5` |
 | `:positronium` | Positronium ground state | `-0.25` |
 | `:harmonic_oscillator` | Three-dimensional harmonic oscillator ground state | `1.5` |
-
-Use `TwoBody.dbkeys()` to obtain the available keys programmatically. Both
-symbols and strings are accepted by `TwoBody.db`.
-
-## Adding data
-
-Use the internal `TwoBody.put!` function to register a key, Hamiltonian, and real
-reference energy. Duplicate keys are rejected.
-
-```julia
-TwoBody.put!(
-    :example,
-    Hamiltonian(
-        NonRelativisticKinetic(ℏ = 1.0, m = 1.0),
-        CoulombPotential(coefficient = -1.0),
-    ),
-    -0.5,
-)
-```
-
-Registration and lookup both copy the Hamiltonian so that modifying a returned
-entry does not alter the stored benchmark.
 
 ## API
 
