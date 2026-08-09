@@ -24,7 +24,10 @@ and local energy gives the single expression
 &= \frac{1}{Z}\int \mathrm{d}\mathbf{r}\,
 |\psi(\mathbf{r})|^2
 \cdot
-\frac{\hat{H}\psi(\mathbf{r})}{\psi(\mathbf{r})} \\
+\frac{\hat{H}\psi(\mathbf{r})}{\psi(\mathbf{r})},
+\qquad
+\left(|\psi(\mathbf{r})|^2 =
+\psi^*(\mathbf{r})\psi(\mathbf{r})\right) \\
 &= \int \mathrm{d}\mathbf{r}\,
 \underbrace{
 \frac{|\psi(\mathbf{r})|^2}{Z}
