@@ -25,8 +25,9 @@ and local energy gives the single expression
 \underbrace{
   \frac{\hat{H}\psi(\mathbf{r})}{\psi(\mathbf{r})}
 }_{E_\mathrm{loc}(\mathbf{r})}
-= \int \mathrm{d}\mathbf{r}\,P(\mathbf{r})E_\mathrm{loc}(\mathbf{r})
-\approx \frac{1}{N}\sum_{i=1}^{N}E_\mathrm{loc}(\mathbf{r}_i),
+\\
+&= \int \mathrm{d}\mathbf{r}\,P(\mathbf{r})E_\mathrm{loc}(\mathbf{r}) \\
+&\approx \frac{1}{N}\sum_{i=1}^{N}E_\mathrm{loc}(\mathbf{r}_i),
 \qquad \mathbf{r}_i \sim P.
 \end{aligned}
 ```
