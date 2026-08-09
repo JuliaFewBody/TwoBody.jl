@@ -18,25 +18,21 @@ and local energy gives the single expression
   |\psi(\mathbf{r})|^2
 } \\
 &= \frac{1}{Z}\int \mathrm{d}\mathbf{r}\,
-\psi^*(\mathbf{r})\hat{H}\psi(\mathbf{r}),
-\qquad
-\left(Z = \int \mathrm{d}\mathbf{r}\,|\psi(\mathbf{r})|^2\right) \\
+\psi^*(\mathbf{r})\hat{H}\psi(\mathbf{r})
+&& Z = \int \mathrm{d}\mathbf{r}\,|\psi(\mathbf{r})|^2 \\
 &= \int \mathrm{d}\mathbf{r}\,
 \frac{1}{Z}|\psi(\mathbf{r})|^2
 \cdot
-\frac{\hat{H}\psi(\mathbf{r})}{\psi(\mathbf{r})},
-\qquad
-\left(|\psi(\mathbf{r})|^2 =
-\psi^*(\mathbf{r})\psi(\mathbf{r})\right) \\
-&= \int \mathrm{d}\mathbf{r}\,P(\mathbf{r})\cdot E_\mathrm{loc}(\mathbf{r}),
-\qquad
-\left(
-P(\mathbf{r}) = \frac{1}{Z}|\psi(\mathbf{r})|^2,\quad
+\frac{\hat{H}\psi(\mathbf{r})}{\psi(\mathbf{r})}
+&& |\psi(\mathbf{r})|^2 =
+\psi^*(\mathbf{r})\psi(\mathbf{r}) \\
+&= \int \mathrm{d}\mathbf{r}\,P(\mathbf{r})\cdot E_\mathrm{loc}(\mathbf{r})
+&& P(\mathbf{r}) = \frac{1}{Z}|\psi(\mathbf{r})|^2,\quad
 E_\mathrm{loc}(\mathbf{r}) =
 \frac{\hat{H}\psi(\mathbf{r})}{\psi(\mathbf{r})}
-\right) \\
-&\approx \frac{1}{N}\sum_{i=1}^{N}E_\mathrm{loc}(\mathbf{r}_i),
-\qquad \left(\mathbf{r}_i \sim P\right).
+\\
+&\approx \frac{1}{N}\sum_{i=1}^{N}E_\mathrm{loc}(\mathbf{r}_i)
+&& \mathbf{r}_i \sim P.
 \end{aligned}
 ```
 
