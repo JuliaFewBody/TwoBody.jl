@@ -8,10 +8,12 @@ The internal database provides benchmark Hamiltonians and their reference
 energies for developing and testing solvers. Database functionality is not
 exported because it is intended for package development.
 
-```julia
-entry = TwoBody.db(:hydrogen)
-hamiltonian = entry.hamiltonian
-reference_energy = entry.energy
+```julia-repl
+julia> entry = TwoBody.db(:hydrogen)
+
+julia> entry.hamiltonian
+
+julia> entry.energy
 ```
 
 The returned Hamiltonian can be passed to a solver, and the calculated energy
