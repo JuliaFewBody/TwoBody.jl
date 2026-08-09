@@ -17,6 +17,10 @@ and local energy gives the single expression
   \displaystyle \int \mathrm{d}\mathbf{r}\,
   |\psi(\mathbf{r})|^2
 } \\
+&= \frac{1}{Z}\int \mathrm{d}\mathbf{r}\,
+\psi^*(\mathbf{r})\hat{H}\psi(\mathbf{r}),
+\qquad
+Z = \int \mathrm{d}\mathbf{r}\,|\psi(\mathbf{r})|^2 \\
 &= \int \mathrm{d}\mathbf{r}\,
 \underbrace{
   \frac{|\psi(\mathbf{r})|^2}
