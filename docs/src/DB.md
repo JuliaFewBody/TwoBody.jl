@@ -11,25 +11,26 @@ intended for package development.
 
 ## Usage
 
+```@example db-usage
+using TwoBody
+```
+
 Retrieve a benchmark using its key:
 
-```julia-repl
-julia> entry = TwoBody.db(:hydrogen)
-
-julia> entry.hamiltonian
-
-julia> entry.energy
+```@repl db-usage
+entry = TwoBody.db(:hydrogen)
+entry.hamiltonian
+entry.energy
 ```
 
 Add a benchmark using `TwoBody.put!`:
 
-```julia-repl
-julia> hamiltonian = Hamiltonian(
-           NonRelativisticKinetic(ℏ = 1.0, m = 1.0),
-           CoulombPotential(coefficient = -1.0),
-       )
-
-julia> TwoBody.put!(:example, hamiltonian, -0.5)
+```@repl db-usage
+hamiltonian = Hamiltonian(
+    NonRelativisticKinetic(ℏ = 1.0, m = 1.0),
+    CoulombPotential(coefficient = -1.0),
+)
+TwoBody.put!(:example, hamiltonian, -0.5)
 ```
 
 Duplicate keys are rejected, and Hamiltonians are copied on registration and
