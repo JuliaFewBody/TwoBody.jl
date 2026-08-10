@@ -79,6 +79,8 @@ println("Reference: -0.4813(6)")
 
 For ``\psi(r)=\exp(-\alpha r)``, the analytical expectation value in atomic units is ``\alpha^2/2-\alpha=-0.48`` at ``\alpha=0.8``; Thijssen reports ``-0.4813(6)``. A finite-sample estimate fluctuates around the analytical expectation value; more samples reduce statistical noise but not the trial wavefunction's variational bias.
 
+`solve` also returns sampling diagnostics and retained data; see the [API reference](#API-reference) for details.
+
 Because successive Markov-chain samples are correlated, rigorous uncertainty estimates require batching or autocorrelation analysis; the blocking method of Flyvbjerg and Petersen [3] is one standard approach.
 
 ## Bibliography
