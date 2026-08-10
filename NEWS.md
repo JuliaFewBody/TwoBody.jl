@@ -38,6 +38,9 @@ have been removed rather than retained as aliases:
 | `FunctionPotential` | `Custom` |
 | `UniformGridPotential` | `Tabulated` |
 
+The reduced Planck constant argument and related public identifiers have also
+been renamed from `ℏ` to the ASCII spelling `hbar`.
+
 For example, update
 
 ```julia
@@ -51,7 +54,7 @@ to
 
 ```julia
 Hamiltonian(
-  Kinetic(ℏ=1, m=1),
+  Kinetic(hbar=1, m=1),
   Coulomb(coefficient=-1),
 )
 ```
@@ -72,3 +75,4 @@ Hamiltonian(
 - #23 — Simplify Hamiltonian operator names.
 - #24 — Fix documentation deployment after the repository transfer.
 - #25 — Make database documentation examples executable.
+- #27 — Rename `ℏ` to `hbar` throughout the public API.
