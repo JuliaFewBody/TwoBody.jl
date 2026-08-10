@@ -34,7 +34,7 @@ function matrix(o::RestEnergy, method::FiniteDifferenceMethod)
   return SparseArrays.spdiagm([o.m * o.c^2 for r in method.R])
 end
 
-function matrix(o::NonRelativisticKinetic, method::FiniteDifferenceMethod)
+function matrix(o::Kinetic, method::FiniteDifferenceMethod)
   D  = FiniteDifferenceMatrices.fdmatrix(Int64(length(method.R)), n=1, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
   D² = FiniteDifferenceMatrices.fdmatrix(Int64(length(method.R)), n=2, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
   return -o.ℏ^2/2/o.m * (D² + SparseArrays.spdiagm(2 ./ method.R) * D - method.l*(method.l+1) * SparseArrays.spdiagm(1 ./ method.R .^ 2))
@@ -207,7 +207,7 @@ mc^2
 """ matrix(o::RestEnergy, method::FiniteDifferenceMethod)
 
 @doc raw"""
-`matrix(o::NonRelativisticKinetic, method::FiniteDifferenceMethod)`
+`matrix(o::Kinetic, method::FiniteDifferenceMethod)`
 
 We use the shorthand notation $\psi'(r) = \frac{\mathrm{d}\psi}{\mathrm{d}r}(r)$ and $\psi''(r) = \frac{\mathrm{d}^{2}\psi}{\mathrm{d}r^{2}}(r)$. For the uniform grid spacing ($r_{i+1} = r_{i} + \Delta r$), the finite difference for the first derivative,
 
@@ -326,7 +326,7 @@ is written as
     \end{array}\right)
   \right].
 ```
-""" matrix(o::NonRelativisticKinetic, method::FiniteDifferenceMethod)
+""" matrix(o::Kinetic, method::FiniteDifferenceMethod)
 
 @doc raw"""
 `matrix(o::PotentialTerm, method::FiniteDifferenceMethod)`

@@ -55,7 +55,7 @@ function _local_energy(term::Laplacian, wavefunction::Function, position, ψ)
   return term.coefficient * _laplacian(wavefunction, position) / ψ
 end
 
-function _local_energy(term::NonRelativisticKinetic, wavefunction::Function, position, ψ)
+function _local_energy(term::Kinetic, wavefunction::Function, position, ψ)
   return -term.ℏ^2 / (2 * term.m) * _laplacian(wavefunction, position) / ψ
 end
 

@@ -35,8 +35,8 @@ Define the [Hamiltoninan](@ref Hamiltonian). This is an example for the non-rela
 
 ```@example example
 H = Hamiltonian(
-  NonRelativisticKinetic(ℏ = 1 , m = 1),
-  CoulombPotential(coefficient = -1),
+  Kinetic(ℏ = 1, m = 1),
+  Coulomb(coefficient = -1),
 )
 nothing # hide
 ```
@@ -78,7 +78,7 @@ Analytical solutions are implemented in [Antique.jl](https://ohno.github.io/Anti
 ```@example example
 # solve
 using TwoBody
-H = Hamiltonian(NonRelativisticKinetic(1,1), CoulombPotential(-1))
+H = Hamiltonian(Kinetic(1, 1), Coulomb(-1))
 BS = GeometricBasisSet(SimpleGaussianBasis, 0.1, 80.0, 20)
 res = solve(H, BS)
 
@@ -132,7 +132,7 @@ Analytical solutions are implemented in [spherical oscillator](https://ohno.gith
 ```@example example
 # solve
 using TwoBody
-H = Hamiltonian(NonRelativisticKinetic(1,1), PowerLawPotential(coefficient=1/2,exponent=2))
+H = Hamiltonian(Kinetic(1, 1), PowerLaw(coefficient=1/2, exponent=2))
 BS = GeometricBasisSet(SimpleGaussianBasis, 1.0, 10.0, 20)
 res = solve(H, BS)
 
@@ -222,10 +222,10 @@ element(SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 element(o::Hamiltonian, B1::Basis, B2::Basis)
 element(o::RestEnergy, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 element(o::Laplacian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-element(o::NonRelativisticKinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-element(o::ConstantPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-element(o::LinearPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-element(o::CoulombPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-element(o::PowerLawPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-element(o::GaussianPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::Kinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::Constant, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::Linear, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::Coulomb, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::PowerLaw, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::Gaussian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 ```

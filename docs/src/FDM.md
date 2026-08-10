@@ -38,8 +38,8 @@ Define the [Hamiltoninan](@ref Hamiltonian). This is an example for the non-rela
 ```
 ```@example example
 H = Hamiltonian(
-  NonRelativisticKinetic(ℏ = 1 , m = 1),
-  CoulombPotential(coefficient = -1),
+  Kinetic(ℏ = 1, m = 1),
+  Coulomb(coefficient = -1),
 )
 nothing # hide
 ```
@@ -79,7 +79,7 @@ Analytical solutions are implemented in [Antique.jl](https://ohno.github.io/Anti
 ```@example example
 # solve
 using TwoBody
-H = Hamiltonian(NonRelativisticKinetic(1,1), CoulombPotential(-1))
+H = Hamiltonian(Kinetic(1, 1), Coulomb(-1))
 FDM = FiniteDifferenceMethod()
 res = solve(H, FDM, info=0, nₘₐₓ=4)
 
@@ -134,7 +134,7 @@ Analytical solutions are implemented in [spherical oscillator](https://ohno.gith
 ```@example example
 # solve
 using TwoBody
-H = Hamiltonian(NonRelativisticKinetic(1,1), PowerLawPotential(coefficient=1/2,exponent=2))
+H = Hamiltonian(Kinetic(1, 1), PowerLaw(coefficient=1/2, exponent=2))
 FDM = FiniteDifferenceMethod(rₘₐₓ=10.0)
 res = solve(H, FDM, info=0, nₘₐₓ=4)
 
@@ -190,6 +190,6 @@ TwoBody.FiniteDifferenceMethod
 TwoBody.solve(hamiltonian::Hamiltonian, method::FiniteDifferenceMethod)
 TwoBody.matrix(o::Hamiltonian, method::FiniteDifferenceMethod)
 TwoBody.matrix(o::RestEnergy, method::FiniteDifferenceMethod)
-TwoBody.matrix(o::NonRelativisticKinetic, method::FiniteDifferenceMethod)
+TwoBody.matrix(o::Kinetic, method::FiniteDifferenceMethod)
 TwoBody.matrix(o::PotentialTerm, method::FiniteDifferenceMethod)
 ```

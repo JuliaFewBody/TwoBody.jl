@@ -3,8 +3,8 @@
   # Testing Results
 
   H = Hamiltonian(
-    NonRelativisticKinetic(ℏ = 1 , m = 1),
-    CoulombPotential(coefficient = -1),
+    Kinetic(ℏ = 1, m = 1),
+    Coulomb(coefficient = -1),
   )
   FDM = FiniteDifferenceMethod(
     Δr = 0.1,

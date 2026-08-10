@@ -19,8 +19,8 @@
 
     key = :temporary_test_problem
     hamiltonian = Hamiltonian(
-        NonRelativisticKinetic(ℏ = 1.0, m = 1.0),
-        CoulombPotential(coefficient = -2.0),
+        Kinetic(ℏ = 1.0, m = 1.0),
+        Coulomb(coefficient = -2.0),
     )
 
     try

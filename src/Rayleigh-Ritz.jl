@@ -388,27 +388,27 @@ function element(o::Laplacian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBa
   return - 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
 end
 
-function element(o::NonRelativisticKinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+function element(o::Kinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return o.ℏ^2/(2*o.m) * 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
 end
 
-function element(o::ConstantPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+function element(o::Constant, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return o.constant * (π/(SGB1.a+SGB2.a))^(3/2)
 end
 
-function element(o::LinearPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+function element(o::Linear, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return o.coefficient * 2*π/(SGB1.a+SGB2.a)^2
 end
 
-function element(o::CoulombPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+function element(o::Coulomb, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return o.coefficient * 2*π/(SGB1.a+SGB2.a)
 end
 
-function element(o::PowerLawPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+function element(o::PowerLaw, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return o.coefficient * 2 * π * SpecialFunctions.gamma((o.exponent+3)/2) / (SGB1.a+SGB2.a)^((o.exponent+3)/2)
 end
 
-function element(o::GaussianPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+function element(o::Gaussian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return o.coefficient * (π/(o.exponent+SGB1.a+SGB2.a))^(3/2)
 end
 
@@ -557,7 +557,7 @@ Integral Formula:
 """ element(o::Laplacian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
-`element(o::NonRelativisticKinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
+`element(o::Kinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
 
 ## Derivation (without Green's identity)
 
@@ -700,10 +700,10 @@ Integral Formula:
   = \frac{\Gamma\left( \frac{n+1}{2} \right)}{2 b^{\frac{n+1}{2}}}
 \end{aligned}
 ```
-""" element(o::NonRelativisticKinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+""" element(o::Kinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
-`element(o::ConstantPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
+`element(o::Constant, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
 
 ```math
 \begin{aligned}
@@ -726,10 +726,10 @@ Integral Formula:
 ```math
 \int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
 ```
-""" element(o::ConstantPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+""" element(o::Constant, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
-`element(o::LinearPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
+`element(o::Linear, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
 
 ```math
 \begin{aligned}
@@ -751,10 +751,10 @@ Integral Formula:
 ```math
 \int_0^{\infty} r^{2n+1} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{n!}{2 a^{n+1}}
 ```
-""" element(o::LinearPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+""" element(o::Linear, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
-`element(o::CoulombPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
+`element(o::Coulomb, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
 
 ```math
 \begin{aligned}
@@ -776,10 +776,10 @@ Integral Formula:
 ```math
 \int_0^{\infty} r^{2n+1} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{n!}{2 a^{n+1}}
 ```
-""" element(o::CoulombPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+""" element(o::Coulomb, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
-`element(o::PowerLawPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
+`element(o::PowerLaw, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
 
 ```math
 \begin{aligned}
@@ -801,10 +801,10 @@ Integral Formula:
 ```math
 \int_0^{\infty} r^{n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{\Gamma\left( \frac{n+1}{2} \right)}{2 a^{\frac{n+1}{2}}}
 ```
-""" element(o::PowerLawPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+""" element(o::PowerLaw, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
-`element(o::GaussianPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
+`element(o::Gaussian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
 
 ```math
 \begin{aligned}
@@ -826,7 +826,7 @@ Integral Formula:
 ```math
 \int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
 ```
-""" element(o::GaussianPotential, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+""" element(o::Gaussian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
 `element(o::Hamiltonian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
