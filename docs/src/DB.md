@@ -4,12 +4,10 @@ CurrentModule = TwoBody
 
 # Database
 
-The internal database provides benchmark Hamiltonians and their reference
-energies for developing and testing solvers. Database functionality is not
-exported because it is intended for package development.
-
-The returned Hamiltonian can be passed to a solver, and the calculated energy
-can then be compared with the reference value.
+The internal database provides benchmark Hamiltonians and reference energies
+for testing solvers. Each Hamiltonian can be passed to a solver and its result
+compared with the reference energy. The database is not exported because it is
+intended for package development.
 
 ## Usage
 
@@ -34,8 +32,8 @@ julia> hamiltonian = Hamiltonian(
 julia> TwoBody.put!(:example, hamiltonian, -0.5)
 ```
 
-Duplicate keys are rejected. Registration and lookup both copy the Hamiltonian
-so that modifying a returned entry does not alter the stored benchmark.
+Duplicate keys are rejected, and Hamiltonians are copied on registration and
+lookup to protect stored benchmarks.
 
 ## Data
 
