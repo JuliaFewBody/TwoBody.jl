@@ -31,8 +31,8 @@ Define the [Hamiltoninan](@ref Hamiltonian). This is an example for the non-rela
 ```
 ```@example index
 H = Hamiltonian(
-  NonRelativisticKinetic(ℏ = 1 , m = 1),
-  CoulombPotential(coefficient = -1),
+  Kinetic(ℏ = 1, m = 1),
+  Coulomb(coefficient = -1),
 )
 nothing # hide
 ```

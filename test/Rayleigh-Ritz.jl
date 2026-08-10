@@ -3,8 +3,8 @@
   # Testing Results
 
   H = Hamiltonian(
-    NonRelativisticKinetic(ℏ = 1 , m = 1),
-    CoulombPotential(coefficient = -1),
+    Kinetic(ℏ = 1, m = 1),
+    Coulomb(coefficient = -1),
   )
   BS = BasisSet(
     SimpleGaussianBasis(13.00773),
@@ -75,7 +75,7 @@
   @testset "element()" begin
 
     # kinetic terms
-    o = NonRelativisticKinetic(ℏ=1, m=1)
+    o = Kinetic(ℏ=1, m=1)
     println(o)
     println("  i  j\tnumerical  \tanalytical")
     l = 0
@@ -96,16 +96,16 @@
 
     # potential terms
     for o in [
-      ConstantPotential(),
-      LinearPotential(),
-      CoulombPotential(),
-      PowerLawPotential(),
-      PowerLawPotential(exponent=2),
-      GaussianPotential(),
-      # ExponentialPotential(),
-      # YukawaPotential(),
-      # LogarithmicPotential(),
-      # DeltaPotential(),
+      Constant(),
+      Linear(),
+      Coulomb(),
+      PowerLaw(),
+      PowerLaw(exponent=2),
+      Gaussian(),
+      # Exponential(),
+      # Yukawa(),
+      # Logarithmic(),
+      # Delta(),
     ]
       println(o)
       println("  i  j\tnumerical  \tanalytical")

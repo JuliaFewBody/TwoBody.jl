@@ -1,4 +1,4 @@
-export Operator, Hamiltonian, getindex, NonRelativisticKinetic, RestEnergy, RelativisticCorrection, RelativisticKinetic, ConstantPotential, LinearPotential, CoulombPotential, PowerLawPotential, GaussianPotential, ExponentialPotential, YukawaPotential, DeltaPotential, FunctionPotential, UniformGridPotential
+export Operator, Hamiltonian, getindex, Kinetic, RestEnergy, RelativisticCorrection, RelativisticKinetic, Constant, Linear, Coulomb, PowerLaw, Gaussian, Exponential, Yukawa, Delta, Custom, Tabulated
 
 # type
 
@@ -17,7 +17,7 @@ Base.@kwdef struct Laplacian <: KineticTerm
   coefficient = 1
 end
 
-Base.@kwdef struct NonRelativisticKinetic <: KineticTerm
+Base.@kwdef struct Kinetic <: KineticTerm
   ℏ = 1
   m = 1
 end
@@ -38,47 +38,47 @@ Base.@kwdef struct RelativisticKinetic <: KineticTerm
   m = 1
 end
 
-Base.@kwdef struct ConstantPotential <: PotentialTerm
+Base.@kwdef struct Constant <: PotentialTerm
   constant = 1
 end
 
-Base.@kwdef struct LinearPotential <: PotentialTerm
+Base.@kwdef struct Linear <: PotentialTerm
   coefficient = 1
 end
 
-Base.@kwdef struct CoulombPotential <: PotentialTerm
+Base.@kwdef struct Coulomb <: PotentialTerm
   coefficient = 1
 end
 
-Base.@kwdef struct PowerLawPotential <: PotentialTerm
-  coefficient = 1
-  exponent = 1
-end
-
-Base.@kwdef struct GaussianPotential <: PotentialTerm
+Base.@kwdef struct PowerLaw <: PotentialTerm
   coefficient = 1
   exponent = 1
 end
 
-Base.@kwdef struct ExponentialPotential <: PotentialTerm
+Base.@kwdef struct Gaussian <: PotentialTerm
   coefficient = 1
   exponent = 1
 end
 
-Base.@kwdef struct YukawaPotential <: PotentialTerm
+Base.@kwdef struct Exponential <: PotentialTerm
   coefficient = 1
   exponent = 1
 end
 
-Base.@kwdef struct DeltaPotential <: PotentialTerm
+Base.@kwdef struct Yukawa <: PotentialTerm
+  coefficient = 1
+  exponent = 1
+end
+
+Base.@kwdef struct Delta <: PotentialTerm
   coefficient = 1
 end
 
-Base.@kwdef struct FunctionPotential <: PotentialTerm
+Base.@kwdef struct Custom <: PotentialTerm
   f::Function
 end
 
-Base.@kwdef struct UniformGridPotential <: PotentialTerm
+Base.@kwdef struct Tabulated <: PotentialTerm
   R::StepRangeLen
   V::Array{Number,1}
 end
@@ -94,16 +94,16 @@ Base.length(H::Hamiltonian) = length(H.terms)
 
 # function
 
-V(p::ConstantPotential   , r) = p.constant
-V(p::LinearPotential     , r) = p.coefficient * r
-V(p::CoulombPotential    , r) = p.coefficient / r
-V(p::PowerLawPotential   , r) = p.coefficient * r ^ p.exponent
-V(p::GaussianPotential   , r) = p.coefficient * exp(- p.exponent * r ^ 2)
-V(p::ExponentialPotential, r) = p.coefficient * exp(- p.exponent * r)
-V(p::YukawaPotential     , r) = p.coefficient * exp(- p.exponent * r) / r
-# V(p::DeltaPotential      , r) = 
-V(p::FunctionPotential   , r) = p.f(r)
-V(p::UniformGridPotential, r) = p.V[findfirst(p.R, r)]
+V(p::Constant       , r) = p.constant
+V(p::Linear         , r) = p.coefficient * r
+V(p::Coulomb        , r) = p.coefficient / r
+V(p::PowerLaw       , r) = p.coefficient * r ^ p.exponent
+V(p::Gaussian       , r) = p.coefficient * exp(- p.exponent * r ^ 2)
+V(p::Exponential    , r) = p.coefficient * exp(- p.exponent * r)
+V(p::Yukawa         , r) = p.coefficient * exp(- p.exponent * r) / r
+# V(p::Delta          , r) =
+V(p::Custom   , r) = p.f(r)
+V(p::Tabulated, r) = p.V[findfirst(p.R, r)]
 
 # docstring
 
@@ -135,8 +135,8 @@ The Hamiltonian is the input for each solver. This is an example for the non-rel
 
 ```@example
 H = Hamiltonian(
-  NonRelativisticKinetic(ℏ =1 , m = 1),
-  CoulombPotential(coefficient = -1),
+  Kinetic(ℏ = 1, m = 1),
+  Coulomb(coefficient = -1),
 )
 ```
 """ Hamiltonian
@@ -152,11 +152,11 @@ H = Hamiltonian(
 """ Laplacian
 
 @doc raw"""
-`NonRelativisticKinetic(ℏ=1, m=1)`
+`Kinetic(ℏ=1, m=1)`
 ```math
 -\frac{\hbar^2}{2m} \nabla^2
 ```
-""" NonRelativisticKinetic
+""" Kinetic
 
 @doc raw"""
 `RestEnergy(c=1, m=1)`
@@ -192,37 +192,37 @@ Use `c = 137.035999177` (from [2022 CODATA](https://physics.nist.gov/cgi-bin/cuu
 """ RelativisticKinetic
 
 @doc raw"""
-`ConstantPotential(constant=1)`
+`Constant(constant=1)`
 ```math
 + c
 ```
 | Arguments | Symbol |
 | :-- | :-- |
 | `constant` | ``c`` |
-""" ConstantPotential
+""" Constant
 
 @doc raw"""
-`LinearPotential(coefficient=1)`
+`Linear(coefficient=1)`
 ```math
 + ar
 ```
 | Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
-""" LinearPotential
+""" Linear
 
 @doc raw"""
-`CoulombPotential(coefficient=1)`
+`Coulomb(coefficient=1)`
 ```math
 + \frac{a}{r}
 ```
 | Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
-""" CoulombPotential
+""" Coulomb
 
 @doc raw"""
-`PowerLawPotential(coefficient=1, exponent=1)`
+`PowerLaw(coefficient=1, exponent=1)`
 ```math
 + ar^n
 ```
@@ -230,10 +230,10 @@ Use `c = 137.035999177` (from [2022 CODATA](https://physics.nist.gov/cgi-bin/cuu
 | :-- | :-- |
 | `coefficient` | ``a`` |
 | `exponent` | ``n`` |
-""" PowerLawPotential
+""" PowerLaw
 
 @doc raw"""
-`GaussianPotential(coefficient=1, exponent=1)`
+`Gaussian(coefficient=1, exponent=1)`
 ```math
 + a \exp(- b r^2)
 ```
@@ -241,10 +241,10 @@ Use `c = 137.035999177` (from [2022 CODATA](https://physics.nist.gov/cgi-bin/cuu
 | :-- | :-- |
 | `coefficient` | ``a`` |
 | `exponent`    | ``b`` |
-""" GaussianPotential
+""" Gaussian
 
 @doc raw"""
-`ExponentialPotential(coefficient=1, exponent=1)`
+`Exponential(coefficient=1, exponent=1)`
 ```math
 + a \exp(- b r)
 ```
@@ -252,10 +252,10 @@ Use `c = 137.035999177` (from [2022 CODATA](https://physics.nist.gov/cgi-bin/cuu
 | :-- | :-- |
 | `coefficient` | ``a`` |
 | `exponent`    | ``b`` |
-""" ExponentialPotential
+""" Exponential
 
 @doc raw"""
-`YukawaPotential(coefficient=1, exponent=1)`
+`Yukawa(coefficient=1, exponent=1)`
 ```math
 + \frac{a}{r} \exp(- b r)
 ```
@@ -263,25 +263,25 @@ Use `c = 137.035999177` (from [2022 CODATA](https://physics.nist.gov/cgi-bin/cuu
 | :-- | :-- |
 | `coefficient` | ``a`` |
 | `exponent`    | ``b`` |
-""" YukawaPotential
+""" Yukawa
 
 @doc raw"""
-`DeltaPotential(coefficient=1)`
+`Delta(coefficient=1)`
 ```math
 + a δ(r)
 ```
 | Arguments | Symbol |
 | :-- | :-- |
 | `coefficient` | ``a`` |
-""" DeltaPotential
+""" Delta
 
 @doc raw"""
-`FunctionPotential(f)`
+`Custom(f)`
 ```math
 + f(r)
 ```
-""" FunctionPotential
+""" Custom
 
 @doc raw"""
-`UniformGridPotential(R, V)`
-""" UniformGridPotential
+`Tabulated(R, V)`
+""" Tabulated

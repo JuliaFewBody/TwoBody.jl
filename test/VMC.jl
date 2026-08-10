@@ -13,8 +13,8 @@
 
   @testset "local energy" begin
     H = Hamiltonian(
-      NonRelativisticKinetic(ℏ=1, m=1),
-      PowerLawPotential(coefficient=1 / 2, exponent=2),
+      Kinetic(ℏ=1, m=1),
+      PowerLaw(coefficient=1 / 2, exponent=2),
     )
     ψ(r) = exp(-sum(abs2, r) / 2)
 
@@ -28,8 +28,8 @@
 
   @testset "harmonic oscillator" begin
     H = Hamiltonian(
-      NonRelativisticKinetic(ℏ=1, m=1),
-      PowerLawPotential(coefficient=1 / 2, exponent=2),
+      Kinetic(ℏ=1, m=1),
+      PowerLaw(coefficient=1 / 2, exponent=2),
     )
     ψ(r) = exp(-sum(abs2, r) / 2)
     method = VariationalMonteCarlo(
@@ -53,8 +53,8 @@
     @test mean_radius_squared ≈ 1.5 atol=0.5
 
     singular_H = Hamiltonian(
-      NonRelativisticKinetic(ℏ=1, m=1),
-      FunctionPotential(f=r -> r < 1 ? Inf : r^2 / 2),
+      Kinetic(ℏ=1, m=1),
+      Custom(f=r -> r < 1 ? Inf : r^2 / 2),
     )
     singular_result = solve(
       singular_H,
@@ -70,8 +70,8 @@
 
   @testset "multiple walkers" begin
     H = Hamiltonian(
-      NonRelativisticKinetic(ℏ=1, m=1),
-      PowerLawPotential(coefficient=1 / 2, exponent=2),
+      Kinetic(ℏ=1, m=1),
+      PowerLaw(coefficient=1 / 2, exponent=2),
     )
     ψ(r) = exp(-sum(abs2, r) / 2)
     method = VariationalMonteCarlo(
@@ -103,8 +103,8 @@
 
   @testset "Coulomb singularity" begin
     H = Hamiltonian(
-      NonRelativisticKinetic(ℏ=1, m=1),
-      CoulombPotential(coefficient=-1),
+      Kinetic(ℏ=1, m=1),
+      Coulomb(coefficient=-1),
     )
     α = 0.2829
     ψ(r) = exp(-α * sum(abs2, r))

@@ -7,6 +7,7 @@ using SpecialFunctions
 using ForwardDiff
 
 @testset verbose = true "TwoBody.jl" begin
+  include("Hamiltonian.jl")
   include("DB.jl")
   include("Basis.jl")
   include("Rayleigh-Ritz.jl")
