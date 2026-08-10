@@ -4,7 +4,7 @@ CurrentModule = TwoBody
 
 # Variational Monte Carlo
 
-Combining the variational energy expectation value with the probability density and local energy gives a single expression in which VMC estimates ``\langle E\rangle`` by averaging the local energy over positions sampled from the normalized density ``P(\mathbf{r})``:
+VMC estimates ``\langle E\rangle`` by averaging the local energy over positions sampled from the normalized density ``P(\mathbf{r})``:
 
 ```math
 \begin{aligned}
@@ -37,14 +37,14 @@ E_\mathrm{loc}(\mathbf{r}) =
 \end{aligned}
 ```
 
-This local-energy formulation and its use in VMC are reviewed by Foulkes *et al.*
+This local-energy formulation is reviewed by Foulkes *et al.*
 [1]. Samples are generated with a symmetric random-walk proposal and the
 Metropolis acceptance rule [2]. The Laplacian in a non-relativistic kinetic term
 is evaluated by forward-mode automatic differentiation with ForwardDiff.jl [4].
 
 ## Usage
 
-The following example uses the hydrogen trial wavefunction ``\psi(r)=\exp(-0.8r)`` and sampling conditions from Thijssen [5, Table 12.1]: 300 walkers, 12,000 attempted displacements per walker, and the first 2,000 states of each walker discarded for equilibration. Since `n_steps` counts retained samples, the remaining 10,000 states are specified with `burn_in=2_000` and `thinning=1`. A nonzero initial position avoids the Coulomb singularity.
+The following example uses the hydrogen trial wavefunction ``\psi(r)=\exp(-0.8r)`` and sampling conditions from Thijssen [5, Table 12.1]: 300 walkers, 12,000 attempted displacements per walker, and the first 2,000 states of each walker discarded for equilibration (`burn_in=2_000`; `n_steps=10_000` counts the retained samples). A nonzero initial position avoids starting exactly at the Coulomb singularity.
 
 ```@example vmc-hydrogen
 using TwoBody
@@ -77,11 +77,9 @@ println("This work: $(result.E)")
 println("Reference: -0.4813(6)")
 ```
 
-For ``\psi(r)=\exp(-\alpha r)``, the analytical expectation value in atomic units is ``\alpha^2/2-\alpha=-0.48`` at ``\alpha=0.8``; Thijssen reports ``-0.4813(6)``. The expectation value obeys the variational bound, while a finite-sample estimate can fluctuate around it. More samples reduce statistical noise but not the trial wavefunction's variational bias.
+For ``\psi(r)=\exp(-\alpha r)``, the analytical expectation value in atomic units is ``\alpha^2/2-\alpha=-0.48`` at ``\alpha=0.8``; Thijssen reports ``-0.4813(6)``. A finite-sample estimate fluctuates around the analytical expectation value; more samples reduce statistical noise but not the trial wavefunction's variational bias.
 
-Each walker performs `burn_in + n_steps * thinning` transitions, giving 3,600,000 attempted displacements, 600,000 discarded burn-in states, and 3,000,000 retained samples. These counts are available as `result.n_attempted`, `result.n_burn_in_discarded`, and `result.n_samples`. The result also contains the sample variance, a naive standard error, the acceptance rate, local energies, and positions; walker-wise local energies can be obtained with `reshape(result.local_energies, method.n_steps, method.n_walkers)`.
-
-Because successive Markov-chain samples are correlated, rigorous uncertainty estimates require batching or autocorrelation analysis; the blocking method of Flyvbjerg and Petersen [3] is one standard approach. Retained samples with non-finite local energies are excluded from the statistics and counted separately in `result.n_discarded`.
+Because successive Markov-chain samples are correlated, rigorous uncertainty estimates require batching or autocorrelation analysis; the blocking method of Flyvbjerg and Petersen [3] is one standard approach.
 
 ## Bibliography
 
