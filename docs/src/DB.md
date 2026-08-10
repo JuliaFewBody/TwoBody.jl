@@ -11,14 +11,16 @@ intended for package development.
 
 ## Usage
 
+```@example db-usage
+using TwoBody
+```
+
 Retrieve a benchmark using its key:
 
-```julia-repl
-julia> entry = TwoBody.db(:hydrogen)
-
-julia> entry.hamiltonian
-
-julia> entry.energy
+```@repl db-usage
+entry = TwoBody.db(:hydrogen)
+entry.hamiltonian
+entry.energy
 ```
 
 Add a benchmark using `TwoBody.put!`:
