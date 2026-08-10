@@ -22,8 +22,11 @@ flowchart TD
   E["FiniteDifferenceMatrices.jl"]
   F["FDM.jl"]
   G["VMC.jl"]
+  H["DB.jl"]
   Z["TwoBody.jl"]
+  A --> H
   A --> C & D & F & G
+  H --> C & D & F & G
   B --> C & D
   E --> F
   C & D & F & G --> Z
