@@ -1,8 +1,8 @@
 # TwoBody.jl release notes
 
-## v0.1.0 — 2026-08-10
+## v0.0.11 — 2026-08-10
 
-TwoBody.jl v0.1.0 adds variational Monte Carlo calculations and a benchmark
+TwoBody.jl v0.0.11 adds variational Monte Carlo calculations and a benchmark
 Hamiltonian database, improves the Rayleigh–Ritz workflow, and simplifies the
 public operator API. This release contains breaking API changes; see the
 migration notes below.
@@ -24,7 +24,7 @@ migration notes below.
 Hamiltonian operator types now use concise mathematical names. The old names
 have been removed rather than retained as aliases:
 
-| Before | v0.1.0 |
+| Before | v0.0.11 |
 | --- | --- |
 | `NonRelativisticKinetic` | `Kinetic` |
 | `ConstantPotential` | `Constant` |
