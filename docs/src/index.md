@@ -4,16 +4,16 @@ CurrentModule = TwoBody
 
 # TwoBody.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://ohno.github.io/TwoBody.jl/stable) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://ohno.github.io/TwoBody.jl/dev) [![Build Status](https://github.com/ohno/TwoBody.jl/workflows/CI/badge.svg)](https://github.com/ohno/TwoBody.jl/actions)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliafewbody.github.io/TwoBody.jl/stable) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliafewbody.github.io/TwoBody.jl/dev) [![Build Status](https://github.com/JuliaFewBody/TwoBody.jl/workflows/CI/badge.svg)](https://github.com/JuliaFewBody/TwoBody.jl/actions)
 
-[TwoBody.jl](https://github.com/ohno/TwoBody.jl): a Julia package for quantum mechanical two-body problems
+[TwoBody.jl](https://github.com/JuliaFewBody/TwoBody.jl): a Julia package for quantum mechanical two-body problems
 
 ## Install
 
 Run the following code on the REPL or Jupyter Notebook to install this package.
 
 ```julia
-import Pkg; Pkg.add(url="https://github.com/ohno/TwoBody.jl.git")
+import Pkg; Pkg.add(url="https://github.com/JuliaFewBody/TwoBody.jl.git")
 ```
 
 ## Usage
