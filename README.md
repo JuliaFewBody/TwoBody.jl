@@ -16,20 +16,15 @@ config:
 ---
 flowchart TD
   A["Hamiltonian.jl"]
-  B["Basis.jl"]
   C["Rayleigh-Ritz.jl"]
-  D["GEM.jl"]
-  E["FiniteDifferenceMatrices.jl"]
   F["FDM.jl"]
   G["VMC.jl"]
   H["DB.jl"]
   Z["TwoBody.jl"]
   A --> H
-  A --> C & D & F & G
-  H --> C & D & F & G
-  B --> C & D
-  E --> F
-  C & D & F & G --> Z
+  A --> C & F & G
+  H --> C & F & G
+  C & F & G --> Z
 ```
 
 ## Developer's Guide
