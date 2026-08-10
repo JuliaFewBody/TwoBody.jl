@@ -13,7 +13,7 @@
 
   @testset "local energy" begin
     H = Hamiltonian(
-      Kinetic(ℏ=1, m=1),
+      Kinetic(hbar=1, m=1),
       PowerLaw(coefficient=1 / 2, exponent=2),
     )
     ψ(r) = exp(-sum(abs2, r) / 2)
@@ -28,7 +28,7 @@
 
   @testset "harmonic oscillator" begin
     H = Hamiltonian(
-      Kinetic(ℏ=1, m=1),
+      Kinetic(hbar=1, m=1),
       PowerLaw(coefficient=1 / 2, exponent=2),
     )
     ψ(r) = exp(-sum(abs2, r) / 2)
@@ -53,7 +53,7 @@
     @test mean_radius_squared ≈ 1.5 atol=0.5
 
     singular_H = Hamiltonian(
-      Kinetic(ℏ=1, m=1),
+      Kinetic(hbar=1, m=1),
       Custom(f=r -> r < 1 ? Inf : r^2 / 2),
     )
     singular_result = solve(
@@ -70,7 +70,7 @@
 
   @testset "multiple walkers" begin
     H = Hamiltonian(
-      Kinetic(ℏ=1, m=1),
+      Kinetic(hbar=1, m=1),
       PowerLaw(coefficient=1 / 2, exponent=2),
     )
     ψ(r) = exp(-sum(abs2, r) / 2)
@@ -103,7 +103,7 @@
 
   @testset "Coulomb singularity" begin
     H = Hamiltonian(
-      Kinetic(ℏ=1, m=1),
+      Kinetic(hbar=1, m=1),
       Coulomb(coefficient=-1),
     )
     α = 0.2829

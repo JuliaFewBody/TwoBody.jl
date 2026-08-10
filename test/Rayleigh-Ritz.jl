@@ -3,7 +3,7 @@
   # Testing Results
 
   H = Hamiltonian(
-    Kinetic(ℏ = 1, m = 1),
+    Kinetic(hbar = 1, m = 1),
     Coulomb(coefficient = -1),
   )
   BS = BasisSet(
@@ -75,7 +75,7 @@
   @testset "element()" begin
 
     # kinetic terms
-    o = Kinetic(ℏ=1, m=1)
+    o = Kinetic(hbar=1, m=1)
     println(o)
     println("  i  j\tnumerical  \tanalytical")
     l = 0
@@ -85,7 +85,7 @@
       φⱼ(r) = TwoBody.φ(BS.basis[j], r)
       dφⱼ(r) = ForwardDiff.derivative(r -> φⱼ(r), r)
       d²φⱼ(r) = ForwardDiff.derivative(r -> dφⱼ(r), r)
-      numerical  = 4*π*QuadGK.quadgk(r -> r^2 * φᵢ(r) * (-o.ℏ^2/2/o.m * (d²φⱼ(r) + 2/r*dφⱼ(r) - l*(l+1)/r^2*φⱼ(r))), 0, Inf, maxevals=10^3)[1]
+      numerical  = 4*π*QuadGK.quadgk(r -> r^2 * φᵢ(r) * (-o.hbar^2/2/o.m * (d²φⱼ(r) + 2/r*dφⱼ(r) - l*(l+1)/r^2*φⱼ(r))), 0, Inf, maxevals=10^3)[1]
       analytical = TwoBody.element(o, BS.basis[i], BS.basis[j])
       error = isinf(analytical) ? 0.0 : abs((numerical-analytical)/analytical)
       acceptance = error < 1e-5

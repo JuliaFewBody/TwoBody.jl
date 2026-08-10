@@ -56,7 +56,7 @@ function _local_energy(term::Laplacian, wavefunction::Function, position, ψ)
 end
 
 function _local_energy(term::Kinetic, wavefunction::Function, position, ψ)
-  return -term.ℏ^2 / (2 * term.m) * _laplacian(wavefunction, position) / ψ
+  return -term.hbar^2 / (2 * term.m) * _laplacian(wavefunction, position) / ψ
 end
 
 _local_energy(term::RestEnergy, wavefunction::Function, position, ψ) = term.m * term.c^2

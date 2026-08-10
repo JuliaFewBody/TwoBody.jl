@@ -25,7 +25,7 @@ Add a benchmark using `TwoBody.put!`:
 
 ```julia-repl
 julia> hamiltonian = Hamiltonian(
-           Kinetic(ℏ = 1.0, m = 1.0),
+           Kinetic(hbar = 1.0, m = 1.0),
            Coulomb(coefficient = -1.0),
        )
 
