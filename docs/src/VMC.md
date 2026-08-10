@@ -4,8 +4,7 @@ CurrentModule = TwoBody
 
 # Variational Monte Carlo
 
-Combining the variational energy expectation value with the probability density
-and local energy gives the single expression
+Combining the variational energy expectation value with the probability density and local energy gives a single expression in which VMC estimates ``\langle E\rangle`` by averaging the local energy over positions sampled from the normalized density ``P(\mathbf{r})``:
 
 ```math
 \begin{aligned}
@@ -38,9 +37,7 @@ E_\mathrm{loc}(\mathbf{r}) =
 \end{aligned}
 ```
 
-Thus VMC estimates ``\langle E\rangle`` by averaging the local energy over
-positions sampled from the normalized density ``P(\mathbf{r})``. This
-local-energy formulation and its use in VMC are reviewed by Foulkes *et al.*
+This local-energy formulation and its use in VMC are reviewed by Foulkes *et al.*
 [1]. Samples are generated with a symmetric random-walk proposal and the
 Metropolis acceptance rule [2]. The Laplacian in a non-relativistic kinetic term
 is evaluated by forward-mode automatic differentiation with ForwardDiff.jl [4].
