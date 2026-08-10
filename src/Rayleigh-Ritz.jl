@@ -389,7 +389,7 @@ function element(o::Laplacian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBa
 end
 
 function element(o::Kinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-  return o.ℏ^2/(2*o.m) * 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
+  return o.hbar^2/(2*o.m) * 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
 end
 
 function element(o::Constant, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)

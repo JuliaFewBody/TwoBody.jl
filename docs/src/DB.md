@@ -25,12 +25,13 @@ entry.energy
 
 Add a benchmark using `TwoBody.put!`:
 
-```@repl db-usage
-hamiltonian = Hamiltonian(
-    Kinetic(ℏ = 1.0, m = 1.0),
-    Coulomb(coefficient = -1.0),
-)
-TwoBody.put!(:example, hamiltonian, -0.5)
+```julia-repl
+julia> hamiltonian = Hamiltonian(
+           Kinetic(hbar = 1.0, m = 1.0),
+           Coulomb(coefficient = -1.0),
+       )
+
+julia> TwoBody.put!(:example, hamiltonian, -0.5)
 ```
 
 Duplicate keys are rejected, and Hamiltonians are copied on registration and

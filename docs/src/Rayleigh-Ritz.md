@@ -35,7 +35,7 @@ Define the [Hamiltoninan](@ref Hamiltonian). This is an example for the non-rela
 
 ```@example example
 H = Hamiltonian(
-  Kinetic(ℏ = 1, m = 1),
+  Kinetic(hbar = 1, m = 1),
   Coulomb(coefficient = -1),
 )
 nothing # hide

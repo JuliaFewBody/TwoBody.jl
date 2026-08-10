@@ -19,7 +19,7 @@
 
     key = :temporary_test_problem
     hamiltonian = Hamiltonian(
-        Kinetic(ℏ = 1.0, m = 1.0),
+        Kinetic(hbar = 1.0, m = 1.0),
         Coulomb(coefficient = -2.0),
     )
 

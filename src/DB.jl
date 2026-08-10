@@ -38,7 +38,7 @@ put!(key::AbstractString, hamiltonian::Hamiltonian, energy::Real) =
 put!(
     :hydrogen,
     Hamiltonian(
-        Kinetic(ℏ = 1.0, m = 1.0),
+        Kinetic(hbar = 1.0, m = 1.0),
         Coulomb(coefficient = -1.0),
     ),
     -0.5,
@@ -47,7 +47,7 @@ put!(
 put!(
     :positronium,
     Hamiltonian(
-        Kinetic(ℏ = 1.0, m = 0.5),
+        Kinetic(hbar = 1.0, m = 0.5),
         Coulomb(coefficient = -1.0),
     ),
     -0.25,
@@ -56,7 +56,7 @@ put!(
 put!(
     :harmonic_oscillator,
     Hamiltonian(
-        Kinetic(ℏ = 1.0, m = 1.0),
+        Kinetic(hbar = 1.0, m = 1.0),
         PowerLaw(coefficient = 0.5, exponent = 2.0),
     ),
     1.5,

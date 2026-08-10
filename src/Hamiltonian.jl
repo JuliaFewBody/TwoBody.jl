@@ -18,7 +18,7 @@ Base.@kwdef struct Laplacian <: KineticTerm
 end
 
 Base.@kwdef struct Kinetic <: KineticTerm
-  ℏ = 1
+  hbar = 1
   m = 1
 end
 
@@ -135,7 +135,7 @@ The Hamiltonian is the input for each solver. This is an example for the non-rel
 
 ```@example
 H = Hamiltonian(
-  Kinetic(ℏ = 1, m = 1),
+  Kinetic(hbar = 1, m = 1),
   Coulomb(coefficient = -1),
 )
 ```
@@ -152,7 +152,7 @@ H = Hamiltonian(
 """ Laplacian
 
 @doc raw"""
-`Kinetic(ℏ=1, m=1)`
+`Kinetic(hbar=1, m=1)`
 ```math
 -\frac{\hbar^2}{2m} \nabla^2
 ```

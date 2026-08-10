@@ -37,7 +37,7 @@ end
 function matrix(o::Kinetic, method::FiniteDifferenceMethod)
   D  = FiniteDifferenceMatrices.fdmatrix(Int64(length(method.R)), n=1, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
   D² = FiniteDifferenceMatrices.fdmatrix(Int64(length(method.R)), n=2, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
-  return -o.ℏ^2/2/o.m * (D² + SparseArrays.spdiagm(2 ./ method.R) * D - method.l*(method.l+1) * SparseArrays.spdiagm(1 ./ method.R .^ 2))
+  return -o.hbar^2/2/o.m * (D² + SparseArrays.spdiagm(2 ./ method.R) * D - method.l*(method.l+1) * SparseArrays.spdiagm(1 ./ method.R .^ 2))
 end
 
 function matrix(o::PotentialTerm, method::FiniteDifferenceMethod)
