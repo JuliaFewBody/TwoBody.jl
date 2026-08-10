@@ -21,6 +21,7 @@ makedocs(;
         "Database" => "DB.md",
         "Rayleigh-Ritz Method" => "Rayleigh-Ritz.md",
         "Finite Difference Method" => "FDM.md",
+        "Variational Monte Carlo" => "VMC.md",
         "API reference" => "API.md",
     ],
 )
