@@ -44,9 +44,7 @@ is evaluated by forward-mode automatic differentiation with ForwardDiff.jl [4].
 
 ## Usage
 
-The following example uses the hydrogen trial wavefunction
-``\psi(r)=\exp(-0.8r)`` from Thijssen [5, Table 12.1]. A nonzero initial
-position avoids starting exactly at the Coulomb singularity.
+The following example uses the hydrogen trial wavefunction ``\psi(r)=\exp(-0.8r)`` and sampling conditions from Thijssen [5, Table 12.1]: 300 walkers, 12,000 attempted displacements per walker, and the first 2,000 states of each walker discarded for equilibration. Since `n_steps` counts retained samples, the remaining 10,000 states are specified with `burn_in=2_000` and `thinning=1`. A nonzero initial position avoids the Coulomb singularity.
 
 ```@example vmc-hydrogen
 using TwoBody
@@ -63,9 +61,10 @@ H = Hamiltonian(
 
 # VMC options
 method = VariationalMonteCarlo(
-  n_walkers=20,
-  n_steps=100,
-  burn_in=100,
+  n_walkers=300,
+  n_steps=10_000,
+  burn_in=2_000,
+  thinning=1,
   δ=2.0,
   r₀=[1.0, 0.0, 0.0],
 )
@@ -78,59 +77,11 @@ println("This work: $(result.E)")
 println("Reference: -0.4813(6)")
 ```
 
-For ``\psi(r)=\exp(-\alpha r)``, the analytical expectation value in atomic
-units is ``\alpha^2/2-\alpha=-0.48`` at ``\alpha=0.8``. Thijssen [5, Table 12.1]
-reports ``-0.4813(6)`` using the larger sampling counts described below. The
-expectation value is above the exact hydrogen ground-state energy, as required
-by the variational principle. Increasing the number of Monte Carlo samples
-reduces statistical noise but does not remove the variational bias of the trial
-wavefunction. A finite-sample VMC estimate can fluctuate to either side of its
-expectation value.
+For ``\psi(r)=\exp(-\alpha r)``, the analytical expectation value in atomic units is ``\alpha^2/2-\alpha=-0.48`` at ``\alpha=0.8``; Thijssen reports ``-0.4813(6)``. The expectation value obeys the variational bound, while a finite-sample estimate can fluctuate around it. More samples reduce statistical noise but not the trial wavefunction's variational bias.
 
-The result also contains the sample variance, a naive standard error, the
-acceptance rate, local energies, and sampled positions. Because
-successive Markov-chain samples are correlated, use batching or an autocorrelation
-analysis when a rigorous uncertainty estimate is required; the blocking method
-of Flyvbjerg and Petersen [3] is one standard approach.
+Each walker performs `burn_in + n_steps * thinning` transitions, giving 3,600,000 attempted displacements, 600,000 discarded burn-in states, and 3,000,000 retained samples. These counts are available as `result.n_attempted`, `result.n_burn_in_discarded`, and `result.n_samples`. The result also contains the sample variance, a naive standard error, the acceptance rate, local energies, and positions; walker-wise local energies can be obtained with `reshape(result.local_energies, method.n_steps, method.n_walkers)`.
 
-Non-finite local energies at isolated singular points are excluded from the
-average and counted in `result.n_discarded`.
-
-## Multiple walkers and equilibration
-
-Thijssen [5, Table 12.1] describes calculations with 300 walkers, 12,000
-attempted displacements per walker, and the first 2,000 states of each walker
-discarded for equilibration. With `thinning=1`, the same sampling counts are
-specified by retaining the remaining 10,000 states per walker:
-
-```julia
-method = VariationalMonteCarlo(
-  n_walkers=300,
-  n_steps=10_000,
-  burn_in=2_000,
-  thinning=1,
-  δ=2.0,
-  r₀=[1.0, 0.0, 0.0],
-)
-
-result = solve(H, ψ, method)
-
-result.E        # expectation value of the energy
-result.variance # sample variance of the retained local energies
-result.n_attempted          # 3_600_000 attempted displacements
-result.n_burn_in_discarded  # 600_000 states discarded for equilibration
-```
-
-Each walker performs `burn_in + n_steps * thinning` transitions, so the
-configuration above attempts 12,000 displacements per walker and retains
-3,000,000 samples in total. Samples and local energies are stored consecutively
-by walker; for example, they can be grouped as
-`reshape(result.local_energies, method.n_steps, method.n_walkers)`. Walkers are
-advanced sequentially using separate random draws from the supplied random
-number generator.
-
-`result.n_discarded` has a different meaning: it counts retained samples whose
-local energy was non-finite and therefore excluded from the energy statistics.
+Because successive Markov-chain samples are correlated, rigorous uncertainty estimates require batching or autocorrelation analysis; the blocking method of Flyvbjerg and Petersen [3] is one standard approach. Retained samples with non-finite local energies are excluded from the statistics and counted separately in `result.n_discarded`.
 
 ## Bibliography
 
