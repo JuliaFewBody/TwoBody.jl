@@ -45,7 +45,7 @@ lookup to protect stored benchmarks.
 
 ## API
 
-```@docs
+```@docs; canonical=false
 TwoBody.DatabaseEntry
 TwoBody.put!
 TwoBody.db

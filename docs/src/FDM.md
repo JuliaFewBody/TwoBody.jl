@@ -94,7 +94,7 @@ println("------------------------------")
 println(" n     numerical    analytical")
 println("------------------------------")
 for n in 1:4
-  @printf("%2d  %+.9f  %+.9f\n", n, res.E[n], Antique.E(HA,n=n))
+  @printf("%2d  %+.9f  %+.9f\n", n, res.E[n], Antique.energy(HA,n=n))
 end
 
 # wave function
@@ -119,7 +119,7 @@ for n in 1:4
   X = res.method.R
   Y = 4π * X .^2 .* res.ψ[:,n] .^ 2
   scatter!(axis, X, Y, label="TwoBody.jl", markersize=6)
-  lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.ψ(HA,r,0,0,n=n))^2, label="Antique.jl", color=:black)
+  lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.wavefunction(HA,r,0,0,n=n))^2, label="Antique.jl", color=:black)
   axislegend(axis, "n = $n", position=:rt, framevisible=false)
 end
 save("assets/FDM_HA.svg", fig) # hide
@@ -149,7 +149,7 @@ println("------------------------------")
 println(" n     numerical    analytical")
 println("------------------------------")
 for n in 1:4
-  @printf("%2d  %+.9f  %+.9f\n", n-1, res.E[n], Antique.E(SO,n=n-1))
+  @printf("%2d  %+.9f  %+.9f\n", n-1, res.E[n], Antique.energy(SO,n=n-1))
 end
 
 # wave function
@@ -174,7 +174,7 @@ for n in 1:4
   X = res.method.R
   Y = 4π * X .^2 .* res.ψ[:,n] .^ 2
   scatter!(axis, X, Y, label="TwoBody.jl", markersize=6)
-  lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.ψ(SO,r,0,0,n=n-1))^2, label="Antique.jl", color=:black)
+  lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.wavefunction(SO,r,0,0,n=n-1))^2, label="Antique.jl", color=:black)
   axislegend(axis, "n = $(n-1)", position=:rt, framevisible=false)
 end
 fig

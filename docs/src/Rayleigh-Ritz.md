@@ -93,7 +93,7 @@ println("------------------------------")
 println(" n     numerical    analytical")
 println("------------------------------")
 for n in 1:4
-  @printf("%2d  %+.9f  %+.9f\n", n, res.E[n], Antique.E(HA,n=n))
+  @printf("%2d  %+.9f  %+.9f\n", n, res.E[n], Antique.energy(HA,n=n))
 end
 
 # wave function
@@ -116,7 +116,7 @@ for n in 1:4
     )
   )
   lines!(axis, 0..50, r -> 4π * r^2 * abs(TwoBody.ψ(res,r,n=n))^2, label="TwoBody.jl")
-  lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.ψ(HA,r,0,0,n=n))^2, label="Antique.jl", color=:black, linestyle=:dash)
+  lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.wavefunction(HA,r,0,0,n=n))^2, label="Antique.jl", color=:black, linestyle=:dash)
   axislegend(axis, "n = $n", position=:rt, framevisible=false)
 end
 fig
@@ -147,7 +147,7 @@ println("------------------------------")
 println(" n     numerical    analytical")
 println("------------------------------")
 for n in 1:4
-  @printf("%2d  %+.9f  %+.9f\n", n-1, res.E[n], Antique.E(SO,n=n-1))
+  @printf("%2d  %+.9f  %+.9f\n", n-1, res.E[n], Antique.energy(SO,n=n-1))
 end
 
 # wave function
@@ -170,7 +170,7 @@ for n in 1:4
     )
   )
   lines!(axis, 0..50, r -> 4π * r^2 * abs(TwoBody.ψ(res,r,n=n))^2, label="TwoBody.jl")
-  lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.ψ(SO,r,0,0,n=n-1))^2, label="Antique.jl", color=:black, linestyle=:dash)
+  lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.wavefunction(SO,r,0,0,n=n-1))^2, label="Antique.jl", color=:black, linestyle=:dash)
   axislegend(axis, "n = $(n-1)", position=:rt, framevisible=false)
 end
 fig
