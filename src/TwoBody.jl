@@ -3,6 +3,9 @@ module TwoBody
 # Hamiltonian
 include("./Hamiltonian.jl")
 
+# Database
+include("./DB.jl")
+
 # Basis
 include("./Basis.jl")
 
