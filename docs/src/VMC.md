@@ -75,6 +75,7 @@ result = solve(H, ψ, method)
 # Display
 println("This work: $(result.E)")
 println("Reference: -0.4813(6)")
+println("Exact    : -0.4800")
 ```
 
 For ``\psi(r)=\exp(-\alpha r)``, the analytical expectation value in atomic units is ``\alpha^2/2-\alpha=-0.48`` at ``\alpha=0.8``; Thijssen reports ``-0.4813(6)``. A finite-sample estimate fluctuates around the analytical expectation value; more samples reduce statistical noise but not the trial wavefunction's variational bias.
