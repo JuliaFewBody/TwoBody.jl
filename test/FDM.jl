@@ -3,7 +3,7 @@
   # Testing Results
 
   H = Hamiltonian(
-    Kinetic(ℏ = 1, m = 1),
+    Kinetic(hbar = 1, m = 1),
     Coulomb(coefficient = -1),
   )
   FDM = FiniteDifferenceMethod(
