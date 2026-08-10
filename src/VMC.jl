@@ -216,7 +216,8 @@ samples from ``|\psi|^2``. A seeded random-number generator can be supplied with
 `rng`; by default, a new `MersenneTwister(123)` is used for a reproducible
 calculation. Set `info` to a positive value to print a result summary.
 
-The returned named tuple contains `E`, `variance`, the naive `standard_error`,
+The returned named tuple echoes the input `hamiltonian` and `method` and
+contains `E`, `variance`, the naive `standard_error`,
 `acceptance_rate`, the sampling counts `n_accepted`, `n_attempted`,
 `n_burn_in_discarded`, `n_samples`, and `n_discarded`, as well as
 `local_energies` and `samples`. Data from multiple walkers are stored

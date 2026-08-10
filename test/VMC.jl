@@ -47,6 +47,7 @@
     @test size(result.samples) == (3, method.n_steps)
     @test length(result.local_energies) == method.n_steps
     @test 0 < result.acceptance_rate < 1
+    @test result.n_attempted == method.burn_in + method.n_steps * method.thinning
     mean_radius_squared =
       sum(sum(abs2, result.samples[:, i]) for i in axes(result.samples, 2)) / method.n_steps
     @test mean_radius_squared ≈ 1.5 atol=0.5
@@ -63,6 +64,8 @@
       info=0,
     )
     @test 0 < singular_result.n_discarded < method.n_steps
+    @test isfinite(singular_result.E)
+    @test singular_result.n_samples + singular_result.n_discarded == method.n_steps
   end
 
   @testset "multiple walkers" begin

@@ -82,7 +82,7 @@ For ``\psi(r)=\exp(-\alpha r)``, the analytical expectation value in atomic unit
 
 `solve` also returns sampling diagnostics and retained data; see the [API reference](#API-reference) for details.
 
-Because successive Markov-chain samples are correlated, rigorous uncertainty estimates require batching or autocorrelation analysis; the blocking method of Flyvbjerg and Petersen [3] is one standard approach.
+Because successive Markov-chain samples are correlated, the naive `standard_error` reported by `solve` typically underestimates the true uncertainty; rigorous estimates require batching or autocorrelation analysis, such as the blocking method of Flyvbjerg and Petersen [3].
 
 ## Bibliography
 
@@ -98,8 +98,10 @@ Because successive Markov-chain samples are correlated, rigorous uncertainty est
 4. J. Revels, M. Lubin, and T. Papamarkou,
    ["Forward-Mode Automatic Differentiation in Julia"](https://arxiv.org/abs/1607.07892),
    arXiv:1607.07892 (2016).
-5. J. M. ティッセン 著, 松田和典, 道廣嘉隆, 谷村吉隆, 高須昌子, 吉江友照 訳,
-   『計算物理学』, 丸善出版 (2012).
+5. J. M. Thijssen,
+   [*Computational Physics*, 2nd ed.](https://doi.org/10.1017/CBO9781139171397),
+   Cambridge University Press (2007);
+   邦訳: 松田和典, 道廣嘉隆, 谷村吉隆, 高須昌子, 吉江友照 訳, 『計算物理学』, 丸善出版 (2012).
 
 ## API reference
 
