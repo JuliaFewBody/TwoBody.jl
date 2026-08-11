@@ -155,10 +155,9 @@ round(eta_c.E[1] * 1000; digits=6)
 | TwoBody.jl with the parameters above | 3013.183414 |
 | Arifi et al. SGA, Table 2 | 3012 |
 
-The 1.18 MeV difference from the paper table comes from using the rounded
-parameters and rounded variational exponent shown above, rather than from the
-matrix-element implementation. The SGA and GEM parameter sets should not be
-mixed.
+The 1.18 MeV difference from the paper table is consistent with using the
+rounded parameters and rounded variational exponent shown above. The SGA and
+GEM parameter sets should not be mixed.
 
 ## API reference
 
