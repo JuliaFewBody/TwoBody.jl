@@ -131,18 +131,19 @@ qttvalue(result.ψ[1], 1)
 
 ## Acknowledgments
 
-This work was developed in collaboration with Lucas Arenstein at
-[CompPhysHack 2026](https://qc-hybrid.github.io/CompPhysHack2026/). The authors
-gratefully acknowledge all those involved in organizing the hackathon for their
+The proof of concept for this QTT solver was developed at
+[CompPhysHack 2026](https://qc-hybrid.github.io/CompPhysHack2026/) in collaboration
+with Lucas Arenstein. We thank him and the hackathon organizers for their
 contributions and support.
 
 ## Bibliography
 
-The implementation follows the finite-difference QTT construction explored in the
-[CompPhysHack 2026 proof of concept](https://github.com/ohno/CompPhysHack2026Ohno/blob/main/julia/qtt.jl)
-and uses the DMRG and tensor-train operations provided by
+The corresponding
+[proof-of-concept implementation](https://github.com/ohno/CompPhysHack2026Ohno/blob/main/julia/qtt.jl)
+is archived in the CompPhysHack repository. The current solver is based on the
+tensor-train operations and two-site DMRG eigensolver provided by
 [TensorTrainNumerics.jl](https://github.com/MartinMikkelsen/TensorTrainNumerics.jl).
-The QTT construction is described by Arenstein, Mikkelsen, and Kastoryano in
+Background on the QTT construction is given by Arenstein, Mikkelsen, and Kastoryano in
 [Fast and Flexible Quantum-Inspired Differential Equation Solvers with Data Integration](https://doi.org/10.48550/arXiv.2505.17046).
 
 ## API reference
