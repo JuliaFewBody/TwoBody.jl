@@ -12,6 +12,7 @@ include("./Basis.jl")
 # Solvers
 include("./Rayleigh-Ritz.jl")
 include("./FDM.jl")
+include("./QTT.jl")
 include("./VMC.jl")
 
 end

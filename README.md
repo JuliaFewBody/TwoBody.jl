@@ -18,13 +18,14 @@ flowchart TD
   A["Hamiltonian.jl"]
   C["Rayleigh-Ritz.jl"]
   F["FDM.jl"]
+  Q["QTT.jl"]
   G["VMC.jl"]
   H["DB.jl"]
   Z["TwoBody.jl"]
   A --> H
-  A --> C & F & G
-  H --> C & F & G
-  C & F & G --> Z
+  A --> C & F & Q & G
+  H --> C & F & Q & G
+  C & F & Q & G --> Z
 ```
 
 ## Developer's Guide
