@@ -58,13 +58,13 @@
   @test acceptance
 
   # comparison with Antique.jl
-  HA = Antique.HydrogenAtom(Z=1, m_e=1.0, a_0=1.0, E_h=1.0, hbar=1.0)
+  HA = Antique.HydrogenAtom(Z=1, mₑ=1.0, a₀=1.0, Eₕ=1.0, ℏ=1.0)
 
   println("ψ(r)")
   println("  r\tnumerical  \tanalytical")
   for r in 0.2:0.1:2.0
     numerical  = abs(TwoBody.ψ(res, r, n=1))
-    analytical = abs(Antique.wavefunction(HA, r, 0, 0))
+    analytical = abs(Antique.ψ(HA, r, 0, 0))
     error = iszero(analytical) ? abs(numerical-analytical) : abs((numerical-analytical)/analytical)
     acceptance = error < 1e-2
     @printf("%.1f\t%.9f\t%.9f\t%s\n", r, numerical, analytical, acceptance ? "✔" :  "✗")

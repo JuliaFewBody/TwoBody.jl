@@ -1,4 +1,6 @@
-export BasisSet, Basis, GeometricBasisSet, PrimitiveBasis, ContractedBasis, SimpleGaussianBasis, GaussianBasis
+export BasisSet, Basis, GeometricBasisSet, PrimitiveBasis, ContractedBasis,
+       SimpleGaussianBasis, GaussianBasis, ComplexGaussianBasis,
+       ComplexGaussianBasisSet
 
 # type
 
@@ -44,6 +46,45 @@ Base.@kwdef struct GaussianBasis <: PrimitiveBasis
   m = 0
 end
 
+Base.@kwdef struct ComplexGaussianBasis <: PrimitiveBasis
+  a = 1
+  ω = 1.0
+  component::Symbol = :cos
+  l = 0
+  m = 0
+end
+
+# GeometricBasisSet constructs primitives from one exponent at a time.
+GaussianBasis(a; l=0, m=0) = GaussianBasis(a, l, m)
+ComplexGaussianBasis(a, ω, component; l=0, m=0) =
+  ComplexGaussianBasis(a, ω, component, l, m)
+
+function ComplexGaussianBasisSet(r₁, rₙ, n::Int; ω=1.0, l=0, m=0)
+  n > 0 || throw(ArgumentError("n must be positive"))
+  primitives = Basis[]
+  for a in geometric(r₁, rₙ, n)
+    push!(primitives, ComplexGaussianBasis(a, ω, :cos, l, m))
+    push!(primitives, ComplexGaussianBasis(a, ω, :sin, l, m))
+  end
+  return BasisSet(primitives...)
+end
+
+@doc raw"""
+`ComplexGaussianBasisSet(r₁, rₙ, n; ω=1.0, l=0, m=0)`
+
+Construct the `2n` real, normalized complex-range Gaussian primitives
+
+```math
+r^l e^{-\nu_j r^2}\cos(\omega\nu_jr^2),\qquad
+r^l e^{-\nu_j r^2}\sin(\omega\nu_jr^2),
+```
+
+where `νⱼ = 1/rⱼ²` and the ranges from `r₁` through `rₙ` form a
+geometric progression. This is the real cos/sin form of the complex-range GEM
+basis introduced by Hiyama, Kino, and Kamimura (2003) and used for the
+highly excited hydrogen example of Hiyama and Kamimura (2018).
+""" ComplexGaussianBasisSet
+
 struct ContractedBasis <: Basis
   c::Vector
   φ::Vector
@@ -63,8 +104,12 @@ Base.length(GBS::GeometricBasisSet) = length(GBS.basis)
 # function
 
 φ(b::SimpleGaussianBasis, r) = exp(-b.a*r^2)
-φ(b::GaussianBasis, r, θ, φ) = N(b.l) * r^b.l * exp(-b.a*r^2) * Y(b.l, b.m, θ, φ)
 φ(b::ContractedBasis, r, θ, φ) = sum(b.c[i] * φ(b.φ[i], r, θ, φ) for i in 1:length(b.c))
+
+_with_exponent(b::Basis, a) = typeof(b)(a)
+_with_exponent(b::GaussianBasis, a) = GaussianBasis(a, b.l, b.m)
+_with_exponent(b::ComplexGaussianBasis, a) =
+  ComplexGaussianBasis(a, b.ω, b.component, b.l, b.m)
 
 # function for testing
 
@@ -319,9 +364,37 @@ k^l e^{-\frac{k^2}{4\alpha}}
 @doc raw"""
 `GaussianBasis(a=1, l=0, m=0)`
 ```math
-\phi_i(r, θ, φ) = N _{il} r^l \exp(-a_i r^2) Y_l^m(θ, φ)
+\phi_{ilm}(r, θ, φ) = N _{il} r^l \exp(-a_i r^2) Y_l^m(θ, φ)
 ```
+
+This normalized primitive is used by the Gaussian expansion method (GEM).
+Combine primitives with the same `l` and `m` and pass the basis set to the
+existing Rayleigh–Ritz solver.
 """ GaussianBasis
+
+@doc raw"""
+`ComplexGaussianBasis(a=1, ω=1, component=:cos, l=0, m=0)`
+
+One normalized real component of a complex-range Gaussian pair:
+
+```math
+\phi^{\cos}_{nlm}=N^{\cos}_{nl}r^l e^{-a_n r^2}
+\cos(\omega a_n r^2)Y_l^m(\hat{\boldsymbol r}),
+```
+
+or the corresponding sine function when `component=:sin`. Equivalently, the
+pair is formed from exponents `(1±iω)aₙ`. Use
+`ComplexGaussianBasisSet(r₁, rₙ, n; ω, l, m)` to construct both members
+at every geometrically spaced range.
+
+The analytic overlap, kinetic, constant, power-law, Coulomb, linear, and
+Gaussian-potential matrix elements are supported by the ordinary
+Rayleigh–Ritz `solve` interface.
+
+References: E. Hiyama, Y. Kino, and M. Kamimura, *Prog. Part. Nucl. Phys.*
+**51**, 223–307 (2003), and E. Hiyama and M. Kamimura, *Front. Phys.* **13**,
+132106 (2018).
+""" ComplexGaussianBasis
 
 @doc raw"""
 `ContractedBasis([c1, c2, ...], [basis1, basis2, ...])`

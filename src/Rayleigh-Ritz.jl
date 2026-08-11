@@ -230,7 +230,7 @@ function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Ham
     x -> try
       E = solve(
         hamiltonian,
-        BasisSet([typeof(basisset.basis[i])(x[i]) for i in keys(basisset.basis)]...),
+        BasisSet([_with_exponent(basisset.basis[i], x[i]) for i in keys(basisset.basis)]...),
         perturbation = perturbation,
         info = -1
       ).E[1]
@@ -250,7 +250,7 @@ function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Ham
   )
 
   # result
-  res = solve(hamiltonian, BasisSet([typeof(basisset.basis[i])(res.minimizer[i]) for i in keys(basisset.basis)]...), perturbation=perturbation, info=info)
+  res = solve(hamiltonian, BasisSet([_with_exponent(basisset.basis[i], res.minimizer[i]) for i in keys(basisset.basis)]...), perturbation=perturbation, info=info)
   if 0 ≤ info
     return ResultRayleighRitz(;
       optimizer = optimizer,

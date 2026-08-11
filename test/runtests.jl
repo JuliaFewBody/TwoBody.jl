@@ -11,6 +11,7 @@ using ForwardDiff
   include("DB.jl")
   include("Basis.jl")
   include("Rayleigh-Ritz.jl")
+  include("GEM.jl")
   include("FDM.jl")
   include("VMC.jl")
 end
