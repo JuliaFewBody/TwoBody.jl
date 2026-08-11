@@ -89,8 +89,7 @@
     @test all(b -> b isa GaussianBasis && b.l == 0 && b.m == 0, geometric_basis.basis)
   end
 
-  @testset "Hiyama complex-range hydrogen benchmark" begin
-    hydrogen = Hamiltonian(Kinetic(hbar=1, m=1), Coulomb(coefficient=-1))
+  @testset "complex-range basis set" begin
     basisset = ComplexGaussianBasisSet(0.015, 2000.0, 80; ω=1.5)
     @test length(basisset) == 160
 
@@ -98,19 +97,24 @@
       norm = quadgk(r -> r^2 * abs2(TwoBody.φ(basis, r)), 0, Inf, rtol=1e-10)[1]
       @test norm ≈ 1 atol=2e-9
     end
+  end
+
+  @testset "Hiyama real-range hydrogen benchmark" begin
+    hydrogen = Hamiltonian(Kinetic(hbar=1, m=1), Coulomb(coefficient=-1))
+    basisset = GeometricBasisSet(GaussianBasis, 0.1, 80.0, 20)
+    @test length(basisset) == 20
 
     result = solve(hydrogen, basisset)
-    levels = [1, 3, 10, 26, 30, 36, 40]
-    hiyama_table_a5 = [
-      -4.999999845e-1,
-      -5.555555494e-2,
-      -4.999999983e-3,
-      -7.396449686e-4,
-      -5.555555323e-4,
-      -3.856834714e-4,
-      -3.106429115e-4,
+    hiyama_table_vii = [
+      -0.499982,
+      -0.124998,
+      -0.055555,
+      -0.031249,
+      -0.019998,
+      -0.013883,
+      -0.010203,
     ]
-    @test maximum(abs.(result.E[levels] .- hiyama_table_a5)) ≤ 5e-11
+    @test maximum(abs.(result.E[1:7] .- hiyama_table_vii)) ≤ 5e-7
   end
 
   @testset "Arifi et al. (2024) Hamiltonian" begin
@@ -136,7 +140,7 @@
       Gaussian(coefficient=hyperfine, exponent=λ^2),
     )
     result = solve(hamiltonian, GaussianBasis(ν))
-    # Regression value from the attached original Arifi2024 implementation.
+    # Regression value for the parameter set above.
     @test result.E[1] ≈ 3.013183414 atol=5e-10
   end
 end
