@@ -27,6 +27,8 @@ makedocs(;
     ],
 )
 
-deploydocs(;
-    repo="github.com/JuliaFewBody/TwoBody.jl",
-)
+if get(ENV, "CI", "false") == "true"
+    deploydocs(;
+        repo="github.com/JuliaFewBody/TwoBody.jl",
+    )
+end
