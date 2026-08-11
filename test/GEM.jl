@@ -110,7 +110,7 @@
       -3.856834714e-4,
       -3.106429115e-4,
     ]
-    @test result.E[levels] ≈ hiyama_table_a5 rtol=0 atol=5e-11
+    @test maximum(abs.(result.E[levels] .- hiyama_table_a5)) ≤ 5e-11
   end
 
   @testset "Arifi et al. (2024) Hamiltonian" begin
