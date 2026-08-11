@@ -19,6 +19,7 @@ flowchart TD
   C["Rayleigh-Ritz.jl"]
   F["FDM.jl"]
   Q["QTT.jl"]
+  N["VNN.jl"]
   G["VMC.jl"]
   H["DB.jl"]
   Z["TwoBody.jl"]
@@ -26,6 +27,10 @@ flowchart TD
   A --> C & F & Q & G
   H --> C & F & Q & G
   C & F & Q & G --> Z
+  A --> C & F & N & G
+  H --> C & F & N & G
+  F --> N
+  C & F & N & G --> Z
 ```
 
 ## Developer's Guide

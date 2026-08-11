@@ -57,6 +57,103 @@
   @printf("%3d\t%.9f\t%.9f\t%s\n", 1, numerical, analytical, acceptance ? "✔" :  "✗")
   @test acceptance
 
+  @testset "Pérez-Torres STO-3G contraction" begin
+    exponents = (0.109818, 0.405771, 2.227660)
+    contraction = (0.444635, 0.535328, 0.154329)
+    primitives = ntuple(i -> SimpleGaussianBasis(exponents[i]), 3)
+    normalization = ntuple(i -> (2exponents[i] / π)^(3/4), 3)
+    coefficients = ntuple(i -> contraction[i] * normalization[i], 3)
+    sto3g = ContractedBasis(coefficients, primitives)
+
+    primitive_set = BasisSet(primitives...)
+    coefficient_vector = collect(coefficients)
+    primitive_overlap = TwoBody.matrix(primitive_set)
+
+    @test TwoBody.element(sto3g, sto3g) ≈ coefficient_vector' * primitive_overlap * coefficient_vector
+    @test TwoBody.element(sto3g, primitives[1]) ≈ sum(
+      conj(coefficients[i]) * TwoBody.element(primitives[i], primitives[1])
+      for i in eachindex(coefficients)
+    )
+    @test TwoBody.element(primitives[1], sto3g) ≈ sum(
+      coefficients[i] * TwoBody.element(primitives[1], primitives[i])
+      for i in eachindex(coefficients)
+    )
+
+    for operator in H.terms
+      primitive_matrix = TwoBody.matrix(operator, primitive_set)
+      @test TwoBody.element(operator, sto3g, sto3g) ≈ coefficient_vector' * primitive_matrix * coefficient_vector
+      @test TwoBody.element(operator, sto3g, primitives[1]) ≈ sum(
+        conj(coefficients[i]) * TwoBody.element(operator, primitives[i], primitives[1])
+        for i in eachindex(coefficients)
+      )
+      @test TwoBody.element(operator, primitives[1], sto3g) ≈ sum(
+        coefficients[i] * TwoBody.element(operator, primitives[1], primitives[i])
+        for i in eachindex(coefficients)
+      )
+    end
+
+    primitive_hamiltonian = TwoBody.matrix(H, primitive_set)
+    @test TwoBody.element(H, sto3g, sto3g) ≈ coefficient_vector' * primitive_hamiltonian * coefficient_vector
+
+    radius = Linear(coefficient=1)
+    radius_squared = PowerLaw(coefficient=1, exponent=2)
+    inverse_radius = Coulomb(coefficient=1)
+    properties = Hamiltonian(radius, radius_squared, inverse_radius)
+
+    contracted_result = solve(H, BasisSet(sto3g), perturbation=properties)
+    uncontracted_result = solve(H, primitive_set, perturbation=properties)
+
+    @test contracted_result.E[1] ≈ -0.494907096570 atol=1e-11
+    @test uncontracted_result.E[1] ≈ -0.495010402012 atol=1e-11
+    @test contracted_result.E[1] ≈ -0.494908 atol=2e-6
+    @test uncontracted_result.E[1] ≈ -0.495010 atol=1e-6
+    @test uncontracted_result.E[1] < contracted_result.E[1]
+
+    @test contracted_result.expectation[radius][1] ≈ 1.500392 atol=2e-6
+    @test contracted_result.expectation[radius_squared][1] ≈ 2.996124 atol=5e-6
+    @test contracted_result.expectation[inverse_radius][1] ≈ 0.989206 atol=2e-6
+    @test 2 * contracted_result.expectation[H.terms[1]][1] ≈ 0.988596 atol=2e-6
+
+    @test uncontracted_result.expectation[radius][1] ≈ 1.514699 atol=1e-6
+    @test uncontracted_result.expectation[radius_squared][1] ≈ 3.046195 atol=1e-6
+    @test uncontracted_result.expectation[inverse_radius][1] ≈ 0.977070 atol=1e-6
+    @test 2 * uncontracted_result.expectation[H.terms[1]][1] ≈ 0.964119 atol=1e-6
+
+    @test contracted_result.S[1,1] ≈ 1.0 atol=2e-6
+    @test 4π * quadgk(r -> r^2 * abs2(TwoBody.ψ(contracted_result, r)), 0, Inf)[1] ≈ 1.0 atol=1e-9
+    @test 4π * quadgk(r -> r^2 * abs2(TwoBody.ψ(uncontracted_result, r)), 0, Inf)[1] ≈ 1.0 atol=1e-9
+
+    # Independent radial quadrature does not use element() or matrix().
+    numerical_components = function (orbital)
+      orbital_derivative = r -> ForwardDiff.derivative(orbital, r)
+      overlap = 4π * quadgk(r -> r^2 * abs2(orbital(r)), 0, Inf, rtol=1e-12)[1]
+      kinetic = 2π * quadgk(r -> r^2 * abs2(orbital_derivative(r)), 0, Inf, rtol=1e-12)[1]
+      coulomb = -4π * quadgk(r -> r * abs2(orbital(r)), 0, Inf, rtol=1e-12)[1]
+      return (overlap=overlap, kinetic=kinetic, coulomb=coulomb, energy=(kinetic+coulomb)/overlap)
+    end
+
+    contracted_numerical = numerical_components(r -> TwoBody.φ(sto3g, r))
+    uncontracted_numerical = numerical_components(r -> TwoBody.ψ(uncontracted_result, r))
+
+    @test contracted_numerical.overlap ≈ TwoBody.element(sto3g, sto3g) atol=1e-10
+    @test contracted_numerical.kinetic ≈ TwoBody.element(H.terms[1], sto3g, sto3g) atol=1e-10
+    @test contracted_numerical.coulomb ≈ TwoBody.element(H.terms[2], sto3g, sto3g) atol=1e-10
+    @test contracted_numerical.energy ≈ contracted_result.E[1] atol=1e-10
+    @test uncontracted_numerical.overlap ≈ 1.0 atol=1e-10
+    @test uncontracted_numerical.energy ≈ uncontracted_result.E[1] atol=1e-10
+
+    complex_coefficients = (1 + 0.5im, -0.25im)
+    complex_basis = ContractedBasis(complex_coefficients, (primitives[1], primitives[2]))
+    @test TwoBody.element(complex_basis, primitives[1]) ≈ sum(
+      conj(complex_coefficients[i]) * TwoBody.element(primitives[i], primitives[1])
+      for i in eachindex(complex_coefficients)
+    )
+    @test TwoBody.element(primitives[1], complex_basis) ≈ sum(
+      complex_coefficients[i] * TwoBody.element(primitives[1], primitives[i])
+      for i in eachindex(complex_coefficients)
+    )
+  end
+
   # comparison with Antique.jl
   HA = Antique.HydrogenAtom(Z=1, m_e=1.0, a_0=1.0, E_h=1.0, hbar=1.0)
 
@@ -121,5 +218,27 @@
       end
     end
 
+    custom = Custom(f=r -> exp(-r^2))
+    gaussian = Gaussian(coefficient=1, exponent=1)
+    for b₁ in BS.basis, b₂ in BS.basis
+      @test TwoBody.element(custom, b₁, b₂) ≈ TwoBody.element(gaussian, b₁, b₂) rtol=1e-9
+    end
+
+  end
+
+  @testset "Custom potential" begin
+    custom_H = Hamiltonian(
+      Kinetic(hbar=1, m=1),
+      Custom(f=r -> -exp(-r^2)),
+    )
+    gaussian_H = Hamiltonian(
+      Kinetic(hbar=1, m=1),
+      Gaussian(coefficient=-1, exponent=1),
+    )
+
+    custom_result = solve(custom_H, BS, info=1)
+    gaussian_result = solve(gaussian_H, BS, info=1)
+    @test custom_result.H ≈ gaussian_result.H rtol=1e-9
+    @test custom_result.E ≈ gaussian_result.E rtol=1e-9
   end
 end

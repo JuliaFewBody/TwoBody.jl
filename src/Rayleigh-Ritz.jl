@@ -3,6 +3,7 @@ export solve, optimize
 import LinearAlgebra
 import Optim
 import Printf
+import QuadGK
 import SpecialFunctions
 import Subscripts
 
@@ -230,7 +231,7 @@ function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Ham
     x -> try
       E = solve(
         hamiltonian,
-        BasisSet([typeof(basisset.basis[i])(x[i]) for i in keys(basisset.basis)]...),
+        BasisSet([_replace_exponent(basisset.basis[i], x[i]) for i in keys(basisset.basis)]...),
         perturbation = perturbation,
         info = -1
       ).E[1]
@@ -250,7 +251,7 @@ function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Ham
   )
 
   # result
-  res = solve(hamiltonian, BasisSet([typeof(basisset.basis[i])(res.minimizer[i]) for i in keys(basisset.basis)]...), perturbation=perturbation, info=info)
+  res = solve(hamiltonian, BasisSet([_replace_exponent(basisset.basis[i], res.minimizer[i]) for i in keys(basisset.basis)]...), perturbation=perturbation, info=info)
   if 0 ≤ info
     return ResultRayleighRitz(;
       optimizer = optimizer,
@@ -380,6 +381,10 @@ function element(SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return (π/(SGB1.a+SGB2.a))^(3/2)
 end
 
+function element(PSB1::PowerSlaterBasis, PSB2::PowerSlaterBasis)
+  return 4 * π * SpecialFunctions.gamma(PSB1.n+PSB2.n+3) / (PSB1.a+PSB2.a)^(PSB1.n+PSB2.n+3)
+end
+
 function element(o::RestEnergy, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return o.m * o.c^2 * (π/(SGB1.a+SGB2.a))^(3/2)
 end
@@ -390,6 +395,14 @@ end
 
 function element(o::Kinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return o.hbar^2/(2*o.m) * 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
+end
+
+function element(o::Kinetic, PSB1::PowerSlaterBasis, PSB2::PowerSlaterBasis)
+  return - o.hbar^2/(2*o.m) * 4 * π * (
+        PSB2.n*(PSB2.n+1) * SpecialFunctions.gamma(PSB1.n+PSB2.n+1) / (PSB1.a+PSB2.a)^(PSB1.n+PSB2.n+1)
+    - 2*PSB2.a*(PSB2.n+1) * SpecialFunctions.gamma(PSB1.n+PSB2.n+2) / (PSB1.a+PSB2.a)^(PSB1.n+PSB2.n+2)
+    +            PSB2.a^2 * SpecialFunctions.gamma(PSB1.n+PSB2.n+3) / (PSB1.a+PSB2.a)^(PSB1.n+PSB2.n+3)
+    )
 end
 
 function element(o::Constant, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
@@ -404,6 +417,10 @@ function element(o::Coulomb, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasi
   return o.coefficient * 2*π/(SGB1.a+SGB2.a)
 end
 
+function element(o::Coulomb, PSB1::PowerSlaterBasis, PSB2::PowerSlaterBasis)
+  return o.coefficient * 4 * π * SpecialFunctions.gamma(PSB1.n+PSB2.n+2) / (PSB1.a+PSB2.a)^(PSB1.n+PSB2.n+2)
+end
+
 function element(o::PowerLaw, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return o.coefficient * 2 * π * SpecialFunctions.gamma((o.exponent+3)/2) / (SGB1.a+SGB2.a)^((o.exponent+3)/2)
 end
@@ -411,6 +428,83 @@ end
 function element(o::Gaussian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return o.coefficient * (π/(o.exponent+SGB1.a+SGB2.a))^(3/2)
 end
+
+function element(o::Custom, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  value, _ = QuadGK.quadgk(
+    r -> 4π * r^2 * φ(SGB1, r) * V(o, r) * φ(SGB2, r),
+    0.0,
+    Inf,
+    rtol=1e-10,
+    atol=1e-12,
+  )
+  return value
+end
+
+@inline function element(B1::ContractedBasis, B2::Basis)
+  return _contracted_bra_element(
+    getfield(B1, :coefficients),
+    getfield(B1, :primitives),
+    B2,
+  )
+end
+
+@inline function element(B1::PrimitiveBasis, B2::ContractedBasis)
+  return _contracted_ket_element(
+    B1,
+    getfield(B2, :coefficients),
+    getfield(B2, :primitives),
+  )
+end
+
+@inline function element(o::Operator, B1::ContractedBasis, B2::Basis)
+  return _contracted_bra_element(
+    o,
+    getfield(B1, :coefficients),
+    getfield(B1, :primitives),
+    B2,
+  )
+end
+
+@inline function element(o::Operator, B1::PrimitiveBasis, B2::ContractedBasis)
+  return _contracted_ket_element(
+    o,
+    B1,
+    getfield(B2, :coefficients),
+    getfield(B2, :primitives),
+  )
+end
+
+@inline _contracted_bra_element(coefficients::Tuple{T}, primitives::Tuple{P}, B2::Basis) where {T,P} =
+  conj(first(coefficients)) * element(first(primitives), B2)
+@inline _contracted_bra_element(coefficients::Tuple, primitives::Tuple, B2::Basis) = muladd(
+  conj(first(coefficients)),
+  element(first(primitives), B2),
+  _contracted_bra_element(Base.tail(coefficients), Base.tail(primitives), B2),
+)
+
+@inline _contracted_ket_element(B1::PrimitiveBasis, coefficients::Tuple{T}, primitives::Tuple{P}) where {T,P} =
+  first(coefficients) * element(B1, first(primitives))
+@inline _contracted_ket_element(B1::PrimitiveBasis, coefficients::Tuple, primitives::Tuple) = muladd(
+  first(coefficients),
+  element(B1, first(primitives)),
+  _contracted_ket_element(B1, Base.tail(coefficients), Base.tail(primitives)),
+)
+
+@inline _contracted_bra_element(o::Operator, coefficients::Tuple{T}, primitives::Tuple{P}, B2::Basis) where {T,P} =
+  conj(first(coefficients)) * element(o, first(primitives), B2)
+@inline _contracted_bra_element(o::Operator, coefficients::Tuple, primitives::Tuple, B2::Basis) = muladd(
+  conj(first(coefficients)),
+  element(o, first(primitives), B2),
+  _contracted_bra_element(o, Base.tail(coefficients), Base.tail(primitives), B2),
+)
+
+@inline _contracted_ket_element(o::Operator, B1::PrimitiveBasis, coefficients::Tuple{T}, primitives::Tuple{P}) where {T,P} =
+  first(coefficients) * element(o, B1, first(primitives))
+@inline _contracted_ket_element(o::Operator, B1::PrimitiveBasis, coefficients::Tuple, primitives::Tuple) = muladd(
+  first(coefficients),
+  element(o, B1, first(primitives)),
+  _contracted_ket_element(o, B1, Base.tail(coefficients), Base.tail(primitives)),
+)
 
 function element(o::Hamiltonian, B1::Basis, B2::Basis)
   return sum(element(term, B1, B2) for term in o.terms)
@@ -827,6 +921,18 @@ Integral Formula:
 \int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
 ```
 """ element(o::Gaussian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+
+@doc raw"""
+`element(o::Custom, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
+
+The matrix element for a custom central potential is evaluated numerically with
+adaptive Gauss--Kronrod quadrature:
+```math
+\langle \phi_i | V | \phi_j \rangle
+= 4\pi \int_0^\infty
+r^2 \phi_i(r) V(r) \phi_j(r)\,\mathrm{d}r.
+```
+""" element(o::Custom, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
 `element(o::Hamiltonian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`

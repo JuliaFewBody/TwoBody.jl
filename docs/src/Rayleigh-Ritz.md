@@ -4,19 +4,94 @@ CurrentModule = TwoBody
 
 # Rayleigh-Ritz Method
 
-This method is one of the variational method. It solves the generalized eigenvalue problem,
+The Rayleigh-Ritz method is a variational method for approximating the eigenvalues and eigenfunctions of a Hamiltonian. The expectation value obtained from a trial wave function is an upper bound on the exact ground-state energy. Note that nonlinear parameters, such as the exponents of Gaussian basis functions, are not optimized by the linear procedure described below.
+
+## Theory
+
+In the Rayleigh-Ritz method, the trial wave function is written as a linear combination of basis functions ``\phi_1, \phi_2, \phi_3, \ldots``:
+
 ```math
-\pmb{H} \pmb{c} = E \pmb{S} \pmb{c}.
+\psi = \sum_i c_i \phi_i.
 ```
-The Hamiltonian matrix is defined as ``H_{ij} = \langle \phi_{i} | \hat{H} | \phi_{j} \rangle`` and the overlap matrix is defined as ``S_{ij} = \langle \phi_{i} | \phi_{j} \rangle``. The eigenvector ``\pmb{c}`` is the column of the optimal coefficients $c_i$ for the linear combination,
+
+We then seek the expansion coefficients ``c_i`` that minimize the energy ``E[\psi]``. The coefficients are ultimately obtained by solving the generalized eigenvalue problem
+
 ```math
-\psi(r) = \sum_i c_i \phi_i(r),
+\boldsymbol{H}\boldsymbol{c} = E\boldsymbol{S}\boldsymbol{c}.
 ```
-to minmize the expectation value of the energy,
+
+The derivation is given below. First, let us define the notation. ``\boldsymbol{H}`` is the Hamiltonian matrix, whose elements are
+
 ```math
-E = \frac{\langle\psi|\hat{H}|\psi\rangle}{\langle\psi|\psi\rangle}.
+H_{ij} = \langle \phi_i | \hat{H} | \phi_j \rangle,
 ```
-Note that the nonlinear parameters (e.g., exponents of the Gaussian basis functions) are not optimized. The expectation by trial wavefunction is the upper bound for the exact energy.
+
+and ``\boldsymbol{S}`` is the overlap matrix, whose elements are
+
+```math
+S_{ij} = \langle \phi_i | \phi_j \rangle.
+```
+
+Substituting ``\psi = \sum_i c_i \phi_i`` into ``E[\psi]`` gives
+
+```math
+\begin{aligned}
+E[\psi]
+&= \frac{\langle \psi | \hat{H} | \psi \rangle}
+        {\langle \psi | \psi \rangle} \\
+&= \frac{\left\langle \sum_i c_i \phi_i \middle| \hat{H} \middle| \sum_j c_j \phi_j \right\rangle}
+        {\left\langle \sum_i c_i \phi_i \middle| \sum_j c_j \phi_j \right\rangle} \\
+&= \frac{\sum_{i,j} c_i c_j \langle \phi_i | \hat{H} | \phi_j \rangle}
+        {\sum_{i,j} c_i c_j \langle \phi_i | \phi_j \rangle} \\
+&= \frac{\sum_{i,j} c_i c_j H_{ij}}
+        {\sum_{i,j} c_i c_j S_{ij}}.
+\end{aligned}
+```
+
+Here and below, the basis functions and coefficients are assumed to be real. For a complex-valued basis, the coefficient on the bra side must be replaced by its complex conjugate ``c_i^*``. The expansion above follows directly from the distributive law and can be seen explicitly by writing ``\sum_i c_i \phi_i = c_1 \phi_1 + c_2 \phi_2 + \cdots``.
+
+We minimize this expression subject to the normalization constraint
+
+```math
+\sum_{i,j} c_i c_j S_{ij} = 1.
+```
+
+Using the method of Lagrange multipliers, define
+
+```math
+L(c_i,E)
+= \sum_{i,j} c_i c_j H_{ij}
+- E \sum_{i,j} c_i c_j S_{ij}
++ E.
+```
+
+When ``L`` is differentiated with respect to ``c_k``, only terms for which ``i=k`` or ``j=k`` remain. Therefore,
+
+```math
+\begin{aligned}
+\frac{\partial L}{\partial c_k} &= 0, \\
+\sum_i c_i H_{ik} + \sum_j c_j H_{kj}
+- E \sum_i c_i S_{ik} - E \sum_j c_j S_{kj} &= 0, \\
+2 \sum_j H_{kj} c_j - 2E \sum_j S_{kj} c_j &= 0, \\
+\sum_j \left(H_{kj}c_j - E S_{kj}c_j\right) &= 0, \\
+\boldsymbol{H}\boldsymbol{c} - E\boldsymbol{S}\boldsymbol{c} &= 0, \\
+\boldsymbol{H}\boldsymbol{c} &= E\boldsymbol{S}\boldsymbol{c}.
+\end{aligned}
+```
+
+In the third line, we used ``H_{ij}=H_{ji}`` and ``S_{ij}=S_{ji}``, which hold for the real-valued case considered here. Similar derivations can be found in the following references:
+
+- J. M. Thijssen, *Computational Physics* (Japanese translation, Maruzen Publishing, 2012), Sec. 3.1, [Variational Calculations](https://www.maruzen-publishing.co.jp/item/b294596.html).
+- A. Szabo and N. S. Ostlund, *Modern Quantum Chemistry: Introduction to Advanced Electronic Structure Theory*, Vol. 1 (Japanese translation, University of Tokyo Press, 1987), Sec. 1.3.2, [The Linear Variational Problem](http://www.utp.or.jp/book/b302128.html).
+
+In Julia, the generalized eigenvalue problem ``\boldsymbol{H}\boldsymbol{c} = E\boldsymbol{S}\boldsymbol{c}`` can be solved easily with the `LinearAlgebra` standard library:
+
+```julia
+using LinearAlgebra
+E, c = eigen(H, S)
+```
+
+It is therefore not necessary to know the details of the eigensolver here. The practical challenge is instead to evaluate the matrix elements ``H_{ij} = \langle \phi_i | \hat{H} | \phi_j \rangle`` and ``S_{ij} = \langle \phi_i | \phi_j \rangle``, and to choose basis functions for which these elements can be calculated efficiently.
 
 ## Usage
 
@@ -179,6 +254,44 @@ save("assets/RR_SO.svg", fig) # hide
 ```
 ![](assets/RR_SO.svg)
 
+## STO-3G
+
+This example reproduces the STO-3G calculation for hydrogen reported by [Pérez-Torres (2019)](https://doi.org/10.1021/acs.jchemed.8b00959). In the contracted calculation, the published coefficients are held fixed, and the resulting contracted function is supplied to the solver. In the uncontracted calculation, the three primitive functions are supplied separately, allowing the Rayleigh–Ritz solver to optimize their linear coefficients.
+
+```@example perez_sto3g
+using TwoBody
+
+# Hamiltonian
+H = Hamiltonian(
+  Kinetic(hbar=1.0, m=1.0),
+  Coulomb(coefficient=-1.0),
+)
+
+# parameters
+α = (0.109818, 0.405771, 2.227660)
+C = (0.444635, 0.535328, 0.154329)
+
+# basis set
+primitives = ntuple(i -> SimpleGaussianBasis(α[i]), 3)
+normalization = ntuple(i -> (2α[i] / π)^(3/4), 3)
+coefficients = ntuple(i -> C[i] * normalization[i], 3)
+contracted_basis = ContractedBasis(coefficients, primitives)
+
+# solve
+contracted = solve(H, BasisSet(contracted_basis))
+uncontracted = solve(H, BasisSet(primitives...))
+
+# results
+println("Contracted STO-3G")
+println("  This work: ", contracted.E[1])
+println("  Reference: ", -0.494908)
+println("Uncontracted STO-3G")
+println("  This work: ", uncontracted.E[1])
+println("  Reference: ", -0.495010)
+```
+
+The results agree with those in Table 1 of the Supporting Information. The small differences between the calculated and reference values arise from rounding in the published parameters.
+
 ## API reference
 
 ### Solver
@@ -228,4 +341,5 @@ element(o::Linear, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 element(o::Coulomb, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 element(o::PowerLaw, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 element(o::Gaussian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::Custom, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 ```

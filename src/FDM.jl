@@ -12,7 +12,7 @@ import Printf
 struct FiniteDifferenceMethod
   Δr::Real
   rₘₐₓ::Real
-  R::StepRangeLen
+  R::AbstractRange
   l::Int
   direction::Symbol
   solver::Symbol
@@ -20,6 +20,23 @@ struct FiniteDifferenceMethod
     new(Δr, rₘₐₓ, R, l, direction, solver)
   end
 end
+
+_jacobian(method::FiniteDifferenceMethod) = SparseArrays.spdiagm(method.R .^ 2)
+
+function _rayleigh_quotient(ψ::AbstractVector, H::AbstractMatrix, J::AbstractMatrix)
+  denominator = LinearAlgebra.dot(ψ, J * ψ)
+  return LinearAlgebra.dot(ψ, J * (H * ψ)) / denominator
+end
+
+function _normalization(ψ::AbstractVector, method::FiniteDifferenceMethod, J)
+  norm² = 4 * π * method.Δr * real(LinearAlgebra.dot(ψ, J * ψ))
+  isfinite(norm²) && 0 < norm² ||
+    throw(ArgumentError("the wavefunction norm must be positive and finite"))
+  return inv(sqrt(norm²))
+end
+
+_normalize_wavefunction(ψ::AbstractVector, method::FiniteDifferenceMethod, J) =
+  _normalization(ψ, method, J) * ψ
 
 Base.string(method::FiniteDifferenceMethod) = "FiniteDifferenceMethod(" * join(["$(symbol)=$(getproperty(method,symbol))" for symbol in fieldnames(typeof(method))], ", ") * ")"
 Base.show(io::IO, method::FiniteDifferenceMethod) = print(io, Base.string(method))
@@ -55,7 +72,7 @@ function solve(hamiltonian::Hamiltonian, method::FiniteDifferenceMethod; perturb
   H = matrix(hamiltonian, method)
 
   # Jacobian
-  J = SparseArrays.spdiagm(method.R .^ 2)
+  J = _jacobian(method)
 
   # Eigenvalues
   if method.solver == :LinearAlgebra
@@ -138,13 +155,13 @@ function solve(hamiltonian::Hamiltonian, wavefunction::Function, method::FiniteD
   H = matrix(hamiltonian, method)
 
   # Jacobian
-  J = SparseArrays.spdiagm(method.R .^ 2)
+  J = _jacobian(method)
 
   # Wave Function
   ψ = wavefunction.(method.R)
 
   # Energy
-  E = (ψ' * J * H * ψ) / (ψ' * J * ψ)
+  E = _rayleigh_quotient(ψ, H, J)
 
   # Return
   if 0 ≤ info
@@ -155,7 +172,7 @@ function solve(hamiltonian::Hamiltonian, wavefunction::Function, method::FiniteD
       H = H,
       J = J,
       E = E,
-      ψ = ψ / sqrt(4 * π * method.Δr * ψ' * J * ψ),
+      ψ = _normalize_wavefunction(ψ, method, J),
     )
   else
     return (
@@ -174,7 +191,7 @@ end
 | :-------- | :------ | :---------- |
 | `Δr::Real`          | `0.1`            | Radial grid spacing. A uniform grid spacing is used, ``r_{i+1} = r_{i} + \Delta r``. |
 | `rₘₐₓ::Real`        | `50.0`           | The maximum value of the radial grid. This value is not directly used in the calculation, but it is used to determine the `R`. |
-| `R::StepRangeLen`   | `Δr:Δr:rₘₐₓ`     | Radial grid. The origin must be excluded from the grid to avoid divergence of the Coulomb potential and the centrifugal potential at the origin. |
+| `R::AbstractRange`  | `Δr:Δr:rₘₐₓ`     | Radial grid. The origin must be excluded from the grid to avoid divergence of the Coulomb potential and the centrifugal potential at the origin. |
 | `l::Int`            | `0`              | Angular momentum quantum number. This is a positive integer, ``0 \leq l``. |
 | `direction::Symbol` | `:c`             | The direction of the finite difference, `:c` for central, :f for forward, `:b` for backward. |
 | `solver::Symbol`    | `:LinearAlgebra` | The solver for eigenvalue problem, `:LinearAlgebra` or `:ArnoldiMethod`. |
