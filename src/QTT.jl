@@ -310,11 +310,10 @@ end
                                maxoperatorbonddim=128, maxiter=100, sweeps=4,
                                deflation_shift=10.0)
 
-Configure a radial QTT calculation on ``2^q`` uniformly spaced interior points,
-where `q = quantics`. `r₀` and `rₘₐₓ` are zero-value (Dirichlet) boundaries and are
-excluded from the grid. `maxbonddim` bounds DMRG state ranks;
-`maxoperatorbonddim` bounds the compressed Hamiltonian and deflation-projector ranks.
-`deflation_shift` controls the penalty applied to states already found.
+Configure a radial QTT grid with ``2^{\mathtt{quantics}}`` uniformly spaced interior
+points. The excluded endpoints `r₀` and `rₘₐₓ` impose zero-value (Dirichlet)
+boundaries. `maxbonddim` and `maxoperatorbonddim` bound state and MPO ranks;
+`deflation_shift` is the penalty for each previously computed state.
 """ QuanticsTensorTrainMethod
 
 @doc raw"""
@@ -323,17 +322,11 @@ excluded from the grid. `maxbonddim` bounds DMRG state ranks;
     solve(hamiltonian, initial::Function, method::QuanticsTensorTrainMethod;
           info=4, nₘₐₓ=4)
 
-Find the lowest `nₘₐₓ` eigenstates of the reduced radial Hamiltonian with the
-TensorTrainNumerics.jl two-site DMRG eigensolver. Excited states are obtained by
-successive projector deflation,
-
-```math
-H^{(n)} = H + \mu \sum_{k=0}^{n-1} |u_k\rangle\langle u_k|.
-```
-
-The supplied `initial` function seeds the first state; node-modulated versions seed
-subsequent states. The returned energies are Rayleigh quotients of the original,
-undeflated Hamiltonian. Inspect `overlaps` and `residuals` to assess convergence.
+Compute the lowest `nₘₐₓ` QTT eigenstates. `initial` seeds the first DMRG solve;
+`info` controls progress output. The result contains energies `E`, unit-norm tensor
+trains `C`, radial functions `ψ` and `u`, and the diagnostics `overlaps`, `residuals`,
+`histories`, and `rank_histories`. Each energy is evaluated with the original
+Hamiltonian rather than its deflated counterpart.
 """ solve(hamiltonian::Hamiltonian, method::QuanticsTensorTrainMethod; initial=r -> exp(-r), info=4, nₘₐₓ=4)
 
 @doc raw"""

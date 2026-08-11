@@ -4,18 +4,19 @@ CurrentModule = TwoBody
 
 # Quantics Tensor Train
 
-The quantics tensor train (QTT) method represents a radial grid of ``2^q`` points as
-``q`` binary tensor sites. A sampled radial function is then approximated by a chain
-of small tensor cores rather than stored as a vector with ``2^q`` entries,
+The quantics tensor train (QTT) solver rewrites a radial grid of ``N=2^q`` points as
+``q`` binary sites and approximates the sampled wave function by a chain of tensor
+cores,
 
 ```math
 f(r_i)=F_{b_1\ldots b_q}
-\simeq G^{(1)}(b_1)G^{(2)}(b_2)\cdots G^{(q)}(b_q).
+\simeq G^{(1)}(b_1)\cdots G^{(q)}(b_q),
+\qquad
+i-1=\sum_{k=1}^{q}b_k2^{q-k}.
 ```
 
-The Hamiltonian is represented in the same form as a matrix product operator (MPO).
-DMRG solves the eigenvalue problem directly in tensor-train form; previously found
-states are shifted out of the low-energy spectrum to expose successive excitations,
+The Hamiltonian is stored as a matrix product operator (MPO). Two-site DMRG finds
+its low-energy states, with projector penalties exposing successive excitations,
 
 ```math
 H^{(n)}_{\mathrm{QTT}}u_n=E_nu_n,
@@ -24,17 +25,7 @@ H^{(n)}_{\mathrm{QTT}}
 =H_{\mathrm{QTT}}+\mu\sum_{k=0}^{n-1}|u_k\rangle\langle u_k|.
 ```
 
-When the tensor-train ranks remain moderate, both storage and contraction costs grow
-with ``q=\log_2 N`` rather than with the full grid size ``N``.
-
 ## Theory
-
-For ``N=2^q`` interior grid points, write the zero-based grid index in binary,
-
-```math
-i-1 = \sum_{k=1}^{q} b_k 2^{q-k},
-\qquad b_k \in \{0,1\}.
-```
 
 Each vector core has dimensions
 ``G^{(k)}\in\mathbb{R}^{\chi_{k-1}\times2\times\chi_k}``, with
@@ -56,8 +47,7 @@ D^{(2)} = \frac{S_- - 2I + S_+}{\Delta r^2}.
 This tridiagonal operator has an exact QTT/MPO representation with maximum bond
 dimension three. Potential functions and initial wave functions are compressed by
 tensor cross interpolation. Two-site DMRG sweeps optimize the tensor cores and adapt
-their bond dimensions. After each state is found, its projector is added to the MPO
-and the result is compressed before the next DMRG solve.
+their bond dimensions; intermediate MPOs are compressed between solves.
 
 If ``\chi`` and ``\rho`` bound the vector and MPO bond dimensions, their storage is
 bounded by
@@ -110,10 +100,8 @@ result.E
 ```
 
 The values approach the exact ``l=0`` oscillator energies ``E_0=3/2`` and
-``E_1=7/2`` as the grid is refined. `result.ψ`, `result.u`, and `result.C` contain
-the compressed radial wave functions, physically normalized reduced radial wave
-functions, and unit-norm DMRG eigenvectors. Their tensor-train ranks can be inspected
-without expanding any object:
+``E_1=7/2`` as the grid is refined. Inspect the eigenvector ranks without expanding
+them:
 
 ```@example qtt
 ranks.(result.C)
@@ -138,12 +126,8 @@ qttvalue(result.ψ[1], 1)
 !!! note "Current scope"
     `QuanticsTensorTrainMethod` currently supports `Kinetic`, `RestEnergy`,
     `Constant`, `Linear`, `Coulomb`, `PowerLaw`, `Gaussian`, `Exponential`, `Yukawa`,
-    and `Custom` operators. Excited states use projector deflation, so
-    `deflation_shift` must exceed the relevant spectral gaps; also monitor MPO ranks,
-    overlaps, and residuals. `r₀` and `rₘₐₓ` are zero-value (Dirichlet) boundaries and
-    the ``2^q`` grid points lie strictly between them, so choose boundaries where the
-    reduced radial wave function is zero or sufficiently small and perform a
-    grid-convergence study.
+    and `Custom` operators. Choose `deflation_shift` above the relevant spectral gaps,
+    monitor MPO ranks, overlaps, and residuals, and perform a grid-convergence study.
 
 ## Acknowledgments
 
