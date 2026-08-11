@@ -133,18 +133,19 @@ qttvalue(result.ψ[1], 1)
 
 The proof of concept for this QTT solver was developed at
 [CompPhysHack 2026](https://qc-hybrid.github.io/CompPhysHack2026/) in collaboration
-with Lucas Arenstein. We thank him and the hackathon organizers for their
-contributions and support.
+with Lucas Arenstein; its source is available in the
+[CompPhysHack repository](https://github.com/ohno/CompPhysHack2026Ohno/blob/main/julia/qtt.jl).
+The current solver builds on the tensor-train operations and two-site DMRG
+eigensolver in
+[TensorTrainNumerics.jl](https://github.com/MartinMikkelsen/TensorTrainNumerics.jl).
+We thank Lucas Arenstein, the TensorTrainNumerics.jl developers, and the hackathon
+organizers for their contributions and support.
 
 ## Bibliography
 
-The corresponding
-[proof-of-concept implementation](https://github.com/ohno/CompPhysHack2026Ohno/blob/main/julia/qtt.jl)
-is archived in the CompPhysHack repository. The current solver is based on the
-tensor-train operations and two-site DMRG eigensolver provided by
-[TensorTrainNumerics.jl](https://github.com/MartinMikkelsen/TensorTrainNumerics.jl).
-Background on the QTT construction is given by Arenstein, Mikkelsen, and Kastoryano in
-[Fast and Flexible Quantum-Inspired Differential Equation Solvers with Data Integration](https://doi.org/10.48550/arXiv.2505.17046).
+- L. Arenstein, M. Mikkelsen, and M. Kastoryano,
+  [*Fast and Flexible Quantum-Inspired Differential Equation Solvers with Data Integration*](https://doi.org/10.48550/arXiv.2505.17046),
+  arXiv:2505.17046 (2025).
 
 ## API reference
 
