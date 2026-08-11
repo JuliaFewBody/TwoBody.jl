@@ -20,6 +20,7 @@ makedocs(;
         "Hamiltonian" => "Hamiltonian.md",
         "Database" => "DB.md",
         "Rayleigh-Ritz Method" => "Rayleigh-Ritz.md",
+        "Free Complement Method" => "Free-Complement.md",
         "Finite Difference Method" => "FDM.md",
         "Variational Neural Network" => "VNN.md",
         "Variational Monte Carlo" => "VMC.md",
@@ -27,6 +28,8 @@ makedocs(;
     ],
 )
 
-deploydocs(;
-    repo="github.com/JuliaFewBody/TwoBody.jl",
-)
+if get(ENV, "CI", "false") == "true"
+    deploydocs(;
+        repo="github.com/JuliaFewBody/TwoBody.jl",
+    )
+end
