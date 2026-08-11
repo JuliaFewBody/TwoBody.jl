@@ -6,6 +6,8 @@
     SimpleGaussianBasis(0.444529),
     SimpleGaussianBasis(0.1219492),
   )
+  @test eltype(BS.basis) === SimpleGaussianBasis{Float64}
+  @test isconcretetype(eltype(BS.basis))
 
   println("φ(SGB,r) = exp(-a*r^2)")
   println("    a\t    r\tnumerical  \tanalytical")
@@ -20,6 +22,47 @@
         @test acceptance
       end
     end
+
+    typed = SimpleGaussianBasis(1.0)
+    @test typed isa SimpleGaussianBasis{Float64}
+    @test fieldtype(typeof(typed), :a) === Float64
+    @test (@inferred TwoBody.φ(typed, 0.3)) isa Float64
+  end
+
+  @testset "ContractedBasis" begin
+    primitives = PrimitiveBasis[SimpleGaussianBasis(1.0), SimpleGaussianBasis(2.0)]
+    contracted = ContractedBasis(Number[1, 0.5], primitives)
+
+    @test contracted isa ContractedBasis{2,Float64,Tuple{SimpleGaussianBasis{Float64},SimpleGaussianBasis{Float64}}}
+    @test contracted.coefficients == (1.0, 0.5)
+    @test contracted.primitives == Tuple(primitives)
+    @test contracted.c === contracted.coefficients
+    @test contracted.φ === contracted.primitives
+    @test length(contracted) == 2
+    @test TwoBody.φ(contracted, 0.3) ≈ sum(
+      contracted.coefficients[i] * TwoBody.φ(contracted.primitives[i], 0.3)
+      for i in eachindex(contracted.coefficients)
+    )
+
+    coefficients = [1.0, 0.5]
+    copied = ContractedBasis(coefficients, primitives)
+    coefficients[1] = 2.0
+    primitives[1] = SimpleGaussianBasis(3.0)
+    @test copied.coefficients == (1.0, 0.5)
+    @test copied.primitives == (SimpleGaussianBasis(1.0), SimpleGaussianBasis(2.0))
+
+    from_tuples = @inferred ContractedBasis((1, 0.5), (SimpleGaussianBasis(1.0), SimpleGaussianBasis(2.0)))
+    @test typeof(from_tuples) === typeof(contracted)
+    @test isbitstype(typeof(from_tuples))
+    @test (@inferred TwoBody.φ(from_tuples, 0.3)) ≈ TwoBody.φ(contracted, 0.3)
+
+    heterogeneous = ContractedBasis((1, 1), (SimpleGaussianBasis(), GaussianBasis()))
+    @test heterogeneous isa ContractedBasis{2,Int,Tuple{SimpleGaussianBasis{Int},GaussianBasis{Int}}}
+
+    @test_throws ArgumentError ContractedBasis(Float64[], SimpleGaussianBasis[])
+    @test_throws DimensionMismatch ContractedBasis([1.0], [SimpleGaussianBasis(1.0), SimpleGaussianBasis(2.0)])
+    @test_throws ArgumentError ContractedBasis(Any[1.0, "invalid"], PrimitiveBasis[SimpleGaussianBasis(1.0), SimpleGaussianBasis(2.0)])
+    @test_throws ArgumentError ContractedBasis([1.0], Any["invalid"])
   end
 
   println("φ(r) = exp(-ar²)")

@@ -44,7 +44,7 @@
   println("  i\tnumerical  \tanalytical")
   for i in 1:res.nₘₐₓ
     numerical  = res.E[i]
-    analytical = Antique.E(HA; n=i)
+    analytical = Antique.energy(HA; n=i)
     error = iszero(analytical) ? abs(numerical-analytical) : abs((numerical-analytical)/analytical)
     acceptance = error < 1e-2
     @printf("%3d\t%.9f\t%.9f\t%s\n", i, numerical, analytical, acceptance ? "✔" :  "✗")
@@ -58,7 +58,7 @@
     for i in keys(res.method.R[begin:min(10,length(res.method.R))])
         r = res.method.R[i]
         numerical  = abs(res.ψ[i,n])
-        analytical = abs(Antique.ψ(HA, r, 0, 0; n=n))
+        analytical = abs(Antique.wavefunction(HA, r, 0, 0; n=n))
         error = iszero(analytical) ? abs(numerical-analytical) : abs((numerical-analytical)/analytical)
         acceptance = error < 5e-2
         @printf("%3d\t%.1f\t%.9f\t%.9f\t%s\n", i, r, numerical, analytical, acceptance ? "✔" :  "✗")

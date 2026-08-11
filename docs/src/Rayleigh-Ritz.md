@@ -93,7 +93,7 @@ println("------------------------------")
 println(" n     numerical    analytical")
 println("------------------------------")
 for n in 1:4
-  @printf("%2d  %+.9f  %+.9f\n", n, res.E[n], Antique.E(HA; n=n))
+  @printf("%2d  %+.9f  %+.9f\n", n, res.E[n], Antique.energy(HA; n=n))
 end
 
 # wave function
@@ -116,7 +116,7 @@ for n in 1:4
     )
   )
   lines!(axis, 0..50, r -> 4π * r^2 * abs(TwoBody.ψ(res,r,n=n))^2, label="TwoBody.jl")
-  lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.ψ(HA, r, 0, 0; n=n))^2, label="Antique.jl", color=:black, linestyle=:dash)
+  lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.wavefunction(HA, r, 0, 0; n=n))^2, label="Antique.jl", color=:black, linestyle=:dash)
   axislegend(axis, "n = $n", position=:rt, framevisible=false)
 end
 fig
@@ -147,7 +147,7 @@ println("------------------------------")
 println(" n     numerical    analytical")
 println("------------------------------")
 for n in 1:4
-  @printf("%2d  %+.9f  %+.9f\n", n-1, res.E[n], Antique.E(SO; n=n-1))
+  @printf("%2d  %+.9f  %+.9f\n", n-1, res.E[n], Antique.energy(SO; n=n-1))
 end
 
 # wave function
@@ -170,7 +170,7 @@ for n in 1:4
     )
   )
   lines!(axis, 0..50, r -> 4π * r^2 * abs(TwoBody.ψ(res,r,n=n))^2, label="TwoBody.jl")
-  lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.ψ(SO, r, 0, 0; n=n-1))^2, label="Antique.jl", color=:black, linestyle=:dash)
+  lines!(axis, 0..50, r -> 4π * r^2 * abs(Antique.wavefunction(SO, r, 0, 0; n=n-1))^2, label="Antique.jl", color=:black, linestyle=:dash)
   axislegend(axis, "n = $(n-1)", position=:rt, framevisible=false)
 end
 fig
@@ -178,6 +178,44 @@ save("assets/RR_SO.svg", fig) # hide
 ; # hide
 ```
 ![](assets/RR_SO.svg)
+
+## STO-3G
+
+This example reproduces the STO-3G calculation for hydrogen reported by [Pérez-Torres (2019)](https://doi.org/10.1021/acs.jchemed.8b00959). In the contracted calculation, the published coefficients are held fixed, and the resulting contracted function is supplied to the solver. In the uncontracted calculation, the three primitive functions are supplied separately, allowing the Rayleigh–Ritz solver to optimize their linear coefficients.
+
+```@example perez_sto3g
+using TwoBody
+
+# Hamiltonian
+H = Hamiltonian(
+  Kinetic(hbar=1.0, m=1.0),
+  Coulomb(coefficient=-1.0),
+)
+
+# parameters
+α = (0.109818, 0.405771, 2.227660)
+C = (0.444635, 0.535328, 0.154329)
+
+# basis set
+primitives = ntuple(i -> SimpleGaussianBasis(α[i]), 3)
+normalization = ntuple(i -> (2α[i] / π)^(3/4), 3)
+coefficients = ntuple(i -> C[i] * normalization[i], 3)
+contracted_basis = ContractedBasis(coefficients, primitives)
+
+# solve
+contracted = solve(H, BasisSet(contracted_basis))
+uncontracted = solve(H, BasisSet(primitives...))
+
+# results
+println("Contracted STO-3G")
+println("  This work: ", contracted.E[1])
+println("  Reference: ", -0.494908)
+println("Uncontracted STO-3G")
+println("  This work: ", uncontracted.E[1])
+println("  Reference: ", -0.495010)
+```
+
+The results agree with those in Table 1 of the Supporting Information. The small differences between the calculated and reference values arise from rounding in the published parameters.
 
 ## API reference
 
@@ -228,4 +266,5 @@ element(o::Linear, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 element(o::Coulomb, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 element(o::PowerLaw, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 element(o::Gaussian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::Custom, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 ```

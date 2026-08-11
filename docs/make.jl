@@ -17,6 +17,7 @@ pages = gem_only ?
         "Database" => "DB.md",
         "Rayleigh-Ritz Method" => "Rayleigh-Ritz.md",
         "Gaussian Expansion Method" => "GEM.md",
+        "Free Complement Method" => "Free-Complement.md",
         "Finite Difference Method" => "FDM.md",
         "Variational Monte Carlo" => "VMC.md",
         "API reference" => "API.md",
@@ -40,7 +41,7 @@ makedocs(;
     remote_options...,
 )
 
-if !local_build
+if get(ENV, "CI", "false") == "true"
     deploydocs(;
         repo="github.com/JuliaFewBody/TwoBody.jl",
         push_preview=true,

@@ -10,6 +10,7 @@ using ForwardDiff
   include("Hamiltonian.jl")
   include("DB.jl")
   include("Basis.jl")
+  include("FC.jl")
   include("Rayleigh-Ritz.jl")
   include("GEM.jl")
   include("FDM.jl")

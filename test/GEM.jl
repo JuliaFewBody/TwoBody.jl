@@ -10,7 +10,7 @@
 
     basis = GaussianBasis(0.7, 0, 0)
     @test TwoBody.φ(basis, 0.4, 0.3, 0.2) ≈ TwoBody.φ(basis, 0.4) / sqrt(4π)
-    @test TwoBody._with_exponent(GaussianBasis(0.7, 2, -1), 1.2) == GaussianBasis(1.2, 2, -1)
+    @test TwoBody._replace_exponent(GaussianBasis(0.7, 2, -1), 1.2) == GaussianBasis(1.2, 2, -1)
     @test_throws ArgumentError TwoBody.φ(GaussianBasis(-1.0), 0.0)
     @test_throws ArgumentError TwoBody.φ(GaussianBasis(1.0, 1, 2), 0.0)
   end
