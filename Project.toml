@@ -1,7 +1,7 @@
 name = "TwoBody"
 uuid = "a92d7657-722c-45a6-9d18-9da4c8a753b6"
 authors = ["Shuhei Ohno"]
-version = "0.0.10"
+version = "0.0.11"
 
 [deps]
 ArnoldiMethod = "ec485272-7323-5ecc-a04f-4719b315124d"

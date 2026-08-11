@@ -1,4 +1,4 @@
-export BasisSet, Basis, GeometricBasisSet, PrimitiveBasis, ContractedBasis, SimpleGaussianBasis, GaussianBasis
+export BasisSet, Basis, GeometricBasisSet, PrimitiveBasis, ContractedBasis, SimpleGaussianBasis, GaussianBasis, PowerSlaterBasis, FC
 
 # type
 
@@ -7,9 +7,21 @@ abstract type PrimitiveBasis <: Basis end
 
 # struct
 
-struct BasisSet
-  basis::Vector{Basis}
-  BasisSet(args...) = new([args...])
+struct BasisSet{B<:Basis}
+  basis::Vector{B}
+
+  BasisSet(basis::Vector{B}, ::Val{:validated}) where {B<:Basis} = new{B}(basis)
+end
+
+function BasisSet(args::Basis...)
+  isempty(args) && return BasisSet(Basis[], Val(:validated))
+
+  basis_type = foldl(typejoin, (typeof(basis) for basis in args))
+  stored_basis = Vector{basis_type}(undef, length(args))
+  for index in eachindex(args)
+    stored_basis[index] = args[index]
+  end
+  return BasisSet(stored_basis, Val(:validated))
 end
 
 function geometric(r₁, rₙ, n::Int; nₘₐₓ::Int=n, nₘᵢₙ::Int=1)
@@ -34,20 +46,59 @@ Base.@kwdef struct GeometricBasisSet
   end
 end
 
-Base.@kwdef struct SimpleGaussianBasis <: PrimitiveBasis
-  a = 1
+Base.@kwdef struct SimpleGaussianBasis{T<:Real} <: PrimitiveBasis
+  a::T = 1
 end
 
-Base.@kwdef struct GaussianBasis <: PrimitiveBasis
-  a = 1
-  l = 0
-  m = 0
+Base.@kwdef struct GaussianBasis{T<:Real} <: PrimitiveBasis
+  a::T = 1
+  l::Int = 0
+  m::Int = 0
 end
 
-struct ContractedBasis <: Basis
-  c::Vector
-  φ::Vector
+Base.@kwdef struct PowerSlaterBasis <: PrimitiveBasis
+  n::Int = 0
+  a::Real = 1
 end
+
+struct ContractedBasis{N, T<:Number, P<:NTuple{N,PrimitiveBasis}} <: Basis
+  coefficients::NTuple{N,T}
+  primitives::P
+
+  function ContractedBasis(
+    coefficients::NTuple{N,T},
+    primitives::P,
+    ::Val{:validated},
+  ) where {N, T<:Number, P<:NTuple{N,PrimitiveBasis}}
+    N > 0 || throw(ArgumentError("a contracted basis requires at least one coefficient and primitive basis"))
+    new{N,T,P}(coefficients, primitives)
+  end
+end
+
+function ContractedBasis(
+  coefficients::C,
+  primitives::P,
+) where {N, C<:NTuple{N,Number}, P<:NTuple{N,PrimitiveBasis}}
+  N > 0 || throw(ArgumentError("a contracted basis requires at least one coefficient and primitive basis"))
+  return ContractedBasis(promote(coefficients...), primitives, Val(:validated))
+end
+
+function _contracted_basis(coefficients, primitives)
+  isempty(coefficients) && throw(ArgumentError("a contracted basis requires at least one coefficient and primitive basis"))
+  length(coefficients) == length(primitives) || throw(DimensionMismatch("the numbers of coefficients and primitive bases must match"))
+  all(coefficient -> coefficient isa Number, coefficients) || throw(ArgumentError("all contraction coefficients must be numbers"))
+  all(primitive -> primitive isa PrimitiveBasis, primitives) || throw(ArgumentError("all components of a contracted basis must be primitive bases"))
+
+  coefficient_values = Tuple(coefficients)
+  stored_primitives = Tuple(primitives)
+  coefficient_type = foldl(promote_type, (typeof(coefficient) for coefficient in coefficient_values))
+  stored_coefficients = ntuple(index -> convert(coefficient_type, coefficient_values[index]), length(coefficient_values))
+
+  return ContractedBasis(stored_coefficients, stored_primitives, Val(:validated))
+end
+
+ContractedBasis(coefficients::AbstractVector, primitives::AbstractVector) = ContractedBasis(Tuple(coefficients), Tuple(primitives))
+ContractedBasis(coefficients::Tuple, primitives::Tuple) = _contracted_basis(coefficients, primitives)
 
 # utility
 
@@ -55,16 +106,100 @@ Base.string(b::Basis) = "$(typeof(b))(" * join(["$(symbol)=$(getproperty(b,symbo
 Base.string(bs::BasisSet) = "BasisSet(" * join(["$(b)" for b in bs.basis], ", ") * ")"
 Base.show(io::IO, b::Basis) = print(io, Base.string(b))
 Base.show(io::IO, bs::BasisSet) = print(io, Base.string(bs))
+@inline function Base.getproperty(b::ContractedBasis, name::Symbol)
+  name === :c && return getfield(b, :coefficients)
+  name === :φ && return getfield(b, :primitives)
+  return getfield(b, name)
+end
+Base.propertynames(::ContractedBasis, ::Bool=false) = (:coefficients, :primitives, :c, :φ)
 Base.getindex(BS::BasisSet, index) = BS.basis[index]
 Base.getindex(GBS::GeometricBasisSet, index) = GBS.basis[index]
 Base.length(BS::BasisSet) = length(BS.basis)
 Base.length(GBS::GeometricBasisSet) = length(GBS.basis)
+Base.length(::ContractedBasis{N}) where {N} = N
 
 # function
 
 φ(b::SimpleGaussianBasis, r) = exp(-b.a*r^2)
+φ(b::PowerSlaterBasis, r) = r^b.n * exp(-b.a*r)
 φ(b::GaussianBasis, r, θ, φ) = N(b.l) * r^b.l * exp(-b.a*r^2) * Y(b.l, b.m, θ, φ)
-φ(b::ContractedBasis, r, θ, φ) = sum(b.c[i] * φ(b.φ[i], r, θ, φ) for i in 1:length(b.c))
+@inline φ(b::ContractedBasis, coordinates...) = _contracted_value(
+  getfield(b, :coefficients),
+  getfield(b, :primitives),
+  coordinates,
+)
+@inline _contracted_value(coefficients::Tuple{T}, primitives::Tuple{P}, coordinates) where {T,P} =
+  first(coefficients) * φ(first(primitives), coordinates...)
+@inline _contracted_value(coefficients::Tuple, primitives::Tuple, coordinates) = muladd(
+  first(coefficients),
+  φ(first(primitives), coordinates...),
+  _contracted_value(Base.tail(coefficients), Base.tail(primitives), coordinates),
+)
+
+_replace_exponent(b::SimpleGaussianBasis, a) = SimpleGaussianBasis(a)
+_replace_exponent(b::GaussianBasis, a) = GaussianBasis(a=a, l=b.l, m=b.m)
+_replace_exponent(b::Basis, a) = typeof(b)(a)
+
+_multiply(basis::PowerSlaterBasis, g::PowerSlaterBasis) =
+  PowerSlaterBasis(basis.n + g.n, basis.a + g.a)
+
+function _laplacian_candidates(basis::PowerSlaterBasis)
+  candidates = PowerSlaterBasis[]
+  !iszero(basis.a^2) && push!(candidates, PowerSlaterBasis(basis.n, basis.a))
+  !iszero(2*basis.a*(basis.n+1)) && push!(candidates, PowerSlaterBasis(basis.n-1, basis.a))
+  !iszero(basis.n*(basis.n+1)) && push!(candidates, PowerSlaterBasis(basis.n-2, basis.a))
+  return candidates
+end
+
+_fc_candidates(o::Laplacian, basis::PowerSlaterBasis) =
+  iszero(o.coefficient) ? PowerSlaterBasis[] : _laplacian_candidates(basis)
+_fc_candidates(o::Kinetic, basis::PowerSlaterBasis) =
+  iszero(o.hbar) ? PowerSlaterBasis[] : _laplacian_candidates(basis)
+_fc_candidates(o::RestEnergy, basis::PowerSlaterBasis) =
+  iszero(o.m * o.c^2) ? PowerSlaterBasis[] : PowerSlaterBasis[basis]
+_fc_candidates(o::Constant, basis::PowerSlaterBasis) =
+  iszero(o.constant) ? PowerSlaterBasis[] : PowerSlaterBasis[basis]
+_fc_candidates(o::Linear, basis::PowerSlaterBasis) =
+  iszero(o.coefficient) ? PowerSlaterBasis[] : PowerSlaterBasis[PowerSlaterBasis(basis.n+1, basis.a)]
+_fc_candidates(o::Coulomb, basis::PowerSlaterBasis) =
+  iszero(o.coefficient) ? PowerSlaterBasis[] : PowerSlaterBasis[PowerSlaterBasis(basis.n-1, basis.a)]
+
+function _fc_candidates(o::PowerLaw, basis::PowerSlaterBasis)
+  iszero(o.coefficient) && return PowerSlaterBasis[]
+  isinteger(o.exponent) || throw(ArgumentError(
+    "FC requires an integer PowerLaw exponent for PowerSlaterBasis, got $(o.exponent)",
+  ))
+  return PowerSlaterBasis[PowerSlaterBasis(basis.n + Int(o.exponent), basis.a)]
+end
+
+_fc_candidates(o::Exponential, basis::PowerSlaterBasis) =
+  iszero(o.coefficient) ? PowerSlaterBasis[] : PowerSlaterBasis[PowerSlaterBasis(basis.n, basis.a + o.exponent)]
+_fc_candidates(o::Yukawa, basis::PowerSlaterBasis) =
+  iszero(o.coefficient) ? PowerSlaterBasis[] : PowerSlaterBasis[PowerSlaterBasis(basis.n-1, basis.a + o.exponent)]
+
+function _fc_candidates(o::Operator, ::PowerSlaterBasis)
+  throw(ArgumentError("FC does not support $(typeof(o)) with PowerSlaterBasis"))
+end
+
+function FC(hamiltonian::Hamiltonian, basis::PowerSlaterBasis; g::PowerSlaterBasis=PowerSlaterBasis(1, 0))
+  candidates = PowerSlaterBasis[basis] # the -Eₙ term in g(H-Eₙ)φ
+  for operator in hamiltonian.terms
+    append!(candidates, _fc_candidates(operator, basis))
+  end
+  complements = unique(_multiply(candidate, g) for candidate in candidates)
+  return BasisSet(filter(candidate -> isfinite(φ(candidate, 0.0)), complements)...)
+end
+
+function FC(hamiltonian::Hamiltonian, basisset::BasisSet; g::PowerSlaterBasis=PowerSlaterBasis(1, 0))
+  complements = PowerSlaterBasis[]
+  for basis in basisset.basis
+    basis isa PowerSlaterBasis || throw(ArgumentError(
+      "FC only supports BasisSet entries of type PowerSlaterBasis, got $(typeof(basis))",
+    ))
+    append!(complements, FC(hamiltonian, basis; g=g).basis)
+  end
+  return BasisSet(unique(complements)...)
+end
 
 # function for testing
 
@@ -94,6 +229,10 @@ end
 \{ \phi_1, \phi_2, \phi_3, \cdots  \}
 ```
 The basis set is the input for Rayleigh-Ritz method. You can define the basis set like this:
+
+The concrete element type is preserved when all basis functions have a common
+type, avoiding abstract `Basis` dispatch in matrix-construction loops.
+
 ```math
 \begin{aligned}
   \phi_1(r) &= \exp(-13.00773 ~r^2), \\
@@ -317,6 +456,37 @@ k^l e^{-\frac{k^2}{4\alpha}}
 """ SimpleGaussianBasis
 
 @doc raw"""
+`PowerSlaterBasis(n=0, a=1)`
+
+An unnormalized power-Slater basis function for an s wave:
+```math
+\phi_{n,a}(r) = r^n \exp(-ar).
+```
+
+`n` is an integer power and `a` is the exponential parameter. For a
+square-integrable basis function, choose parameters for which the required
+matrix elements are finite (normally ``n \ge 0`` and ``a > 0``).
+""" PowerSlaterBasis
+
+@doc raw"""
+`FC(hamiltonian, basis; g=PowerSlaterBasis(1, 0))`
+
+Generate the next Free Complement basis from a `PowerSlaterBasis` or a
+`BasisSet` of power-Slater functions by collecting the basis-function forms in
+``g(H-E_n)\phi``. Numerical coefficients are ignored. The default scaling
+function is ``g(r)=r``. Duplicate functions and functions singular at the
+origin are removed.
+
+The Hamiltonian may contain `Kinetic`, `Laplacian`, `RestEnergy`, `Constant`,
+`Linear`, `Coulomb`, integer-exponent `PowerLaw`, `Exponential`, and `Yukawa`
+terms. An `ArgumentError` is thrown when an operator does not map a
+`PowerSlaterBasis` to power-Slater functions.
+
+For the hydrogen Hamiltonian, repeated application starting from
+`PowerSlaterBasis(0, 1.5)` adds one power of ``r`` at each iteration.
+""" FC
+
+@doc raw"""
 `GaussianBasis(a=1, l=0, m=0)`
 ```math
 \phi_i(r, θ, φ) = N _{il} r^l \exp(-a_i r^2) Y_l^m(θ, φ)
@@ -324,8 +494,22 @@ k^l e^{-\frac{k^2}{4\alpha}}
 """ GaussianBasis
 
 @doc raw"""
-`ContractedBasis([c1, c2, ...], [basis1, basis2, ...])`
+`ContractedBasis([c1, c2, ...], [primitive1, primitive2, ...])`
 ```math
 \phi' = \sum_i c_i \phi_i
 ```
+
+A contracted basis is a nonempty linear combination of `PrimitiveBasis`
+objects. The numbers of coefficients and primitive bases must match. Numeric
+coefficient types are promoted to a common type.
+
+The components are stored in tuples, making their number part of the type and
+preserving the concrete type of every primitive basis. This lets Julia
+specialize and inline evaluation without dispatching through an abstract
+`PrimitiveBasis` container. Tuple inputs are recommended when constructing a
+basis in performance-sensitive code; vectors are also accepted and converted
+once during construction.
+
+The fields are named `coefficients` and `primitives`. The aliases `c` and `φ`
+are retained for compatibility.
 """ ContractedBasis
