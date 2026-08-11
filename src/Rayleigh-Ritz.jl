@@ -3,6 +3,7 @@ export solve, optimize
 import LinearAlgebra
 import Optim
 import Printf
+import QuadGK
 import SpecialFunctions
 import Subscripts
 
@@ -410,6 +411,17 @@ end
 
 function element(o::Gaussian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return o.coefficient * (π/(o.exponent+SGB1.a+SGB2.a))^(3/2)
+end
+
+function element(o::Custom, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  value, _ = QuadGK.quadgk(
+    r -> 4π * r^2 * φ(SGB1, r) * V(o, r) * φ(SGB2, r),
+    0.0,
+    Inf,
+    rtol=1e-10,
+    atol=1e-12,
+  )
+  return value
 end
 
 function element(o::Hamiltonian, B1::Basis, B2::Basis)
@@ -827,6 +839,18 @@ Integral Formula:
 \int_0^{\infty} r^{2n} \exp \left(-a r^2\right) ~\mathrm{d}r = \frac{(2n-1)!!}{2^{n+1}} \sqrt{\frac{\pi}{a^{2n+1}}}
 ```
 """ element(o::Gaussian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+
+@doc raw"""
+`element(o::Custom, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
+
+The matrix element for a custom central potential is evaluated numerically with
+adaptive Gauss--Kronrod quadrature:
+```math
+\langle \phi_i | V | \phi_j \rangle
+= 4\pi \int_0^\infty
+r^2 \phi_i(r) V(r) \phi_j(r)\,\mathrm{d}r.
+```
+""" element(o::Custom, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 
 @doc raw"""
 `element(o::Hamiltonian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)`
