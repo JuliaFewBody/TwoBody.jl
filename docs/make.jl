@@ -19,6 +19,7 @@ pages = gem_only ?
         "Gaussian Expansion Method" => "GEM.md",
         "Free Complement Method" => "Free-Complement.md",
         "Finite Difference Method" => "FDM.md",
+        "Variational Neural Network" => "VNN.md",
         "Variational Monte Carlo" => "VMC.md",
         "API reference" => "API.md",
     ]
