@@ -380,6 +380,10 @@ function element(SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return (π/(SGB1.a+SGB2.a))^(3/2)
 end
 
+function element(PSB1::PowerSlaterBasis, PSB2::PowerSlaterBasis)
+  return 4 * π * SpecialFunctions.gamma(PSB1.n+PSB2.n+3) / (PSB1.a+PSB2.a)^(PSB1.n+PSB2.n+3)
+end
+
 function element(o::RestEnergy, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return o.m * o.c^2 * (π/(SGB1.a+SGB2.a))^(3/2)
 end
@@ -392,6 +396,14 @@ function element(o::Kinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasi
   return o.hbar^2/(2*o.m) * 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
 end
 
+function element(o::Kinetic, PSB1::PowerSlaterBasis, PSB2::PowerSlaterBasis)
+  return - o.hbar^2/(2*o.m) * 4 * π * (
+        PSB2.n*(PSB2.n+1) * SpecialFunctions.gamma(PSB1.n+PSB2.n+1) / (PSB1.a+PSB2.a)^(PSB1.n+PSB2.n+1)
+    - 2*PSB2.a*(PSB2.n+1) * SpecialFunctions.gamma(PSB1.n+PSB2.n+2) / (PSB1.a+PSB2.a)^(PSB1.n+PSB2.n+2)
+    +            PSB2.a^2 * SpecialFunctions.gamma(PSB1.n+PSB2.n+3) / (PSB1.a+PSB2.a)^(PSB1.n+PSB2.n+3)
+    )
+end
+
 function element(o::Constant, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return o.constant * (π/(SGB1.a+SGB2.a))^(3/2)
 end
@@ -402,6 +414,10 @@ end
 
 function element(o::Coulomb, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
   return o.coefficient * 2*π/(SGB1.a+SGB2.a)
+end
+
+function element(o::Coulomb, PSB1::PowerSlaterBasis, PSB2::PowerSlaterBasis)
+  return o.coefficient * 4 * π * SpecialFunctions.gamma(PSB1.n+PSB2.n+2) / (PSB1.a+PSB2.a)^(PSB1.n+PSB2.n+2)
 end
 
 function element(o::PowerLaw, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
