@@ -20,6 +20,7 @@ makedocs(;
         "Hamiltonian" => "Hamiltonian.md",
         "Database" => "DB.md",
         "Rayleigh-Ritz Method" => "Rayleigh-Ritz.md",
+        "Free Complement Method" => "Free-Complement.md",
         "Finite Difference Method" => "FDM.md",
         "Variational Monte Carlo" => "VMC.md",
         "API reference" => "API.md",

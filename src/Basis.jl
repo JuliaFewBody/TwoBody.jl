@@ -1,4 +1,4 @@
-export BasisSet, Basis, GeometricBasisSet, PrimitiveBasis, ContractedBasis, SimpleGaussianBasis, GaussianBasis
+export BasisSet, Basis, GeometricBasisSet, PrimitiveBasis, ContractedBasis, SimpleGaussianBasis, GaussianBasis, PowerSlaterBasis, FC
 
 # type
 
@@ -38,6 +38,11 @@ Base.@kwdef struct SimpleGaussianBasis <: PrimitiveBasis
   a = 1
 end
 
+Base.@kwdef struct PowerSlaterBasis <: PrimitiveBasis
+  n::Int = 0
+  a::Real = 1
+end
+
 Base.@kwdef struct GaussianBasis <: PrimitiveBasis
   a = 1
   l = 0
@@ -63,8 +68,70 @@ Base.length(GBS::GeometricBasisSet) = length(GBS.basis)
 # function
 
 φ(b::SimpleGaussianBasis, r) = exp(-b.a*r^2)
+φ(b::PowerSlaterBasis, r) = r^b.n * exp(-b.a*r)
 φ(b::GaussianBasis, r, θ, φ) = N(b.l) * r^b.l * exp(-b.a*r^2) * Y(b.l, b.m, θ, φ)
 φ(b::ContractedBasis, r, θ, φ) = sum(b.c[i] * φ(b.φ[i], r, θ, φ) for i in 1:length(b.c))
+
+_multiply(basis::PowerSlaterBasis, g::PowerSlaterBasis) =
+  PowerSlaterBasis(basis.n + g.n, basis.a + g.a)
+
+function _laplacian_candidates(basis::PowerSlaterBasis)
+  candidates = PowerSlaterBasis[]
+  !iszero(basis.a^2) && push!(candidates, PowerSlaterBasis(basis.n, basis.a))
+  !iszero(2*basis.a*(basis.n+1)) && push!(candidates, PowerSlaterBasis(basis.n-1, basis.a))
+  !iszero(basis.n*(basis.n+1)) && push!(candidates, PowerSlaterBasis(basis.n-2, basis.a))
+  return candidates
+end
+
+_fc_candidates(o::Laplacian, basis::PowerSlaterBasis) =
+  iszero(o.coefficient) ? PowerSlaterBasis[] : _laplacian_candidates(basis)
+_fc_candidates(o::Kinetic, basis::PowerSlaterBasis) =
+  iszero(o.hbar) ? PowerSlaterBasis[] : _laplacian_candidates(basis)
+_fc_candidates(o::RestEnergy, basis::PowerSlaterBasis) =
+  iszero(o.m * o.c^2) ? PowerSlaterBasis[] : PowerSlaterBasis[basis]
+_fc_candidates(o::Constant, basis::PowerSlaterBasis) =
+  iszero(o.constant) ? PowerSlaterBasis[] : PowerSlaterBasis[basis]
+_fc_candidates(o::Linear, basis::PowerSlaterBasis) =
+  iszero(o.coefficient) ? PowerSlaterBasis[] : PowerSlaterBasis[PowerSlaterBasis(basis.n+1, basis.a)]
+_fc_candidates(o::Coulomb, basis::PowerSlaterBasis) =
+  iszero(o.coefficient) ? PowerSlaterBasis[] : PowerSlaterBasis[PowerSlaterBasis(basis.n-1, basis.a)]
+
+function _fc_candidates(o::PowerLaw, basis::PowerSlaterBasis)
+  iszero(o.coefficient) && return PowerSlaterBasis[]
+  isinteger(o.exponent) || throw(ArgumentError(
+    "FC requires an integer PowerLaw exponent for PowerSlaterBasis, got $(o.exponent)",
+  ))
+  return PowerSlaterBasis[PowerSlaterBasis(basis.n + Int(o.exponent), basis.a)]
+end
+
+_fc_candidates(o::Exponential, basis::PowerSlaterBasis) =
+  iszero(o.coefficient) ? PowerSlaterBasis[] : PowerSlaterBasis[PowerSlaterBasis(basis.n, basis.a + o.exponent)]
+_fc_candidates(o::Yukawa, basis::PowerSlaterBasis) =
+  iszero(o.coefficient) ? PowerSlaterBasis[] : PowerSlaterBasis[PowerSlaterBasis(basis.n-1, basis.a + o.exponent)]
+
+function _fc_candidates(o::Operator, ::PowerSlaterBasis)
+  throw(ArgumentError("FC does not support $(typeof(o)) with PowerSlaterBasis"))
+end
+
+function FC(hamiltonian::Hamiltonian, basis::PowerSlaterBasis; g::PowerSlaterBasis=PowerSlaterBasis(1, 0))
+  candidates = PowerSlaterBasis[basis] # the -Eₙ term in g(H-Eₙ)φ
+  for operator in hamiltonian.terms
+    append!(candidates, _fc_candidates(operator, basis))
+  end
+  complements = unique(_multiply(candidate, g) for candidate in candidates)
+  return BasisSet(filter(candidate -> isfinite(φ(candidate, 0.0)), complements)...)
+end
+
+function FC(hamiltonian::Hamiltonian, basisset::BasisSet; g::PowerSlaterBasis=PowerSlaterBasis(1, 0))
+  complements = PowerSlaterBasis[]
+  for basis in basisset.basis
+    basis isa PowerSlaterBasis || throw(ArgumentError(
+      "FC only supports BasisSet entries of type PowerSlaterBasis, got $(typeof(basis))",
+    ))
+    append!(complements, FC(hamiltonian, basis; g=g).basis)
+  end
+  return BasisSet(unique(complements)...)
+end
 
 # function for testing
 
@@ -315,6 +382,37 @@ r^{2}
 k^l e^{-\frac{k^2}{4\alpha}}
 ```
 """ SimpleGaussianBasis
+
+@doc raw"""
+`PowerSlaterBasis(n=0, a=1)`
+
+An unnormalized power-Slater basis function for an s wave:
+```math
+\phi_{n,a}(r) = r^n \exp(-ar).
+```
+
+`n` is an integer power and `a` is the exponential parameter. For a
+square-integrable basis function, choose parameters for which the required
+matrix elements are finite (normally ``n \ge 0`` and ``a > 0``).
+""" PowerSlaterBasis
+
+@doc raw"""
+`FC(hamiltonian, basis; g=PowerSlaterBasis(1, 0))`
+
+Generate the next Free Complement basis from a `PowerSlaterBasis` or a
+`BasisSet` of power-Slater functions by collecting the basis-function forms in
+``g(H-E_n)\phi``. Numerical coefficients are ignored. The default scaling
+function is ``g(r)=r``. Duplicate functions and functions singular at the
+origin are removed.
+
+The Hamiltonian may contain `Kinetic`, `Laplacian`, `RestEnergy`, `Constant`,
+`Linear`, `Coulomb`, integer-exponent `PowerLaw`, `Exponential`, and `Yukawa`
+terms. An `ArgumentError` is thrown when an operator does not map a
+`PowerSlaterBasis` to power-Slater functions.
+
+For the hydrogen Hamiltonian, repeated application starting from
+`PowerSlaterBasis(0, 1.5)` adds one power of ``r`` at each iteration.
+""" FC
 
 @doc raw"""
 `GaussianBasis(a=1, l=0, m=0)`
