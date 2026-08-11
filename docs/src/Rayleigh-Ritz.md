@@ -266,4 +266,5 @@ element(o::Linear, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 element(o::Coulomb, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 element(o::PowerLaw, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 element(o::Gaussian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+element(o::Custom, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
 ```

@@ -218,5 +218,27 @@
       end
     end
 
+    custom = Custom(f=r -> exp(-r^2))
+    gaussian = Gaussian(coefficient=1, exponent=1)
+    for b₁ in BS.basis, b₂ in BS.basis
+      @test TwoBody.element(custom, b₁, b₂) ≈ TwoBody.element(gaussian, b₁, b₂) rtol=1e-9
+    end
+
+  end
+
+  @testset "Custom potential" begin
+    custom_H = Hamiltonian(
+      Kinetic(hbar=1, m=1),
+      Custom(f=r -> -exp(-r^2)),
+    )
+    gaussian_H = Hamiltonian(
+      Kinetic(hbar=1, m=1),
+      Gaussian(coefficient=-1, exponent=1),
+    )
+
+    custom_result = solve(custom_H, BS, info=1)
+    gaussian_result = solve(gaussian_H, BS, info=1)
+    @test custom_result.H ≈ gaussian_result.H rtol=1e-9
+    @test custom_result.E ≈ gaussian_result.E rtol=1e-9
   end
 end
