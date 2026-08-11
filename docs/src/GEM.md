@@ -19,18 +19,35 @@ the formulation reviewed by [Hiyama, Kino, and Kamimura
 and uses TwoBody.jl's ordinary `solve` function for the generalized
 Rayleigh–Ritz eigenvalue problem.
 
-## Real-range basis
+## Usage
+
+Run the following code before each use.
 
 ```@example gem
 using TwoBody
+```
 
+Define the Hamiltonian. This example uses the non-relativistic hydrogen atom
+in atomic units,
+
+```math
+\hat{H} = -\frac{1}{2}\nabla^2 - \frac{1}{r}.
+```
+
+```@example gem
 H = Hamiltonian(
-  Kinetic(hbar=1, m=1),
-  Coulomb(coefficient=-1),
+  Kinetic(hbar = 1, m = 1),
+  Coulomb(coefficient = -1),
 )
+nothing # hide
+```
+
+Define a basis set. Here, 20 Gaussian ranges are placed in a geometric
+progression from 0.1 to 10.0.
+
+```@example gem
 BS = GeometricBasisSet(GaussianBasis, 0.1, 10.0, 20)
-result = solve(H, BS)
-result.E[1]
+nothing # hide
 ```
 
 `GaussianBasis` includes the spherical harmonic and is radially normalized.
@@ -44,10 +61,17 @@ p_wave_basis = BasisSet((GaussianBasis(a, 1, 0) for a in exponents)...)
 nothing # hide
 ```
 
+Solve the generalized eigenvalue problem with the Rayleigh–Ritz solver.
+
+```@example gem
+result = solve(H, BS)
+result.E[1]
+```
+
 The position- and momentum-space definitions and unit conventions are given
 in the `GaussianBasis`, `φp`, and `ψp` docstrings in the API reference below.
 
-## Hiyama complex-range hydrogen example
+## Example of Hydrogen Atom
 
 For highly excited states, Hiyama and Kamimura use the equivalent real
 cosine/sine form of complex-range Gaussians,
@@ -98,12 +122,12 @@ ill-conditioned 160-function generalized eigenproblem. The loss of accuracy
 relative to the exact Coulomb value at the highest states is the same
 finite-basis behavior shown in the reference.
 
-## Arifi charmonium example
+## Example of Charmonium
 
-The next example is a direct translation of the default `Arifi2024` inputs in
-the supplied original source: one Gaussian with ``\nu=0.2443`` and the SGA
-parameter set. Natural units are used, so energies and masses are in GeV and
-lengths are in GeV``^{-1}``.
+The following calculation uses one Gaussian with ``\nu=0.2443`` and the SGA
+parameters of [Arifi et al.
+(2024)](https://arxiv.org/abs/2401.07933). Natural units are used, so energies
+and masses are in GeV and lengths are in GeV``^{-1}``.
 
 ```@example gem
 ν = 0.2443
@@ -134,16 +158,13 @@ round(eta_c.E[1] * 1000; digits=6)
 
 | calculation | ``\eta_c`` mass (MeV) |
 |:--|--:|
-| supplied original `Arifi2024` code | 3013.183414 |
-| TwoBody.jl operator interface | 3013.183414 |
+| TwoBody.jl with the parameters above | 3013.183414 |
 | Arifi et al. SGA, Table 2 | 3012 |
 
-The two code paths agree when their inputs are identical. The 1.18 MeV
-difference from the paper table is consistent with evaluating the rounded
-parameters and rounded variational exponent printed or retained in the
-source; it is not a discrepancy between the old and new matrix-element
-implementations. The SGA and GEM parameter sets in [Arifi et al.
-(2024)](https://arxiv.org/abs/2401.07933) should not be mixed.
+The 1.18 MeV difference from the paper table comes from using the rounded
+parameters and rounded variational exponent shown above, rather than from the
+matrix-element implementation. The SGA and GEM parameter sets should not be
+mixed.
 
 ## API reference
 
