@@ -13,14 +13,15 @@ f(r_i)=F_{b_1\ldots b_q}
 \simeq G^{(1)}(b_1)G^{(2)}(b_2)\cdots G^{(q)}(b_q).
 ```
 
-The Hamiltonian is represented in the same form as a matrix product operator (MPO),
-so the energy can be evaluated by contracting tensor networks without expanding the
-wave function or Hamiltonian,
+The Hamiltonian is represented in the same form as a matrix product operator (MPO).
+DMRG solves the eigenvalue problem directly in tensor-train form; previously found
+states are shifted out of the low-energy spectrum to expose successive excitations,
 
 ```math
-E_{\mathrm{QTT}}
-=\frac{\langle u_{\mathrm{QTT}}|H_{\mathrm{QTT}}|u_{\mathrm{QTT}}\rangle}
-{\langle u_{\mathrm{QTT}}|u_{\mathrm{QTT}}\rangle}.
+H^{(n)}_{\mathrm{QTT}}u_n=E_nu_n,
+\qquad
+H^{(n)}_{\mathrm{QTT}}
+=H_{\mathrm{QTT}}+\mu\sum_{k=0}^{n-1}|u_k\rangle\langle u_k|.
 ```
 
 When the tensor-train ranks remain moderate, both storage and contraction costs grow
@@ -53,9 +54,13 @@ D^{(2)} = \frac{S_- - 2I + S_+}{\Delta r^2}.
 ```
 
 This tridiagonal operator has an exact QTT/MPO representation with maximum bond
-dimension three. Potential functions and trial wave functions are compressed by
-tensor cross interpolation. If ``\chi`` and ``\rho`` bound the vector and MPO bond
-dimensions, their storage is bounded by
+dimension three. Potential functions and initial wave functions are compressed by
+tensor cross interpolation. Two-site DMRG sweeps optimize the tensor cores and adapt
+their bond dimensions. After each state is found, its projector is added to the MPO
+and the result is compressed before the next DMRG solve.
+
+If ``\chi`` and ``\rho`` bound the vector and MPO bond dimensions, their storage is
+bounded by
 
 ```math
 \operatorname{storage}(F_{\mathrm{QTT}}) \leq 2q\chi^2,
@@ -68,13 +73,15 @@ Thus, when the QTT ranks remain moderate, storage grows as ``O(\log N)`` instead
 
 ## Usage
 
-For the three-dimensional spherical oscillator in atomic units, the normalized
-ground-state radial dependence is proportional to
-``\exp(-r^2/2)``. Configure the QTT grid with `quantics`; the number of grid points is
-`2^quantics`.
+For the three-dimensional spherical oscillator in atomic units, configure the QTT
+grid with `quantics`; the number of interior grid points is `2^quantics`. Here a
+coarse grid is used so the example runs quickly.
 
 ```@example qtt
 using TwoBody
+using Random
+
+Random.seed!(1234)
 
 H = Hamiltonian(
   Kinetic(hbar=1, m=1),
@@ -82,41 +89,61 @@ H = Hamiltonian(
 )
 
 method = QuanticsTensorTrainMethod(
-  quantics=8,
+  quantics=5,
   r₀=0.0,
   rₘₐₓ=8.0,
   l=0,
-  tolerance=1e-9,
-  maxbonddim=32,
+  tolerance=1e-8,
+  maxbonddim=16,
+  maxoperatorbonddim=32,
+  sweeps=4,
 )
 
-result = solve(H, r -> exp(-r^2 / 2), method; info=0)
+result = solve(
+  H,
+  method;
+  initial=r -> exp(-r^2 / 2),
+  nₘₐₓ=2,
+  info=0,
+)
 result.E
 ```
 
-The result approaches the exact ground-state energy ``E=3/2`` as the grid is
-refined. `result.ψ`, `result.u`, and `result.H` contain the compressed radial wave
-function, reduced radial wave function, and reduced Hamiltonian. Their tensor-train
-ranks can be inspected without expanding any object:
+The values approach the exact ``l=0`` oscillator energies ``E_0=3/2`` and
+``E_1=7/2`` as the grid is refined. `result.ψ`, `result.u`, and `result.C` contain
+the compressed radial wave functions, physically normalized reduced radial wave
+functions, and unit-norm DMRG eigenvectors. Their tensor-train ranks can be inspected
+without expanding any object:
 
 ```@example qtt
-ranks(result.ψ)
+ranks.(result.C)
+```
+
+The overlap matrix and residual norms provide convergence diagnostics:
+
+```@example qtt
+result.overlaps
+```
+
+```@example qtt
+result.residuals
 ```
 
 Individual entries can also be contracted directly:
 
 ```@example qtt
-qttvalue(result.ψ, 1)
+qttvalue(result.ψ[1], 1)
 ```
 
 !!! note "Current scope"
     `QuanticsTensorTrainMethod` currently supports `Kinetic`, `RestEnergy`,
     `Constant`, `Linear`, `Coulomb`, `PowerLaw`, `Gaussian`, `Exponential`, `Yukawa`,
-    and `Custom` operators. It evaluates a user-supplied trial wave function; a
-    tensor-train eigensolver is not yet included. `r₀` and `rₘₐₓ` are zero-value
-    (Dirichlet) boundaries and the ``2^q`` grid points lie strictly between them, so
-    choose boundaries where the reduced radial wave function is zero or sufficiently
-    small and perform a grid-convergence study.
+    and `Custom` operators. Excited states use projector deflation, so
+    `deflation_shift` must exceed the relevant spectral gaps; also monitor MPO ranks,
+    overlaps, and residuals. `r₀` and `rₘₐₓ` are zero-value (Dirichlet) boundaries and
+    the ``2^q`` grid points lie strictly between them, so choose boundaries where the
+    reduced radial wave function is zero or sufficiently small and perform a
+    grid-convergence study.
 
 ## Acknowledgments
 
@@ -129,14 +156,16 @@ contributions and support.
 
 The implementation follows the finite-difference QTT construction explored in the
 [CompPhysHack 2026 proof of concept](https://github.com/ohno/CompPhysHack2026Ohno/blob/main/julia/qtt.jl)
-and the method described by Arenstein, Mikkelsen, and Kastoryano in
+and uses the DMRG and tensor-train operations provided by
+[TensorTrainNumerics.jl](https://github.com/MartinMikkelsen/TensorTrainNumerics.jl).
+The QTT construction is described by Arenstein, Mikkelsen, and Kastoryano in
 [Fast and Flexible Quantum-Inspired Differential Equation Solvers with Data Integration](https://doi.org/10.48550/arXiv.2505.17046).
 
 ## API reference
 
 ```@docs; canonical=false
 QuanticsTensorTrainMethod
-solve(hamiltonian::Hamiltonian, wavefunction::Function, method::QuanticsTensorTrainMethod; info=1)
+solve(hamiltonian::Hamiltonian, method::QuanticsTensorTrainMethod)
 QTTVector
 QTTMatrix
 order

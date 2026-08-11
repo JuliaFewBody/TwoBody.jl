@@ -5,6 +5,7 @@ using Printf
 using Antique
 using SpecialFunctions
 using ForwardDiff
+using Random
 
 @testset verbose = true "TwoBody.jl" begin
   include("Hamiltonian.jl")
