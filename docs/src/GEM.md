@@ -122,7 +122,7 @@ reduced_mass = inv(inv(masses[1]) + inv(masses[2]))
 hyperfine = 32π * αs * (λ / sqrt(π))^3 /
             (9 * masses[1] * masses[2]) * spin
 
-arifi_hamiltonian = Hamiltonian(
+H = Hamiltonian(
   RestEnergy(m=masses[1]), RelativisticKinetic(m=masses[1]),
   RestEnergy(m=masses[2]), RelativisticKinetic(m=masses[2]),
   Constant(constant=a),
@@ -131,7 +131,7 @@ arifi_hamiltonian = Hamiltonian(
   Gaussian(coefficient=hyperfine, exponent=λ^2),
 )
 
-eta_c = solve(arifi_hamiltonian, GaussianBasis(ν))
+eta_c = solve(H, GaussianBasis(ν))
 round(eta_c.E[1] * 1000; digits=6)
 ```
 
@@ -141,8 +141,7 @@ round(eta_c.E[1] * 1000; digits=6)
 | Arifi et al. SGA, Table 2 | 3012 |
 
 The 1.18 MeV difference from the paper table is consistent with using the
-rounded parameters and rounded variational exponent shown above. The SGA and
-GEM parameter sets should not be mixed.
+rounded parameters and rounded variational exponent shown above.
 
 ## API reference
 
