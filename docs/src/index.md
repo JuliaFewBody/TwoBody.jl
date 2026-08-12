@@ -86,6 +86,28 @@ axislegend(axis, position=:rt, framevisible=false)
 fig
 ```
 
+## Hydrogen atom benchmark
+
+The following table compares the two lowest ``s``-wave energies of the
+hydrogen atom in atomic units. Here ``n=0`` denotes the ground state and
+``n=1`` the first excited state. The numerical values use the example settings
+from the corresponding method pages: 20 Gaussian functions for RR, the
+nine-function complement basis (``M_n=9``) for FC, ``\Delta r=0.1`` and
+``r_\mathrm{max}=50`` for FDM, the default 1024-point grid
+(``\mathtt{quantics}=10``) for QTT+DMRG, and the documented training or
+sampling settings for VNN and VMC. A dash indicates that the state is not
+currently available.
+
+| Method | ``n=0`` | ``n=1`` |
+|:---|---:|---:|
+| [RR](@ref Rayleigh-Ritz-Method) | -0.499981735104 | -0.124997703473 |
+| [FC](@ref Free-Complement-Method) | -0.499999999978 | -0.123665583532 |
+| [FDM](@ref Finite-Difference-Method) | -0.498756211209 | -0.124921972504 |
+| [QTT+DMRG](@ref Quantics-Tensor-Train) | -0.499702911360 | -0.124981415403 |
+| [VNN](@ref Variational-Neural-Network) | -0.468779111883 | — |
+| [VMC](@ref Variational-Monte-Carlo) | -0.480218518855 | — |
+| Exact | -0.500000000000 | -0.125000000000 |
+
 ## API reference
 
 ```@index
