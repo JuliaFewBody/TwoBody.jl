@@ -21,6 +21,10 @@ Rayleigh–Ritz eigenvalue problem.
 
 ## Usage
 
+GEM uses the same Hamiltonian construction and `solve` interface as the
+[Rayleigh–Ritz method](@ref "Rayleigh-Ritz Method"). Only the basis set is
+changed below.
+
 Run the following code before each use.
 
 ```@example gem
@@ -42,22 +46,10 @@ H = Hamiltonian(
 nothing # hide
 ```
 
-Define a basis set. Here, 20 Gaussian ranges are placed in a geometric
-progression from 0.1 to 10.0.
+Define the Gaussian basis set.
 
 ```@example gem
 BS = GeometricBasisSet(GaussianBasis, 0.1, 10.0, 20)
-nothing # hide
-```
-
-`GaussianBasis` includes the spherical harmonic and is radially normalized.
-For a central Hamiltonian, all primitives in one calculation should use the
-same `l` and `m`. For example, a ``p``-wave basis can be made from the
-exponents returned by `geometric`:
-
-```@example gem
-exponents = TwoBody.geometric(0.1, 10.0, 20)
-p_wave_basis = BasisSet((GaussianBasis(a, 1, 0) for a in exponents)...)
 nothing # hide
 ```
 

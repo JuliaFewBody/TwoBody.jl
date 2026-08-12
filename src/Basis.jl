@@ -536,8 +536,17 @@ For the hydrogen Hamiltonian, repeated application starting from
 ```
 
 This normalized primitive is used by the Gaussian expansion method (GEM).
-Combine primitives with the same `l` and `m` and pass the basis set to the
-existing Rayleigh–Ritz solver.
+`N_{il}` normalizes the primitive, while `l` and `m` specify its spherical
+harmonic. For a central Hamiltonian, combine primitives with the same `l` and
+`m` and pass the basis set to the existing Rayleigh–Ritz solver.
+
+For example, a ``p``-wave basis can be constructed from geometrically spaced
+exponents as follows:
+
+```julia
+exponents = TwoBody.geometric(0.1, 10.0, 20)
+BS = BasisSet((GaussianBasis(a; l=1, m=0) for a in exponents)...)
+```
 """ GaussianBasis
 
 @doc raw"""
