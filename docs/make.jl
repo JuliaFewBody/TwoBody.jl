@@ -1,5 +1,6 @@
 using TwoBody
 using Documenter
+using DocumenterMermaid
 
 DocMeta.setdocmeta!(TwoBody, :DocTestSetup, :(using TwoBody); recursive=true)
 
@@ -22,6 +23,7 @@ pages = gem_only ?
         "Quantics Tensor Train" => "QTT.md",
         "Variational Neural Network" => "VNN.md",
         "Variational Monte Carlo" => "VMC.md",
+        "Developer Guide" => "developer.md",
         "API reference" => "API.md",
     ]
 
