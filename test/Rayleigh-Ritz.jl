@@ -155,7 +155,7 @@
   end
 
   # comparison with Antique.jl
-  HA = Antique.HydrogenAtom(Z=1, m_e=1.0, a_0=1.0, E_h=1.0, hbar=1.0)
+  HA = Antique.HydrogenAtom(Z=1, mₑ=1.0, a₀=1.0, Eₕ=1.0, ℏ=1.0)
 
   println("ψ(r)")
   println("  r\tnumerical  \tanalytical")
