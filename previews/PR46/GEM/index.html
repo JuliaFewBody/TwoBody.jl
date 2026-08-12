@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Gaussian Expansion Method · TwoBody.jl</title><meta name="title" content="Gaussian Expansion Method · TwoBody.jl"/><meta property="og:title" content="Gaussian Expansion Method · TwoBody.jl"/><meta property="twitter:title" content="Gaussian Expansion Method · TwoBody.jl"/><meta name="description" content="Documentation for TwoBody.jl."/><meta property="og:description" content="Documentation for TwoBody.jl."/><meta property="twitter:description" content="Documentation for TwoBody.jl."/><meta property="og:url" content="https://juliafewbody.github.io/TwoBody.jl/GEM/"/><meta property="twitter:url" content="https://juliafewbody.github.io/TwoBody.jl/GEM/"/><link rel="canonical" href="https://juliafewbody.github.io/TwoBody.jl/GEM/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="../assets/logo.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="TwoBody.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">TwoBody.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../Hamiltonian/">Hamiltonian</a></li><li><a class="tocitem" href="../DB/">Database</a></li><li><a class="tocitem" href="../Rayleigh-Ritz/">Rayleigh-Ritz Method</a></li><li class="is-active"><a class="tocitem" href>Gaussian Expansion Method</a><ul class="internal"><li><a class="tocitem" href="#Usage"><span>Usage</span></a></li><li><a class="tocitem" href="#Example-of-Hydrogen-Atom"><span>Example of Hydrogen Atom</span></a></li><li><a class="tocitem" href="#Example-of-Charmonium"><span>Example of Charmonium</span></a></li><li><a class="tocitem" href="#API-reference"><span>API reference</span></a></li></ul></li><li><a class="tocitem" href="../Free-Complement/">Free Complement Method</a></li><li><a class="tocitem" href="../FDM/">Finite Difference Method</a></li><li><a class="tocitem" href="../QTT/">Quantics Tensor Train</a></li><li><a class="tocitem" href="../VNN/">Variational Neural Network</a></li><li><a class="tocitem" href="../VMC/">Variational Monte Carlo</a></li><li><a class="tocitem" href="../developer/">Developer Guide</a></li><li><a class="tocitem" href="../API/">API reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Gaussian Expansion Method</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Gaussian Expansion Method</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaFewBody/TwoBody.jl/blob/5ea03134c730888a6732ac7d693f26989b3f51ff/docs/src/GEM.md#" title="View source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Gaussian-Expansion-Method"><a class="docs-heading-anchor" href="#Gaussian-Expansion-Method">Gaussian Expansion Method</a><a id="Gaussian-Expansion-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Gaussian-Expansion-Method" title="Permalink"></a></h1><p>The Gaussian expansion method (GEM) uses the existing Rayleigh–Ritz solver with normalized Gaussian primitives,</p><p class="math-container">\[\psi_{lm}(\boldsymbol r) = \sum_{n=1}^{n_\mathrm{max}} c_n
+N_{nl} r^l e^{-\nu_n r^2}Y_{lm}(\hat{\boldsymbol r}).\]</p><p>The ranges are normally placed in a geometric progression so that one basis set covers both short- and long-distance behavior. The implementation follows the formulation reviewed by <a href="https://www.sciencedirect.com/science/article/abs/pii/S0146641003900159?via%3Dihub">Hiyama, Kino, and Kamimura (2003)</a> and uses TwoBody.jl&#39;s ordinary <code>solve</code> function for the generalized Rayleigh–Ritz eigenvalue problem.</p><h2 id="Usage"><a class="docs-heading-anchor" href="#Usage">Usage</a><a id="Usage-1"></a><a class="docs-heading-anchor-permalink" href="#Usage" title="Permalink"></a></h2><p>GEM uses the same Hamiltonian construction and <code>solve</code> interface as the <a href="../Rayleigh-Ritz/#Rayleigh-Ritz-Method">Rayleigh–Ritz method</a>. Only the basis set is changed below.</p><p>Run the following code before each use.</p><pre><code class="language-julia hljs">using TwoBody</code></pre><p>Define the Hamiltonian. This example uses the non-relativistic hydrogen atom in atomic units,</p><p class="math-container">\[\hat{H} = -\frac{1}{2}\nabla^2 - \frac{1}{r}.\]</p><pre><code class="language-julia hljs">H = Hamiltonian(
+  Kinetic(hbar = 1, m = 1),
+  Coulomb(coefficient = -1),
+)</code></pre><p>Define the Gaussian basis set.</p><pre><code class="language-julia hljs">BS = GeometricBasisSet(GaussianBasis, 0.1, 10.0, 20)</code></pre><p>Solve the generalized eigenvalue problem with the Rayleigh–Ritz solver.</p><pre><code class="language-julia hljs">result = solve(H, BS)
+result.E[1]</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">-0.49998621577270475</code></pre><p>The position- and momentum-space definitions and unit conventions are given in the <code>GaussianBasis</code>, <code>φp</code>, and <code>ψp</code> docstrings in the API reference below.</p><h2 id="Example-of-Hydrogen-Atom"><a class="docs-heading-anchor" href="#Example-of-Hydrogen-Atom">Example of Hydrogen Atom</a><a id="Example-of-Hydrogen-Atom-1"></a><a class="docs-heading-anchor-permalink" href="#Example-of-Hydrogen-Atom" title="Permalink"></a></h2><p>Appendix A.2 and Table VII of <a href="https://link.springer.com/article/10.1007/s11467-018-0828-5">Hiyama and Kamimura (2018)</a> calculate the lowest seven <span>$l=0$</span> states of the hydrogen atom with 20 real-range Gaussians,</p><p class="math-container">\[\phi_n(r) = N_n e^{-\nu_n r^2}.\]</p><p>The Gaussian ranges are placed in a geometric progression with <span>$n_{\max}=20$</span>, <span>$r_1=0.1$</span> a.u., and <span>$r_{20}=80$</span> a.u.</p><pre><code class="language-julia hljs">H = Hamiltonian(
+  Kinetic(hbar = 1, m = 1),
+  Coulomb(coefficient = -1),
+)
+BS = GeometricBasisSet(GaussianBasis, 0.1, 80.0, 20)
+solve(H, BS)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"># method
+
+Rayleigh-Ritz method with GaussianBasis{Float64}
+J. Thijssen, Computational Physics 2nd Edition (2013)
+https://doi.org/10.1017/CBO9781139171397
+
+# geometric progression
+
+type 	GaussianBasis
+range	r₁ - r₂₀
+r₁ 	0.1
+r₂₀ 	80.0
+
+# basis function
+
+φ₁(r) = TwoBody.φ(GaussianBasis{Float64}(a=100.0, l=0, m=0), r)
+φ₂(r) = TwoBody.φ(GaussianBasis{Float64}(a=49.477936663157664, l=0, m=0), r)
+φ₃(r) = TwoBody.φ(GaussianBasis{Float64}(a=24.480662164434406, l=0, m=0), r)
+φ₄(r) = TwoBody.φ(GaussianBasis{Float64}(a=12.112526520440458, l=0, m=0), r)
+φ₅(r) = TwoBody.φ(GaussianBasis{Float64}(a=5.993028200091704, l=0, m=0), r)
+φ₆(r) = TwoBody.φ(GaussianBasis{Float64}(a=2.965226697046551, l=0, m=0), r)
+φ₇(r) = TwoBody.φ(GaussianBasis{Float64}(a=1.4671329870837342, l=0, m=0), r)
+φ₈(r) = TwoBody.φ(GaussianBasis{Float64}(a=0.7259071301135831, l=0, m=0), r)
+φ₉(r) = TwoBody.φ(GaussianBasis{Float64}(a=0.3591638700709441, l=0, m=0), r)
+φ₁₀(r) = TwoBody.φ(GaussianBasis{Float64}(a=0.1777068721506476, l=0, m=0), r)
+φ₁₁(r) = TwoBody.φ(GaussianBasis{Float64}(a=0.08792569364877596, l=0, m=0), r)
+φ₁₂(r) = TwoBody.φ(GaussianBasis{Float64}(a=0.04350381901418342, l=0, m=0), r)
+φ₁₃(r) = TwoBody.φ(GaussianBasis{Float64}(a=0.021524792017892407, l=0, m=0), r)
+φ₁₄(r) = TwoBody.φ(GaussianBasis{Float64}(a=0.01065002296148922, l=0, m=0), r)
+φ₁₅(r) = TwoBody.φ(GaussianBasis{Float64}(a=0.005269411615497385, l=0, m=0), r)
+φ₁₆(r) = TwoBody.φ(GaussianBasis{Float64}(a=0.0026071961416368685, l=0, m=0), r)
+φ₁₇(r) = TwoBody.φ(GaussianBasis{Float64}(a=0.00128998685564338, l=0, m=0), r)
+φ₁₈(r) = TwoBody.φ(GaussianBasis{Float64}(a=0.0006382588793982906, l=0, m=0), r)
+φ₁₉(r) = TwoBody.φ(GaussianBasis{Float64}(a=0.00031579732409566603, l=0, m=0), r)
+φ₂₀(r) = TwoBody.φ(GaussianBasis{Float64}(a=0.00015625000000000038, l=0, m=0), r)
+
+# eigenfunction
+
+ψ₁(r) = ( + 0.001617φ₁(r) - 0.000865φ₂(r) + 0.005485φ₃(r) + 0.003935φ₄(r) + 0.018984φ₅(r) 
+           + 0.034269φ₆(r) + 0.084755φ₇(r) + 0.163694φ₈(r) + 0.283926φ₉(r) + 0.331713φ₁₀(r) 
+           + 0.192716φ₁₁(r) + 0.023620φ₁₂(r) + 0.001945φ₁₃(r) - 0.001534φ₁₄(r) + 0.001144φ₁₅(r) 
+           - 0.000790φ₁₆(r) + 0.000506φ₁₇(r) - 0.000287φ₁₈(r) + 0.000127φ₁₉(r) - 0.000032φ₂₀(r) )
+ψ₂(r) = ( - 0.000573φ₁(r) + 0.000308φ₂(r) - 0.001953φ₃(r) - 0.001395φ₄(r) - 0.006876φ₅(r) 
+           - 0.012584φ₆(r) - 0.032710φ₇(r) - 0.068248φ₈(r) - 0.140240φ₉(r) - 0.217364φ₁₀(r) 
+           - 0.168499φ₁₁(r) + 0.296707φ₁₂(r) + 0.692188φ₁₃(r) + 0.237761φ₁₄(r) - 0.007819φ₁₅(r) 
+           + 0.005865φ₁₆(r) - 0.003155φ₁₇(r) + 0.001633φ₁₈(r) - 0.000693φ₁₉(r) + 0.000172φ₂₀(r) )
+ψ₃(r) = ( + 0.000311φ₁(r) - 0.000162φ₂(r) + 0.001046φ₃(r) + 0.000806φ₄(r) + 0.003654φ₅(r) 
+           + 0.007130φ₆(r) + 0.017599φ₇(r) + 0.039392φ₈(r) + 0.079109φ₉(r) + 0.139004φ₁₀(r) 
+           + 0.105730φ₁₁(r) - 0.257435φ₁₂(r) - 1.000034φ₁₃(r) + 0.104290φ₁₄(r) + 1.243145φ₁₅(r) 
+           + 0.072140φ₁₆(r) + 0.029327φ₁₇(r) - 0.019197φ₁₈(r) + 0.008830φ₁₉(r) - 0.002259φ₂₀(r) )
+ψ₄(r) = ( + 0.000201φ₁(r) - 0.000100φ₂(r) + 0.000663φ₃(r) + 0.000564φ₄(r) + 0.002285φ₅(r) 
+           + 0.004843φ₆(r) + 0.011062φ₇(r) + 0.026795φ₈(r) + 0.050551φ₉(r) + 0.098729φ₁₀(r) 
+           + 0.065517φ₁₁(r) - 0.181088φ₁₂(r) - 0.971128φ₁₃(r) + 0.396131φ₁₄(r) + 2.468277φ₁₅(r) 
+           - 1.911563φ₁₆(r) - 0.543548φ₁₇(r) + 0.067686φ₁₈(r) - 0.018994φ₁₉(r) + 0.003811φ₂₀(r) )
+ψ₅(r) = ( - 0.000144φ₁(r) + 0.000072φ₂(r) - 0.000477φ₃(r) - 0.000401φ₄(r) - 0.001646φ₅(r) 
+           - 0.003458φ₆(r) - 0.007982φ₇(r) - 0.019226φ₈(r) - 0.036760φ₉(r) - 0.071922φ₁₀(r) 
+           - 0.049545φ₁₁(r) + 0.142559φ₁₂(r) + 0.822769φ₁₃(r) - 0.443979φ₁₄(r) - 3.186555φ₁₅(r) 
+           + 5.320852φ₁₆(r) - 1.955557φ₁₇(r) - 1.120825φ₁₈(r) + 0.228722φ₁₉(r) - 0.047111φ₂₀(r) )
+ψ₆(r) = ( + 0.000111φ₁(r) - 0.000057φ₂(r) + 0.000373φ₃(r) + 0.000293φ₄(r) + 0.001300φ₅(r) 
+           + 0.002586φ₆(r) + 0.006306φ₇(r) + 0.014478φ₈(r) + 0.029160φ₉(r) + 0.054341φ₁₀(r) 
+           + 0.042361φ₁₁(r) - 0.122069φ₁₂(r) - 0.679361φ₁₃(r) + 0.399096φ₁₄(r) + 3.478252φ₁₅(r) 
+           - 8.386215φ₁₆(r) + 8.419592φ₁₇(r) - 2.837965φ₁₈(r) - 0.919873φ₁₉(r) + 0.142564φ₂₀(r) )
+ψ₇(r) = ( + 0.000085φ₁(r) - 0.000039φ₂(r) + 0.000274φ₃(r) + 0.000269φ₄(r) + 0.000920φ₅(r) 
+           + 0.002216φ₆(r) + 0.004478φ₇(r) + 0.012230φ₈(r) + 0.020757φ₉(r) + 0.047005φ₁₀(r) 
+           + 0.023754φ₁₁(r) - 0.076059φ₁₂(r) - 0.609571φ₁₃(r) + 0.473785φ₁₄(r) + 3.040625φ₁₅(r) 
+           - 9.257264φ₁₆(r) + 13.905210φ₁₇(r) - 12.446301φ₁₈(r) + 5.363825φ₁₉(r) - 0.150216φ₂₀(r) )
+ψ₈(r) = ( - 0.000050φ₁(r) + 0.000011φ₂(r) - 0.000130φ₃(r) - 0.000262φ₄(r) - 0.000347φ₅(r) 
+           - 0.001845φ₆(r) - 0.001714φ₇(r) - 0.009772φ₈(r) - 0.007958φ₉(r) - 0.039553φ₁₀(r) 
+           + 0.008332φ₁₁(r) - 0.003801φ₁₂(r) + 0.507287φ₁₃(r) - 0.592999φ₁₄(r) - 1.499046φ₁₅(r) 
+           + 6.008282φ₁₆(r) - 11.271595φ₁₇(r) + 14.457907φ₁₈(r) - 12.379565φ₁₉(r) + 5.221831φ₂₀(r) )
+ψ₉(r) = ( - 0.000181φ₁(r) - 0.000421φ₂(r) + 0.000756φ₃(r) - 0.005118φ₄(r) + 0.006442φ₅(r) 
+           - 0.028595φ₆(r) + 0.030207φ₇(r) - 0.140142φ₈(r) + 0.141151φ₉(r) - 0.630992φ₁₀(r) 
+           + 0.956565φ₁₁(r) - 2.115134φ₁₂(r) + 8.468812φ₁₃(r) - 18.294325φ₁₄(r) + 24.333078φ₁₅(r) 
+           - 23.495515φ₁₆(r) + 18.110797φ₁₇(r) - 11.400795φ₁₈(r) + 5.410592φ₁₉(r) - 1.433877φ₂₀(r) )
+ψ₁₀(r) = ( - 0.001045φ₁(r) + 0.002751φ₂(r) - 0.009369φ₃(r) + 0.017188φ₄(r) - 0.049156φ₅(r) 
+           + 0.080658φ₆(r) - 0.236111φ₇(r) + 0.368045φ₈(r) - 1.136671φ₉(r) + 1.887248φ₁₀(r) 
+           - 5.521019φ₁₁(r) + 14.434213φ₁₂(r) - 21.816101φ₁₃(r) + 22.135525φ₁₄(r) - 17.660950φ₁₅(r) 
+           + 12.313995φ₁₆(r) - 7.818090φ₁₇(r) + 4.395944φ₁₈(r) - 1.947524φ₁₉(r) + 0.493538φ₂₀(r) )
+ψ₁₁(r) = ( + 0.000532φ₁(r) - 0.006817φ₂(r) + 0.019136φ₃(r) - 0.057761φ₄(r) + 0.115909φ₅(r) 
+           - 0.302374φ₆(r) + 0.561203φ₇(r) - 1.503726φ₈(r) + 2.803555φ₉(r) - 8.225740φ₁₀(r) 
+           + 17.229503φ₁₁(r) - 21.588854φ₁₂(r) + 19.231235φ₁₃(r) - 14.288773φ₁₄(r) + 9.780647φ₁₅(r) 
+           - 6.407642φ₁₆(r) + 3.979774φ₁₇(r) - 2.219891φ₁₈(r) + 0.979464φ₁₉(r) - 0.247490φ₂₀(r) )
+ψ₁₂(r) = ( + 0.005153φ₁(r) - 0.019689φ₂(r) + 0.062627φ₃(r) - 0.141022φ₄(r) + 0.350964φ₅(r) 
+           - 0.712294φ₆(r) + 1.775690φ₇(r) - 3.601785φ₈(r) + 10.091491φ₉(r) - 18.388467φ₁₀(r) 
+           + 20.619730φ₁₁(r) - 17.132140φ₁₂(r) + 12.326221φ₁₃(r) - 8.399729φ₁₄(r) + 5.606012φ₁₅(r) 
+           - 3.659464φ₁₆(r) + 2.276239φ₁₇(r) - 1.271576φ₁₈(r) + 0.561417φ₁₉(r) - 0.141868φ₂₀(r) )
+ψ₁₃(r) = ( - 0.006835φ₁(r) + 0.044400φ₂(r) - 0.132114φ₃(r) + 0.357366φ₄(r) - 0.792940φ₅(r) 
+           + 1.943377φ₆(r) - 4.192358φ₇(r) + 11.255922φ₈(r) - 18.771954φ₉(r) + 19.677925φ₁₀(r) 
+           - 15.720172φ₁₁(r) + 11.126598φ₁₂(r) - 7.570336φ₁₃(r) + 5.100995φ₁₄(r) - 3.411794φ₁₅(r) 
+           + 2.236179φ₁₆(r) - 1.395055φ₁₇(r) + 0.780608φ₁₈(r) - 0.344911φ₁₉(r) + 0.087182φ₂₀(r) )
+ψ₁₄(r) = ( - 0.023953φ₁(r) + 0.106870φ₂(r) - 0.336185φ₃(r) + 0.819497φ₄(r) - 2.031704φ₅(r) 
+           + 4.588847φ₆(r) - 11.950712φ₇(r) + 18.843243φ₈(r) - 18.950832φ₉(r) + 14.795147φ₁₀(r) 
+           - 10.377351φ₁₁(r) + 7.054363φ₁₂(r) - 4.775738φ₁₃(r) + 3.232166φ₁₄(r) - 2.172506φ₁₅(r) 
+           + 1.428817φ₁₆(r) - 0.893167φ₁₇(r) + 0.500297φ₁₈(r) - 0.221164φ₁₉(r) + 0.055914φ₂₀(r) )
+ψ₁₅(r) = ( + 0.041235φ₁(r) - 0.235723φ₂(r) + 0.727198φ₃(r) - 1.971586φ₄(r) + 4.741575φ₅(r) 
+           - 12.274258φ₆(r) + 18.743148φ₇(r) - 18.390702φ₈(r) + 14.167901φ₉(r) - 9.888272φ₁₀(r) 
+           + 6.719187φ₁₁(r) - 4.559713φ₁₂(r) + 3.103830φ₁₃(r) - 2.111799φ₁₄(r) + 1.424614φ₁₅(r) 
+           - 0.938972φ₁₆(r) + 0.587654φ₁₇(r) - 0.329365φ₁₈(r) + 0.145642φ₁₉(r) - 0.036825φ₂₀(r) )
+ψ₁₆(r) = ( + 0.112489φ₁(r) - 0.545008φ₂(r) + 1.769010φ₃(r) - 4.663476φ₄(r) + 12.303804φ₅(r) 
+           - 18.524572φ₆(r) + 17.937061φ₇(r) - 13.721514φ₈(r) + 9.554613φ₉(r) - 6.492950φ₁₀(r) 
+           + 4.412231φ₁₁(r) - 3.012189φ₁₂(r) + 2.061627φ₁₃(r) - 1.407910φ₁₄(r) + 0.951897φ₁₅(r) 
+           - 0.628188φ₁₆(r) + 0.393411φ₁₇(r) - 0.220570φ₁₈(r) + 0.097549φ₁₉(r) - 0.024667φ₂₀(r) )
+ψ₁₇(r) = ( + 0.221147φ₁(r) - 1.252793φ₂(r) + 4.121684φ₃(r) - 11.838049φ₄(r) + 18.010355φ₅(r) 
+           - 17.419607φ₆(r) + 13.317675φ₇(r) - 9.281011φ₈(r) + 6.315250φ₉(r) - 4.297519φ₁₀(r) 
+           + 2.939179φ₁₁(r) - 2.017821φ₁₂(r) + 1.386287φ₁₃(r) - 0.948884φ₁₄(r) + 0.642383φ₁₅(r) 
+           - 0.424229φ₁₆(r) + 0.265777φ₁₇(r) - 0.149038φ₁₈(r) + 0.065919φ₁₉(r) - 0.016669φ₂₀(r) )
+ψ₁₈(r) = ( + 0.584649φ₁(r) - 3.095113φ₂(r) + 10.749906φ₃(r) - 17.057057φ₄(r) + 16.717787φ₅(r) 
+           - 12.870900φ₆(r) + 9.012533φ₇(r) - 6.152150φ₈(r) + 4.195298φ₉(r) - 2.873906φ₁₀(r) 
+           + 1.976670φ₁₁(r) - 1.362203φ₁₂(r) + 0.938030φ₁₃(r) - 0.642914φ₁₄(r) + 0.435564φ₁₅(r) 
+           - 0.287758φ₁₆(r) + 0.180315φ₁₇(r) - 0.101124φ₁₈(r) + 0.044729φ₁₉(r) - 0.011311φ₂₀(r) )
+ψ₁₉(r) = ( + 1.409480φ₁(r) - 8.453860φ₂(r) + 15.022208φ₃(r) - 15.363788φ₄(r) + 12.103089φ₅(r) 
+           - 8.593811φ₆(r) + 5.914944φ₇(r) - 4.052536φ₈(r) + 2.783703φ₉(r) - 1.918276φ₁₀(r) 
+           + 1.324604φ₁₁(r) - 0.915025φ₁₂(r) + 0.630966φ₁₃(r) - 0.432787φ₁₄(r) + 0.293327φ₁₅(r) 
+           - 0.193830φ₁₆(r) + 0.121471φ₁₇(r) - 0.068127φ₁₈(r) + 0.030135φ₁₉(r) - 0.007621φ₂₀(r) )
+ψ₂₀(r) = ( - 5.226321φ₁(r) + 11.596893φ₂(r) - 12.967315φ₃(r) + 10.739594φ₄(r) - 7.858097φ₅(r) 
+           + 5.503201φ₆(r) - 3.806691φ₇(r) + 2.628410φ₈(r) - 1.816558φ₉(r) + 1.256862φ₁₀(r) 
+           - 0.870005φ₁₁(r) + 0.601838φ₁₂(r) - 0.415329φ₁₃(r) + 0.285001φ₁₄(r) - 0.193207φ₁₅(r) 
+           + 0.127686φ₁₆(r) - 0.080024φ₁₇(r) + 0.044883φ₁₈(r) - 0.019853φ₁₉(r) + 0.005021φ₂₀(r) )
+
+# eigenvalue
+
+E₁ = -0.4999817351035771
+E₂ = -0.12499770347301413
+E₃ = -0.055554577624929
+E₄ = -0.03124910743705319
+E₅ = -0.019997899245591533
+E₆ = -0.013883058655228717
+E₇ = -0.010202748073617977
+E₈ = -0.007647557223221132
+E₉ = 0.004518350049793145
+E₁₀ = 0.07481201008755672
+E₁₁ = 0.2798723082950151
+E₁₂ = 0.7863747842885986
+E₁₃ = 1.9394488169588202
+E₁₄ = 4.446202262906536
+E₁₅ = 9.766813302532762
+E₁₆ = 20.891733283996366
+E₁₇ = 44.11714599737757
+E₁₈ = 92.63329471592415
+E₁₉ = 197.60010418322022
+E₂₀ = 439.8801091096239
+
+# verification
+
+n 	norm, &lt;ψₙ|ψₙ&gt; = cₙ&#39; * S * cₙ = 1
+1	0.9999999999999983
+2	0.9999999999999998
+3	0.9999999999999981
+4	0.9999999999999979
+
+n 	ill-conditioned, |&lt;ψₙ|H|ψₙ&gt; - E| = |cₙ&#39; * H * cₙ - E| = 0
+1	2.148281552649678e-14
+2	3.187727859454981e-14
+3	1.1025902413308586e-14
+4	2.928560172144046e-14
+
+# expectation value
+
+n 	hamiltonian, &lt;ψₙ|H|ψₙ&gt; = cₙ&#39; * H * cₙ
+1	-0.49998173510359856
+2	-0.12499770347298225
+3	-0.055554577624940024
+4	-0.031249107437082476
+
+n 	expectation value of Kinetic(hbar=1, m=1)
+1	0.4999274354605999
+2	0.12499087800016524
+3	0.055551413233219105
+4	0.03123869393190692
+
+n 	expectation value of Coulomb(coefficient=-1)
+1	-0.9999091705641985
+2	-0.24998858147314748
+3	-0.1111059908581592
+4	-0.06248780136898924
+</code></pre><table><tr><th style="text-align: center">principal level <span>$n$</span></th><th style="text-align: right">TwoBody.jl (hartree)</th><th style="text-align: right">Hiyama Table VII (hartree)</th><th style="text-align: right">exact (hartree)</th></tr><tr><td style="text-align: center">1</td><td style="text-align: right"><span>$-0.499~982$</span></td><td style="text-align: right"><span>$-0.499~982$</span></td><td style="text-align: right"><span>$-0.500~000$</span></td></tr><tr><td style="text-align: center">2</td><td style="text-align: right"><span>$-0.124~998$</span></td><td style="text-align: right"><span>$-0.124~998$</span></td><td style="text-align: right"><span>$-0.125~000$</span></td></tr><tr><td style="text-align: center">3</td><td style="text-align: right"><span>$-0.055~555$</span></td><td style="text-align: right"><span>$-0.055~555$</span></td><td style="text-align: right"><span>$-0.055~556$</span></td></tr><tr><td style="text-align: center">4</td><td style="text-align: right"><span>$-0.031~249$</span></td><td style="text-align: right"><span>$-0.031~249$</span></td><td style="text-align: right"><span>$-0.031~250$</span></td></tr><tr><td style="text-align: center">5</td><td style="text-align: right"><span>$-0.019~998$</span></td><td style="text-align: right"><span>$-0.019~998$</span></td><td style="text-align: right"><span>$-0.020~000$</span></td></tr><tr><td style="text-align: center">6</td><td style="text-align: right"><span>$-0.013~883$</span></td><td style="text-align: right"><span>$-0.013~883$</span></td><td style="text-align: right"><span>$-0.013~889$</span></td></tr><tr><td style="text-align: center">7</td><td style="text-align: right"><span>$-0.010~203$</span></td><td style="text-align: right"><span>$-0.010~203$</span></td><td style="text-align: right"><span>$-0.010~204$</span></td></tr></table><p>The TwoBody.jl results agree with all seven values in Table VII at the six decimal places reported there. The complex-range hydrogen calculation in Appendix A.6.2 is a separate example for highly excited states and is not the calculation reproduced here.</p><h2 id="Example-of-Charmonium"><a class="docs-heading-anchor" href="#Example-of-Charmonium">Example of Charmonium</a><a id="Example-of-Charmonium-1"></a><a class="docs-heading-anchor-permalink" href="#Example-of-Charmonium" title="Permalink"></a></h2><p>The following calculation uses one Gaussian with <span>$\nu=0.2443$</span> and the SGA parameters of <a href="https://arxiv.org/abs/2401.07933">Arifi et al. (2024)</a>. Natural units are used, so energies and masses are in GeV and lengths are in GeV<span>$^{-1}$</span>.</p><pre><code class="language-julia hljs">ν = 0.2443
+masses = (1.6324, 1.6324)
+a = -0.4235
+b = 0.1655
+αs = 0.4410
+Λ = 0.9639
+spin = -3/4
+
+reduced_mass = inv(inv(masses[1]) + inv(masses[2]))
+λ = Λ * sqrt(reduced_mass)
+hyperfine = 32π * αs * (λ / sqrt(π))^3 /
+            (9 * masses[1] * masses[2]) * spin
+
+H = Hamiltonian(
+  RestEnergy(m=masses[1]), RelativisticKinetic(m=masses[1]),
+  RestEnergy(m=masses[2]), RelativisticKinetic(m=masses[2]),
+  Constant(constant=a),
+  Linear(coefficient=b),
+  Coulomb(coefficient=-4αs/3),
+  Gaussian(coefficient=hyperfine, exponent=λ^2),
+)
+
+eta_c = solve(H, GaussianBasis(ν))
+round(eta_c.E[1] * 1000; digits=6)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">3013.183414</code></pre><table><tr><th style="text-align: left">calculation</th><th style="text-align: right"><span>$\eta_c$</span> mass (MeV)</th></tr><tr><td style="text-align: left">TwoBody.jl with the parameters above</td><td style="text-align: right">3013.183414</td></tr><tr><td style="text-align: left">Arifi et al. SGA, Table 2</td><td style="text-align: right">3012</td></tr></table><p>The 1.18 MeV difference from the paper table is consistent with using the rounded parameters and rounded variational exponent shown above.</p><h2 id="API-reference"><a class="docs-heading-anchor" href="#API-reference">API reference</a><a id="API-reference-1"></a><a class="docs-heading-anchor-permalink" href="#API-reference" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="TwoBody.GaussianBasis-GEM"><a class="docstring-binding" href="#TwoBody.GaussianBasis-GEM"><code>TwoBody.GaussianBasis</code></a> — <span class="docstring-category">Type</span></summary><section><div><p><code>GaussianBasis(a=1, l=0, m=0)</code></p><p class="math-container">\[\phi_{ilm}(r, θ, φ) = N _{il} r^l \exp(-a_i r^2) Y_l^m(θ, φ)\]</p><p>This normalized primitive is used by the Gaussian expansion method (GEM). <code>N_{il}</code> normalizes the primitive, while <code>l</code> and <code>m</code> specify its spherical harmonic. For a central Hamiltonian, combine primitives with the same <code>l</code> and <code>m</code> and pass the basis set to the existing Rayleigh–Ritz solver.</p><p>For example, a <span>$p$</span>-wave basis can be constructed from geometrically spaced exponents as follows:</p><pre><code class="language-julia hljs">exponents = TwoBody.geometric(0.1, 10.0, 20)
+BS = BasisSet((GaussianBasis(a; l=1, m=0) for a in exponents)...)</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFewBody/TwoBody.jl/blob/5ea03134c730888a6732ac7d693f26989b3f51ff/src/Basis.jl#L532-L550">source</a></section></details></article><article><details class="docstring" open="true"><summary id="TwoBody.ComplexGaussianBasis-GEM"><a class="docstring-binding" href="#TwoBody.ComplexGaussianBasis-GEM"><code>TwoBody.ComplexGaussianBasis</code></a> — <span class="docstring-category">Type</span></summary><section><div><p><code>ComplexGaussianBasis(a=1, ω=1, component=:cos, l=0, m=0)</code></p><p>One normalized real component of a complex-range Gaussian pair:</p><p class="math-container">\[\phi^{\cos}_{nlm}=N^{\cos}_{nl}r^l e^{-a_n r^2}
+\cos(\omega a_n r^2)Y_l^m(\hat{\boldsymbol r}),\]</p><p>or the corresponding sine function when <code>component=:sin</code>. Equivalently, the pair is formed from exponents <code>(1±iω)aₙ</code>. Use <code>ComplexGaussianBasisSet(r₁, rₙ, n; ω, l, m)</code> to construct both members at every geometrically spaced range.</p><p>The analytic overlap, kinetic, constant, power-law, Coulomb, linear, and Gaussian-potential matrix elements are supported by the ordinary Rayleigh–Ritz <code>solve</code> interface.</p><p>References: E. Hiyama, Y. Kino, and M. Kamimura, <em>Prog. Part. Nucl. Phys.</em> <strong>51</strong>, 223–307 (2003), and E. Hiyama and M. Kamimura, <em>Front. Phys.</em> <strong>13</strong>, 132106 (2018).</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFewBody/TwoBody.jl/blob/5ea03134c730888a6732ac7d693f26989b3f51ff/src/Basis.jl#L552-L574">source</a></section></details></article><article><details class="docstring" open="true"><summary id="TwoBody.ComplexGaussianBasisSet-GEM"><a class="docstring-binding" href="#TwoBody.ComplexGaussianBasisSet-GEM"><code>TwoBody.ComplexGaussianBasisSet</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>ComplexGaussianBasisSet(r₁, rₙ, n; ω=1.0, l=0, m=0)</code></p><p>Construct the <code>2n</code> real, normalized complex-range Gaussian primitives</p><p class="math-container">\[r^l e^{-\nu_j r^2}\cos(\omega\nu_jr^2),\qquad
+r^l e^{-\nu_j r^2}\sin(\omega\nu_jr^2),\]</p><p>where <code>νⱼ = 1/rⱼ²</code> and the ranges from <code>r₁</code> through <code>rₙ</code> form a geometric progression. This is the real cos/sin form of the complex-range GEM basis introduced by Hiyama, Kino, and Kamimura (2003) and used for the highly excited hydrogen example of Hiyama and Kamimura (2018).</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFewBody/TwoBody.jl/blob/5ea03134c730888a6732ac7d693f26989b3f51ff/src/Basis.jl#L84-L98">source</a></section></details></article><article><details class="docstring" open="true"><summary id="TwoBody.φp-GEM"><a class="docstring-binding" href="#TwoBody.φp-GEM"><code>TwoBody.φp</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>φp(b::GaussianBasis, p)</code> returns the radial momentum-space primitive. With the unitary Fourier convention</p><p class="math-container">\[\widetilde\phi(\boldsymbol p)=(2\pi)^{-3/2}\int
+e^{i\boldsymbol p\cdot\boldsymbol r}\phi(\boldsymbol r)\,d^3r,\]</p><p>the normalized position-space primitive <span>$N_l r^l e^{-a r^2}Y_l^m(\hat{\boldsymbol r})$</span> becomes</p><p class="math-container">\[\widetilde\phi_{alm}(\boldsymbol p)=
+i^l N_l\frac{p^l}{(2a)^{l+3/2}}e^{-p^2/(4a)}
+Y_l^m(\hat{\boldsymbol p}).\]</p><p>The two-argument method returns only its radial factor; the four-argument method <code>φp(b, p, θ, ϕ)</code> includes the spherical harmonic. Position and momentum must use reciprocal units (for example, GeV⁻¹ and GeV when <code>ℏ=c=1</code>).</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFewBody/TwoBody.jl/blob/5ea03134c730888a6732ac7d693f26989b3f51ff/src/GEM.jl#L338-L359">source</a></section></details></article><article><details class="docstring" open="true"><summary id="TwoBody.ψp-GEM"><a class="docstring-binding" href="#TwoBody.ψp-GEM"><code>TwoBody.ψp</code></a> — <span class="docstring-category">Function</span></summary><section><div><p><code>ψp(result, p; n=1)</code> evaluates a Gaussian-expansion eigenfunction in momentum space by summing <code>result.C[i,n] * φp(result.basisset[i], p)</code>. It therefore uses the same unitary Fourier convention as <code>φp</code>. The four-argument form <code>ψp(result, p, θ, ϕ; n=1)</code> also includes the spherical harmonic.</p><p>This method currently applies to results built from real-range <code>GaussianBasis</code> primitives. Complex-range cos/sin primitives are intended for the position-space Rayleigh–Ritz calculation.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFewBody/TwoBody.jl/blob/5ea03134c730888a6732ac7d693f26989b3f51ff/src/GEM.jl#L361-L370">source</a></section></details></article><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../Rayleigh-Ritz/">« Rayleigh-Ritz Method</a><a class="docs-footer-nextpage" href="../Free-Complement/">Free Complement Method »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Wednesday 12 August 2026 08:51">Wednesday 12 August 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
