@@ -77,7 +77,7 @@ real-range Gaussians,
 The Gaussian ranges are placed in a geometric progression with
 ``n_{\max}=20``, ``r_1=0.1`` a.u., and ``r_{20}=80`` a.u.
 
-```julia
+```@example gem
 H = Hamiltonian(
   Kinetic(hbar = 1, m = 1),
   Coulomb(coefficient = -1),
