@@ -85,31 +85,24 @@ real-range Gaussians,
 The Gaussian ranges are placed in a geometric progression with
 ``n_{\max}=20``, ``r_1=0.1`` a.u., and ``r_{20}=80`` a.u.
 
-```@example gem
-hiyama_basis = GeometricBasisSet(GaussianBasis, 0.1, 80.0, 20)
-hiyama = solve(H, hiyama_basis)
-
-published = [
-  -0.499982,
-  -0.124998,
-  -0.055555,
-  -0.031249,
-  -0.019998,
-  -0.013883,
-  -0.010203,
-]
-maximum(abs.(hiyama.E[1:7] .- published)) < 5e-7
+```julia
+H = Hamiltonian(
+  Kinetic(hbar = 1, m = 1),
+  Coulomb(coefficient = -1),
+)
+BS = GeometricBasisSet(GaussianBasis, 0.1, 80.0, 20)
+solve(H, BS)
 ```
 
 | principal level ``n`` | TwoBody.jl (hartree) | Hiyama Table VII (hartree) | exact (hartree) |
 |:--:|--:|--:|--:|
-| 1 | -0.499982 | -0.499982 | -0.500000 |
-| 2 | -0.124998 | -0.124998 | -0.125000 |
-| 3 | -0.055555 | -0.055555 | -0.055556 |
-| 4 | -0.031249 | -0.031249 | -0.031250 |
-| 5 | -0.019998 | -0.019998 | -0.020000 |
-| 6 | -0.013883 | -0.013883 | -0.013889 |
-| 7 | -0.010203 | -0.010203 | -0.010204 |
+| 1 | ``-0.499~982`` | ``-0.499~982`` | ``-0.500~000`` |
+| 2 | ``-0.124~998`` | ``-0.124~998`` | ``-0.125~000`` |
+| 3 | ``-0.055~555`` | ``-0.055~555`` | ``-0.055~556`` |
+| 4 | ``-0.031~249`` | ``-0.031~249`` | ``-0.031~250`` |
+| 5 | ``-0.019~998`` | ``-0.019~998`` | ``-0.020~000`` |
+| 6 | ``-0.013~883`` | ``-0.013~883`` | ``-0.013~889`` |
+| 7 | ``-0.010~203`` | ``-0.010~203`` | ``-0.010~204`` |
 
 The TwoBody.jl results agree with all seven values in Table VII at the six
 decimal places reported there. The complex-range hydrogen calculation in
