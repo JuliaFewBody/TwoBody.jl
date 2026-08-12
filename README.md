@@ -2,46 +2,8 @@
 
 TwoBody.jl: a Julia package for quantum mechanical two-body problems
 
-## Documentation 
+## Documentation
 
-https://juliafewbody.github.io/TwoBody.jl/dev/
-
-## Dependency
-
-```mermaid
----
-config:
-  layout: elk
-  theme: mc
----
-flowchart TD
-  A["Hamiltonian.jl"]
-  C["Rayleigh-Ritz.jl"]
-  F["FDM.jl"]
-  Q["QTT.jl"]
-  N["VNN.jl"]
-  G["VMC.jl"]
-  H["DB.jl"]
-  Z["TwoBody.jl"]
-  A --> H
-  A --> C & F & Q & G
-  H --> C & F & Q & G
-  C & F & Q & G --> Z
-  A --> C & F & N & G
-  H --> C & F & N & G
-  F --> N
-  C & F & N & G --> Z
-```
-
-## Developer's Guide
-
-There are several tools for developers.
-
-```sh
-git clone https://github.com/JuliaFewBody/TwoBody.jl.git
-cd TwoBody.jl
-julia
-julia> include("dev/revice.jl")
-julia> include("dev/test.jl")
-julia> include("dev/docs.jl")
-```
+- Home: https://juliafewbody.github.io/TwoBody.jl
+- Developer Guide: https://juliafewbody.github.io/TwoBody.jl/dev/developer
+- API Reference: https://juliafewbody.github.io/TwoBody.jl/dev/API
