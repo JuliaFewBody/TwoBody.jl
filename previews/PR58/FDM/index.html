@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Finite Difference Method · TwoBody.jl</title><meta name="title" content="Finite Difference Method · TwoBody.jl"/><meta property="og:title" content="Finite Difference Method · TwoBody.jl"/><meta property="twitter:title" content="Finite Difference Method · TwoBody.jl"/><meta name="description" content="Documentation for TwoBody.jl."/><meta property="og:description" content="Documentation for TwoBody.jl."/><meta property="twitter:description" content="Documentation for TwoBody.jl."/><meta property="og:url" content="https://juliafewbody.github.io/TwoBody.jl/FDM/"/><meta property="twitter:url" content="https://juliafewbody.github.io/TwoBody.jl/FDM/"/><link rel="canonical" href="https://juliafewbody.github.io/TwoBody.jl/FDM/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script><link href="../assets/logo.ico" rel="icon" type="image/x-icon"/></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.svg" alt="TwoBody.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">TwoBody.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../Hamiltonian/">Hamiltonian</a></li><li><a class="tocitem" href="../DB/">Database</a></li><li><a class="tocitem" href="../Rayleigh-Ritz/">Rayleigh-Ritz Method</a></li><li><a class="tocitem" href="../GEM/">Gaussian Expansion Method</a></li><li><a class="tocitem" href="../Free-Complement/">Free Complement Method</a></li><li class="is-active"><a class="tocitem" href>Finite Difference Method</a><ul class="internal"><li><a class="tocitem" href="#Usage"><span>Usage</span></a></li><li><a class="tocitem" href="#Example-of-Hydrogen-Atom"><span>Example of Hydrogen Atom</span></a></li><li><a class="tocitem" href="#Example-of-Spherical-Oscillator"><span>Example of Spherical Oscillator</span></a></li><li><a class="tocitem" href="#API-reference"><span>API reference</span></a></li></ul></li><li><a class="tocitem" href="../QTT/">Quantics Tensor Train</a></li><li><a class="tocitem" href="../VNN/">Variational Neural Network</a></li><li><a class="tocitem" href="../VMC/">Variational Monte Carlo</a></li><li><a class="tocitem" href="../developer/">Developer Guide</a></li><li><a class="tocitem" href="../API/">API reference</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Finite Difference Method</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Finite Difference Method</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/JuliaFewBody/TwoBody.jl/blob/efa148bb69925e7c60090e7f1c82bfe65cbd22ca/docs/src/FDM.md#" title="View source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Finite-Difference-Method"><a class="docs-heading-anchor" href="#Finite-Difference-Method">Finite Difference Method</a><a id="Finite-Difference-Method-1"></a><a class="docs-heading-anchor-permalink" href="#Finite-Difference-Method" title="Permalink"></a></h1><p>This method solve the eigenvalue problem for the Hamiltonian discretized as a sparse matrix with finite difference approximation,</p><p class="math-container">\[\pmb{H} \pmb{\psi} = E \pmb{\psi}.\]</p><p>The eigenvalue <span>$E$</span> is an approximation of the exact energy and the eigenvector <span>$\pmb{\psi}$</span> is a vector of the approximated values of the exact wavefunction <span>$\psi(r)$</span> on points of the grid,</p><p class="math-container">\[\pmb{\psi}
+=
+\left(\begin{array}{c}
+  \psi(r_1) \\
+  \psi(r_2) \\
+  \psi(r_3) \\
+  \vdots \\
+\end{array}\right).\]</p><p>A uniform grid spacing is used, <span>$r_{i+1} = r_{i} + \Delta r$</span>. See the API reference for the expression of the matrix <span>$\pmb{H}$</span>.</p><h2 id="Usage"><a class="docs-heading-anchor" href="#Usage">Usage</a><a id="Usage-1"></a><a class="docs-heading-anchor-permalink" href="#Usage" title="Permalink"></a></h2><p>Run the following code before each use.</p><pre><code class="language-julia hljs">using TwoBody</code></pre><p>Define the <a href="../Hamiltonian/#Hamiltonian">Hamiltoninan</a>. This is an example for the non-relativistic Hamiltonian of hydrogen atom in atomic units:</p><p class="math-container">\[\hat{H} = 
+- \frac{1}{2} \nabla^2
+- \frac{1}{r}\]</p><pre><code class="language-julia hljs">H = Hamiltonian(
+  Kinetic(hbar = 1, m = 1),
+  Coulomb(coefficient = -1),
+)</code></pre><p>Set the calculation options.</p><pre><code class="language-julia hljs">FDM = FiniteDifferenceMethod(
+  Δr = 0.1,
+  rₘₐₓ = 50.0,
+  l = 0,
+  direction = :c,
+  solver = :LinearAlgebra,
+)</code></pre><p>Solve the eigenvalue problem. You should find reasonable approximations to <a href="https://ohno.github.io/Antique.jl/stable/HydrogenAtom/#Eigenvalues">the exact eigenvalues</a>:</p><p class="math-container">\[\begin{aligned}
+  E_{n=1} &amp;= -0.5,\\
+  E_{n=2} &amp;= -0.125,\\
+  E_{n=3} &amp;= -0.05555\cdots,\\
+  E_{n=4} &amp;= -0.03125.
+\end{aligned}\]</p><p>By default the eigenvalues and the expectation values are displayed.</p><pre><code class="language-julia-repl hljs" style="display:block;">julia&gt; solve(H, FDM)</code><code class="nohighlight hljs ansi" style="display:block;">
+# method
+
+FiniteDifferenceMethod(Δr=0.1, rₘₐₓ=50.0, R=0.1:0.1:50.0, l=0, direction=c, solver=LinearAlgebra)
+
+# eigenvalue
+
+E₁ = -0.4987562112092615
+E₂ = -0.12492197250369766
+E₃ = -0.05554012469051319
+E₄ = -0.031200723331266493
+
+# others
+
+n 	norm, &lt;ψₙ|ψₙ&gt; = cₙ&#39; * cₙ
+1	0.9999999999999998
+2	0.9999999999999999
+3	1.0000000000000004
+4	1.0
+
+n 	error check, |&lt;ψₙ|H|ψₙ&gt; - E| = |cₙ&#39; * H * cₙ - E| = 0
+1	3.673727988484643e-13
+2	2.2917778785824794e-13
+3	2.5460883401606793e-13
+4	2.530718690163525e-13
+
+n 	expectation value of Kinetic(hbar=1, m=1)
+1	3.2786923701708206
+2	3.530703114153333
+3	3.5759997979300326
+4	3.5934083915850286
+
+n 	expectation value of Coulomb(coefficient=-1)
+1	-3.777448581379713
+2	-3.655625086656795
+3	-3.631539922620289
+4	-3.6246091149160358
+
+(hamiltonian = Hamiltonian(Kinetic(hbar=1, m=1), Coulomb(coefficient=-1)), perturbation = Hamiltonian(), method = FiniteDifferenceMethod(Δr=0.1, rₘₐₓ=50.0, R=0.1:0.1:50.0, l=0, direction=c, solver=LinearAlgebra), nₘₐₓ = 4, H = sparse([1, 2, 1, 2, 3, 2, 3, 4, 3, 4  …  497, 498, 497, 498, 499, 498, 499, 500, 499, 500], [1, 1, 2, 2, 2, 3, 3, 3, 4, 4  …  497, 497, 498, 498, 498, 499, 499, 499, 500, 500], [89.99999999999999, -24.999999999999993, -100.0, 94.99999999999999, -33.33333333333333, -75.0, 96.66666666666666, -37.49999999999999, -66.66666666666666, 97.49999999999999  …  99.97987927565391, -49.89959839357429, -50.10060362173037, 99.97991967871485, -49.89979959919839, -50.1004016064257, 99.97995991983967, -49.89999999999999, -50.1002004008016, 99.97999999999999], 500, 500), J = sparse([1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  491, 492, 493, 494, 495, 496, 497, 498, 499, 500], [1, 2, 3, 4, 5, 6, 7, 8, 9, 10  …  491, 492, 493, 494, 495, 496, 497, 498, 499, 500], [0.010000000000000002, 0.04000000000000001, 0.09, 0.16000000000000003, 0.25, 0.36, 0.48999999999999994, 0.6400000000000001, 0.81, 1.0  …  2410.81, 2420.6400000000003, 2430.49, 2440.3599999999997, 2450.25, 2460.1600000000003, 2470.09, 2480.0399999999995, 2490.0099999999998, 2500.0], 500, 500), E = [-0.4987562112092615, -0.12492197250369766, -0.05554012469051319, -0.031200723331266493], C = [0.4254380241849766 0.4251461161934448 0.4250919140636053 -0.4251709606200608; 0.3850161203369446 0.38316260548846925 0.3828188192363622 -0.3827865209731601; … ; 1.9041443531396908e-17 -2.778714615755565e-11 4.3280324837293224e-7 3.851240744573792e-5; -1.1836573006003485e-16 -1.3851685999590626e-11 2.158920922815757e-7 1.9215539036411178e-5], ψ = [0.5093160129260603 0.1803838291995552 0.09822040734929309 -0.06432384275343007; 0.460924656882603 0.1625707853171123 0.08845291835107645 -0.05791152798230022; … ; 2.2795593126276707e-17 -1.178971566600631e-11 1.000021641223832e-7 5.826517495416151e-6; -1.417023356498282e-16 -5.877085703728113e-12 4.988335121381465e-8 2.9071066132972178e-6])</code></pre><h2 id="Example-of-Hydrogen-Atom"><a class="docs-heading-anchor" href="#Example-of-Hydrogen-Atom">Example of Hydrogen Atom</a><a id="Example-of-Hydrogen-Atom-1"></a><a class="docs-heading-anchor-permalink" href="#Example-of-Hydrogen-Atom" title="Permalink"></a></h2><p>Analytical solutions are implemented in <a href="https://ohno.github.io/Antique.jl/stable/HydrogenAtom/">Antique.jl</a>.</p><pre><code class="language-julia hljs"># solve
+using TwoBody
+H = Hamiltonian(Kinetic(1, 1), Coulomb(-1))
+FDM = FiniteDifferenceMethod()
+res = solve(H, FDM, info=0, nₘₐₓ=4)
+
+# benchmark
+import Antique
+HA = Antique.HydrogenAtom(Z=1, Eₕ=1.0, a₀=1.0, mₑ=1.0, ℏ=1.0)
+
+# energy
+using Printf
+println(&quot;Total Energy Eₙ&quot;)
+println(&quot;------------------------------&quot;)
+println(&quot; n     numerical    analytical&quot;)
+println(&quot;------------------------------&quot;)
+for n in 1:4
+  @printf(&quot;%2d  %+.9f  %+.9f\n&quot;, n, res.E[n], Antique.energy(HA; n=n))
+end
+
+# wave function
+using CairoMakie
+fig = Figure(
+  size = (840,600),
+  fontsize = 11,
+  backgroundcolor = :transparent
+)
+for n in 1:4
+  axis = Axis(
+    fig[div(n-1,2)+1,rem(n-1,2)+1],
+    xlabel = L&quot;$r~/~a_0$&quot;,
+    ylabel = L&quot;$4\pi r^2|\psi(r)|^2~ /~{a_0}^{-1}$&quot;,
+    xlabelsize = 16.5,
+    ylabelsize = 16.5,
+    limits=(
+      0, [5, 15, 30, 50][n],
+      0, [0.6, 0.2, 0.11, 0.07][n],
+    )
+  )
+  X = res.method.R
+  Y = 4π * X .^2 .* res.ψ[:,n] .^ 2
+  scatter!(axis, X, Y, label=&quot;TwoBody.jl&quot;, markersize=6)
+  lines!(axis, 0..50, r -&gt; 4π * r^2 * abs(Antique.wavefunction(HA, r, 0, 0; n=n))^2, label=&quot;Antique.jl&quot;, color=:black)
+  axislegend(axis, &quot;n = $n&quot;, position=:rt, framevisible=false)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Total Energy Eₙ
+------------------------------
+ n     numerical    analytical
+------------------------------
+ 1  -0.498756211  -0.500000000
+ 2  -0.124921973  -0.125000000
+ 3  -0.055540125  -0.055555556
+ 4  -0.031200723  -0.031250000</code></pre><p><img src="../assets/FDM_HA.svg" alt/></p><h2 id="Example-of-Spherical-Oscillator"><a class="docs-heading-anchor" href="#Example-of-Spherical-Oscillator">Example of Spherical Oscillator</a><a id="Example-of-Spherical-Oscillator-1"></a><a class="docs-heading-anchor-permalink" href="#Example-of-Spherical-Oscillator" title="Permalink"></a></h2><p>Analytical solutions are implemented in <a href="https://ohno.github.io/Antique.jl/stable/SphericalOscillator/">spherical oscillator</a>.</p><pre><code class="language-julia hljs"># solve
+using TwoBody
+H = Hamiltonian(Kinetic(1, 1), PowerLaw(coefficient=1/2, exponent=2))
+FDM = FiniteDifferenceMethod(rₘₐₓ=10.0)
+res = solve(H, FDM, info=0, nₘₐₓ=4)
+
+# benchmark
+import Antique
+SO = Antique.SphericalOscillator(k=1.0, μ=1.0, ℏ=1.0)
+
+# energy
+using Printf
+println(&quot;Total Energy Eₙ&quot;)
+println(&quot;------------------------------&quot;)
+println(&quot; n     numerical    analytical&quot;)
+println(&quot;------------------------------&quot;)
+for n in 1:4
+  @printf(&quot;%2d  %+.9f  %+.9f\n&quot;, n-1, res.E[n], Antique.energy(SO; n=n-1))
+end
+
+# wave function
+using CairoMakie
+fig = Figure(
+  size = (840,600),
+  fontsize = 11,
+  backgroundcolor = :transparent
+)
+for n in 1:4
+  axis = Axis(
+    fig[div(n-1,2)+1,rem(n-1,2)+1],
+    xlabel = L&quot;$r~/~a_0$&quot;,
+    ylabel = L&quot;$4\pi r^2|\psi(r)|^2~ /~{a_0}^{-1}$&quot;,
+    xlabelsize = 16.5,
+    ylabelsize = 16.5,
+    limits=(
+      0, [4.5, 5.0, 5.5, 6.0][n],
+      0, [0.90, 0.75, 0.70, 0.65][n],
+    )
+  )
+  X = res.method.R
+  Y = 4π * X .^2 .* res.ψ[:,n] .^ 2
+  scatter!(axis, X, Y, label=&quot;TwoBody.jl&quot;, markersize=6)
+  lines!(axis, 0..50, r -&gt; 4π * r^2 * abs(Antique.wavefunction(SO, r, 0, 0; n=n-1))^2, label=&quot;Antique.jl&quot;, color=:black)
+  axislegend(axis, &quot;n = $(n-1)&quot;, position=:rt, framevisible=false)
+end
+fig</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Total Energy Eₙ
+------------------------------
+ n     numerical    analytical
+------------------------------
+ 0  +1.498435737  +1.500000000
+ 1  +3.492169621  +3.500000000
+ 2  +5.480870301  +5.500000000
+ 3  +7.464518486  +7.500000000</code></pre><p><img src="../assets/FDM_SO.svg" alt/></p><h2 id="API-reference"><a class="docs-heading-anchor" href="#API-reference">API reference</a><a id="API-reference-1"></a><a class="docs-heading-anchor-permalink" href="#API-reference" title="Permalink"></a></h2><article><details class="docstring" open="true"><summary id="TwoBody.FiniteDifferenceMethod-FDM"><a class="docstring-binding" href="#TwoBody.FiniteDifferenceMethod-FDM"><code>TwoBody.FiniteDifferenceMethod</code></a> — <span class="docstring-category">Type</span></summary><section><div><p><code>FiniteDifferenceMethod(Δr=0.1, rₘₐₓ=50.0, R=Δr:Δr:rₘₐₓ, l=0, direction=:c, solver=:LinearAlgebra)</code></p><table><tr><th style="text-align: left">Arguments</th><th style="text-align: left">Default</th><th style="text-align: left">Description</th></tr><tr><td style="text-align: left"><code>Δr::Real</code></td><td style="text-align: left"><code>0.1</code></td><td style="text-align: left">Radial grid spacing. A uniform grid spacing is used, <span>$r_{i+1} = r_{i} + \Delta r$</span>.</td></tr><tr><td style="text-align: left"><code>rₘₐₓ::Real</code></td><td style="text-align: left"><code>50.0</code></td><td style="text-align: left">The maximum value of the radial grid. This value is not directly used in the calculation, but it is used to determine the <code>R</code>.</td></tr><tr><td style="text-align: left"><code>R::AbstractRange</code></td><td style="text-align: left"><code>Δr:Δr:rₘₐₓ</code></td><td style="text-align: left">Radial grid. The origin must be excluded from the grid to avoid divergence of the Coulomb potential and the centrifugal potential at the origin.</td></tr><tr><td style="text-align: left"><code>l::Int</code></td><td style="text-align: left"><code>0</code></td><td style="text-align: left">Angular momentum quantum number. This is a positive integer, <span>$0 \leq l$</span>.</td></tr><tr><td style="text-align: left"><code>direction::Symbol</code></td><td style="text-align: left"><code>:c</code></td><td style="text-align: left">The direction of the finite difference, <code>:c</code> for central, :f for forward, <code>:b</code> for backward.</td></tr><tr><td style="text-align: left"><code>solver::Symbol</code></td><td style="text-align: left"><code>:LinearAlgebra</code></td><td style="text-align: left">The solver for eigenvalue problem, <code>:LinearAlgebra</code> or <code>:ArnoldiMethod</code>.</td></tr></table></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFewBody/TwoBody.jl/blob/efa148bb69925e7c60090e7f1c82bfe65cbd22ca/src/FDM.jl#L187-L198">source</a></section></details></article><article><details class="docstring" open="true"><summary id="TwoBody.solve-Tuple{Hamiltonian, FiniteDifferenceMethod}-FDM"><a class="docstring-binding" href="#TwoBody.solve-Tuple{Hamiltonian, FiniteDifferenceMethod}-FDM"><code>TwoBody.solve</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>solve(hamiltonian::Hamiltonian, method::FiniteDifferenceMethod; perturbation=Hamiltonian(), info=4, nₘₐₓ=4)</code></p><p>This method solve the eigenvalue problem for the Hamiltonian discretized as a sparse matrix with finite difference approximation,</p><p class="math-container">\[\pmb{H} \pmb{\psi} = E \pmb{\psi}.\]</p><p>The eigenvalue <span>$E$</span> is an approximation of the exact energy and the eigenvector <span>$\pmb{\psi}$</span> is a vector of the approximated values of the exact wavefunction <span>$\psi(r)$</span> on points of the grid,</p><p class="math-container">\[\pmb{\psi}
+=
+\left(\begin{array}{c}
+  \psi(r_1) \\
+  \psi(r_2) \\
+  \psi(r_3) \\
+  \vdots \\
+\end{array}\right).\]</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFewBody/TwoBody.jl/blob/efa148bb69925e7c60090e7f1c82bfe65cbd22ca/src/FDM.jl#L364-L382">source</a></section></details></article><article><details class="docstring" open="true"><summary id="TwoBody.matrix-Tuple{Hamiltonian, FiniteDifferenceMethod}-FDM"><a class="docstring-binding" href="#TwoBody.matrix-Tuple{Hamiltonian, FiniteDifferenceMethod}-FDM"><code>TwoBody.matrix</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>matrix(o::Hamiltonian, method::FiniteDifferenceMethod)</code></p><p>The matrix for the Hamiltonian is a sum of matrices for each term,</p><p class="math-container">\[\pmb{H} = \sum_i \pmb{O}_i.\]</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFewBody/TwoBody.jl/blob/efa148bb69925e7c60090e7f1c82bfe65cbd22ca/src/FDM.jl#L200-L208">source</a></section></details></article><article><details class="docstring" open="true"><summary id="TwoBody.matrix-Tuple{RestEnergy, FiniteDifferenceMethod}-FDM"><a class="docstring-binding" href="#TwoBody.matrix-Tuple{RestEnergy, FiniteDifferenceMethod}-FDM"><code>TwoBody.matrix</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>matrix(o::RestEnergy, method::FiniteDifferenceMethod)</code></p><p>The matrix for the rest energy <span>$mc^2$</span> is a diagonal matrix,</p><p class="math-container">\[mc^2
+\left(\begin{array}{ccccccc}
+  1 &amp; 0 &amp; 0 &amp; \ldots \\
+  0 &amp; 1 &amp; 0 &amp; \ldots \\
+  0 &amp; 0 &amp; 1 &amp; \ldots \\
+  \vdots &amp; \vdots &amp; \vdots &amp; \ddots \\
+\end{array}\right).\]</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFewBody/TwoBody.jl/blob/efa148bb69925e7c60090e7f1c82bfe65cbd22ca/src/FDM.jl#L210-L224">source</a></section></details></article><article><details class="docstring" open="true"><summary id="TwoBody.matrix-Tuple{Kinetic, FiniteDifferenceMethod}-FDM"><a class="docstring-binding" href="#TwoBody.matrix-Tuple{Kinetic, FiniteDifferenceMethod}-FDM"><code>TwoBody.matrix</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>matrix(o::Kinetic, method::FiniteDifferenceMethod)</code></p><p>We use the shorthand notation <span>$\psi&#39;(r) = \frac{\mathrm{d}\psi}{\mathrm{d}r}(r)$</span> and <span>$\psi&#39;&#39;(r) = \frac{\mathrm{d}^{2}\psi}{\mathrm{d}r^{2}}(r)$</span>. For the uniform grid spacing (<span>$r_{i+1} = r_{i} + \Delta r$</span>), the finite difference for the first derivative,</p><p class="math-container">\[\frac{\mathrm{d}\psi}{\mathrm{d}r}(r) = \frac{\psi(r+\Delta r) - \psi(r-\Delta r)}{2\Delta r} + O(\Delta r^{2})\]</p><p>is written as</p><p class="math-container">\[\left(\begin{array}{ccccc}
+  \psi&#39;(r_1) \\
+  \psi&#39;(r_2) \\
+  \psi&#39;(r_3) \\
+  \psi&#39;(r_4) \\
+  \vdots
+\end{array}\right)
+\simeq
+\frac{1}{2\Delta r}
+\left(\begin{array}{ccccc}
+   0 &amp;  1 &amp;  0 &amp;  0 &amp;\ldots \\
+  -1 &amp;  0 &amp;  1 &amp;  0 &amp;\ldots \\
+   0 &amp; -1 &amp;  0 &amp;  1 &amp;\ldots \\
+   0 &amp;  0 &amp; -1 &amp;  0 &amp;\ldots \\
+  \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \ddots \\
+\end{array}\right)
+\left(\begin{array}{ccccccc}
+  \psi(r_1) \\
+  \psi(r_2) \\
+  \psi(r_3) \\
+  \psi(r_4) \\
+  \vdots
+\end{array}\right),\]</p><p>and the finite difference for the second derivative,</p><p class="math-container">\[\frac{\mathrm{d}^{2}}{\mathrm{d}r^{2}}(r) = \frac{\psi(r+\Delta r) - 2f(r) + \psi(r-\Delta r)}{\Delta r^{2}} + O(\Delta r^{2}).\]</p><p>is written as</p><p class="math-container">\[\left(\begin{array}{ccccc}
+  \psi&#39;&#39;(r_1) \\
+  \psi&#39;&#39;(r_2) \\
+  \psi&#39;&#39;(r_3) \\
+  \psi&#39;&#39;(r_4) \\
+  \vdots
+\end{array}\right)
+\simeq
+\frac{1}{\Delta r^2}
+\left(\begin{array}{ccccccc}
+  -2 &amp;  1 &amp;  0 &amp;  0 &amp; \ldots \\
+   1 &amp; -2 &amp;  1 &amp;  0 &amp; \ldots \\
+   0 &amp;  1 &amp; -2 &amp;  1 &amp; \ldots \\
+   0 &amp;  0 &amp;  1 &amp; -2 &amp; \ldots \\
+  \vdots &amp; \vdots &amp; \vdots &amp; \vdots &amp; \ddots 
+\end{array}\right)
+\left(\begin{array}{ccccccc}
+  \psi(r_1) \\
+  \psi(r_2) \\
+  \psi(r_3) \\
+  \psi(r_4) \\
+  \vdots
+\end{array}\right).\]</p><p>Similarly, the matrix for the kinetic energy,</p><p class="math-container">\[\hat{T}
+=
+-\frac{\hbar^2}{2\mu}
+\left[
+      \frac{\partial^2}{\partial r^2}
+    + \frac{2}{r} \frac{\partial}{\partial r}
+    - \frac{l(l+1)}{r^2}
+\right]\]</p><p>is written as</p><p class="math-container">\[\pmb{T}
+= - \frac{\hbar^2}{2\mu}
+  \left[
+    \frac{1}{{\Delta r}^2}
+    \left(\begin{array}{ccccccc}
+      -2 &amp; 1 &amp; 0 &amp; \ldots \\
+      1 &amp; -2 &amp; 1 &amp; \ldots \\
+      0 &amp; 1 &amp; -2 &amp; \ldots \\
+      \vdots &amp; \vdots &amp; \vdots &amp; \ddots \\
+    \end{array}\right)
+    +
+    \left(\begin{array}{ccccccc}
+       2/r_1 &amp; 0 &amp; 0 &amp; \ldots \\
+       0 &amp; 2/r_2 &amp; 0 &amp; \ldots \\
+       0 &amp; 0 &amp; 2/r_3 &amp; \ldots \\
+      \vdots &amp; \vdots &amp; \vdots &amp; \ddots \\
+    \end{array}\right)
+    \frac{1}{\Delta r}
+    \left(\begin{array}{ccccccc}
+       0 &amp;  1 &amp;  0 &amp; \ldots \\
+      -1 &amp;  0 &amp;  1 &amp; \ldots \\
+       0 &amp; -1 &amp;  0 &amp; \ldots \\
+      \vdots &amp; \vdots &amp; \vdots &amp; \ddots \\
+    \end{array}\right)
+    - l(l+1)
+    \left(\begin{array}{ccccccc}
+       1/{r_1}^2 &amp; 0 &amp; 0 &amp; \ldots \\
+       0 &amp; 1/{r_2}^2 &amp; 0 &amp; \ldots \\
+       0 &amp; 0 &amp; 1/{r_3}^2 &amp; \ldots \\
+      \vdots &amp; \vdots &amp; \vdots &amp; \ddots \\
+    \end{array}\right)
+  \right].\]</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFewBody/TwoBody.jl/blob/efa148bb69925e7c60090e7f1c82bfe65cbd22ca/src/FDM.jl#L226-L346">source</a></section></details></article><article><details class="docstring" open="true"><summary id="TwoBody.matrix-Tuple{TwoBody.PotentialTerm, FiniteDifferenceMethod}-FDM"><a class="docstring-binding" href="#TwoBody.matrix-Tuple{TwoBody.PotentialTerm, FiniteDifferenceMethod}-FDM"><code>TwoBody.matrix</code></a> — <span class="docstring-category">Method</span></summary><section><div><p><code>matrix(o::PotentialTerm, method::FiniteDifferenceMethod)</code></p><p>The matrix for the potential energy <span>$V(r)$</span> is a diagonal matrix,</p><p class="math-container">\[\pmb{V} = 
+\left(\begin{array}{ccccccc}
+  V(r_1) &amp; 0 &amp; 0 &amp; \ldots \\
+  0 &amp; V(r_2) &amp; 0 &amp; \ldots \\
+  0 &amp; 0 &amp; V(r_3) &amp; \ldots \\
+  \vdots &amp; \vdots &amp; \vdots &amp; \ddots \\
+\end{array}\right).\]</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/JuliaFewBody/TwoBody.jl/blob/efa148bb69925e7c60090e7f1c82bfe65cbd22ca/src/FDM.jl#L348-L362">source</a></section></details></article><script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+mermaid.initialize({
+    startOnLoad: true,
+    theme: "neutral"
+});
+</script></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../Free-Complement/">« Free Complement Method</a><a class="docs-footer-nextpage" href="../QTT/">Quantics Tensor Train »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Friday 14 August 2026 02:50">Friday 14 August 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
