@@ -317,6 +317,7 @@ TwoBody.geometric(r₁, rₙ, n::Int; nₘₐₓ::Int=n, nₘᵢₙ::Int=1)
 
 ```@docs; canonical=false
 TwoBody.SimpleGaussianBasis
+TwoBody.CustomBasis
 TwoBody.ContractedBasis
 ```
 
