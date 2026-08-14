@@ -1,4 +1,4 @@
-export FiniteDifferenceMethod #, solve
+export FiniteDifferenceMethod, ResultFiniteDifferenceMethod #, solve
 
 import FiniteDifferenceMatrices
 import SparseArrays
@@ -19,6 +19,59 @@ struct FiniteDifferenceMethod
   function FiniteDifferenceMethod(;Δr=0.1, rₘₐₓ=50.0, R=Δr:Δr:rₘₐₓ, l=0, direction=:c, solver=:LinearAlgebra)
     new(Δr, rₘₐₓ, R, l, direction, solver)
   end
+end
+
+struct ResultFiniteDifferenceMethod
+  data::Any
+  ResultFiniteDifferenceMethod(; args...) = new(NamedTuple(Dict(args)))
+end
+
+Base.getproperty(result::ResultFiniteDifferenceMethod, symbol::Symbol) =
+  Base.getproperty(getfield(result, :data), symbol)
+Base.haskey(result::ResultFiniteDifferenceMethod, symbol::Symbol) =
+  Base.haskey(getfield(result, :data), symbol)
+Base.show(io::IO, result::ResultFiniteDifferenceMethod) = print(io, Base.string(result))
+
+function Base.string(result::ResultFiniteDifferenceMethod)
+  if result.info < 0
+    return "ResultFiniteDifferenceMethod(E=$(result.E))"
+  elseif !haskey(result, :C)
+    return "ResultFiniteDifferenceMethod(E=$(result.E))"
+  end
+
+  text = "# method\n\n$(result.method)\n"
+  text *= "\n# eigenvalue\n\n"
+  for n in 1:min(result.nₘₐₓ, result.info)
+    text *= Printf.@sprintf("E%s = %s\n", Subscripts.sub("$n"), "$(result.E[n])")
+  end
+  text *= "\n# others\n"
+  text *= "\nn \tnorm, <ψₙ|ψₙ> = cₙ' * cₙ\n"
+  for n in 1:min(result.nₘₐₓ, result.info)
+    text *= "$n\t$(result.C[:,n]' * result.C[:,n])\n"
+  end
+  if !isempty(result.perturbation.terms)
+    M = matrix(result.perturbation, result.method)
+    text *= "\nn \tperturbation\n"
+    for n in 1:min(result.nₘₐₓ, result.info)
+      text *= "$n\t$(result.C[:,n]' * M * result.C[:,n])\n"
+    end
+    text *= "\nn \teigenvalue + perturbation\n"
+    for n in 1:min(result.nₘₐₓ, result.info)
+      text *= "$n\t$(result.E[n] + result.C[:,n]' * M * result.C[:,n])\n"
+    end
+  end
+  text *= "\nn \terror check, |<ψₙ|H|ψₙ> - E| = |cₙ' * H * cₙ - E| = 0\n"
+  for n in 1:min(result.nₘₐₓ, result.info)
+    text *= "$n\t$(abs(result.C[:,n]' * result.H * result.C[:,n] - result.E[n]))\n"
+  end
+  for term in [result.hamiltonian.terms..., result.perturbation.terms...]
+    M = matrix(term, result.method)
+    text *= "\nn \texpectation value of $(term)\n"
+    for n in 1:min(result.nₘₐₓ, result.info)
+      text *= "$n\t$(result.C[:,n]' * M * result.C[:,n])\n"
+    end
+  end
+  return text * "\n"
 end
 
 _jacobian(method::FiniteDifferenceMethod) = SparseArrays.spdiagm(method.R .^ 2)
@@ -84,51 +137,14 @@ function solve(hamiltonian::Hamiltonian, method::FiniteDifferenceMethod; perturb
     error("Unknown solver: $(method.solver)")
   end
 
-  # Print
-  if 0 < info
-    println("\n# method\n")
-    println(method)
-    println("\n# eigenvalue\n")
-    for n in 1:min(nₘₐₓ, info)
-      Printf.@printf("E%s = %s\n", Subscripts.sub("$n"), "$(E[n])")
-    end
-    println("\n# others")
-    println("\nn \tnorm, <ψₙ|ψₙ> = cₙ' * cₙ")
-    for n in 1:min(nₘₐₓ, info)
-      println("$n\t", C[:,n]' * C[:,n])
-    end
-    if !isempty(perturbation.terms)
-      println("\nn \tperturbation")
-      M = matrix(perturbation, method)
-      for n in 1:min(nₘₐₓ, info)
-        println("$n\t", C[:,n]' * M * C[:,n])
-      end
-      println("\nn \teigenvalue + perturbation")
-      for n in 1:min(nₘₐₓ, info)
-        println("$n\t", E[n] + C[:,n]' * M * C[:,n])
-      end
-    end
-    println("\nn \terror check, |<ψₙ|H|ψₙ> - E| = |cₙ' * H * cₙ - E| = 0")
-    for n in 1:min(nₘₐₓ, info)
-      println("$n\t", abs(C[:,n]' * H * C[:,n] - E[n]))
-    end
-    for term in [hamiltonian.terms..., perturbation.terms...]
-      println("\nn \texpectation value of $(term)")
-      M = matrix(term, method)
-      for n in 1:min(nₘₐₓ, info)
-        println("$n\t", C[:,n]' * M * C[:,n])
-      end
-    end
-    println()
-  end
-
   # Normalization
   N = LinearAlgebra.diagm([1 / sqrt(4 * π * method.Δr * C[:,n]' * J * C[:,n]) for n in 1:nₘₐₓ])
   ψ = C[:, 1:nₘₐₓ] * N
 
   # Return
   if 0 ≤ info
-    return (
+    result = ResultFiniteDifferenceMethod(;
+      info = info,
       hamiltonian = hamiltonian, 
       perturbation = perturbation,
       method = method,
@@ -140,10 +156,13 @@ function solve(hamiltonian::Hamiltonian, method::FiniteDifferenceMethod; perturb
       ψ = ψ,
     )
   else
-    return (
+    result = ResultFiniteDifferenceMethod(;
+      info = info,
       E = E[1:nₘₐₓ],
     )
   end
+  0 < info && println("\n", result)
+  return result
 end
 
 function solve(hamiltonian::Hamiltonian, wavefunction::Function, method::FiniteDifferenceMethod, info=4, nₘₐₓ=4)
@@ -165,7 +184,8 @@ function solve(hamiltonian::Hamiltonian, wavefunction::Function, method::FiniteD
 
   # Return
   if 0 ≤ info
-    return (
+    return ResultFiniteDifferenceMethod(;
+      info = info,
       hamiltonian = hamiltonian,
       method = method,
       nₘₐₓ = nₘₐₓ,
@@ -175,7 +195,8 @@ function solve(hamiltonian::Hamiltonian, wavefunction::Function, method::FiniteD
       ψ = _normalize_wavefunction(ψ, method, J),
     )
   else
-    return (
+    return ResultFiniteDifferenceMethod(;
+      info = info,
       E = E,
     )
   end
@@ -183,6 +204,13 @@ function solve(hamiltonian::Hamiltonian, wavefunction::Function, method::FiniteD
 end
 
 # docstring
+
+@doc raw"""
+`ResultFiniteDifferenceMethod`
+
+Calculation result returned by `solve` for `FiniteDifferenceMethod`. Stored
+values are available as properties such as `result.E` and `result.ψ`.
+""" ResultFiniteDifferenceMethod
 
 @doc raw"""
 `FiniteDifferenceMethod(Δr=0.1, rₘₐₓ=50.0, R=Δr:Δr:rₘₐₓ, l=0, direction=:c, solver=:LinearAlgebra)`
