@@ -1,9 +1,10 @@
-export solve, optimize
+export solve, optimize, WeinsteinBound, weinstein
 
 import LinearAlgebra
 import Optim
 import Printf
 import QuadGK
+import ForwardDiff
 import SpecialFunctions
 import Subscripts
 
@@ -14,8 +15,70 @@ struct ResultRayleighRitz
   ResultRayleighRitz(; args...) = new(NamedTuple(Dict(args)))
 end
 
+struct WeinsteinBound{T<:Real}
+  E::T
+  variance::T
+  lower::T
+  upper::T
+end
+
 function ψ(result::ResultRayleighRitz, r; n::Int=1)
   return sum(result.C[i,n] * TwoBody.φ(result.basisset[i], r) for i in 1:result.nₘₐₓ)
+end
+
+Base.show(io::IO, bound::WeinsteinBound) = print(
+  io,
+  "WeinsteinBound(E=$(bound.E), lower=$(bound.lower), upper=$(bound.upper))",
+)
+
+_weinstein_laplacian(wavefunction, r, l) =
+  ForwardDiff.derivative(x -> ForwardDiff.derivative(wavefunction, x), r) +
+  2 / r * ForwardDiff.derivative(wavefunction, r) -
+  l * (l + 1) / r^2 * wavefunction(r)
+
+_weinstein_action(o::Laplacian, wavefunction, r, l) =
+  o.coefficient * _weinstein_laplacian(wavefunction, r, l)
+
+_weinstein_action(o::Kinetic, wavefunction, r, l) =
+  -o.hbar^2 / (2o.m) * _weinstein_laplacian(wavefunction, r, l)
+
+_weinstein_action(o::RestEnergy, wavefunction, r, l) = o.m * o.c^2 * wavefunction(r)
+_weinstein_action(o::PotentialTerm, wavefunction, r, l) = V(o, r) * wavefunction(r)
+_weinstein_action(o::Operator, wavefunction, r, l) =
+  throw(ArgumentError("Weinstein bound does not support $(typeof(o))"))
+
+function _weinstein_angular_momentum(basisset::BasisSet)
+  angular_momenta = unique(hasproperty(basis, :l) ? basis.l : 0 for basis in basisset.basis)
+  length(angular_momenta) == 1 ||
+    throw(ArgumentError("all basis functions must have the same angular momentum"))
+  return only(angular_momenta)
+end
+
+function weinstein(result::ResultRayleighRitz; n::Int=1)
+  haskey(result, :hamiltonian) || throw(ArgumentError("the full solver result is required"))
+  1 <= n <= result.nₘₐₓ || throw(BoundsError(result.E, n))
+
+  l = _weinstein_angular_momentum(result.basisset)
+  wavefunction = r -> ψ(result, r; n=n)
+  hamiltonian_wavefunction = r -> sum(
+    _weinstein_action(term, wavefunction, r, l)
+    for term in result.hamiltonian.terms
+  )
+  second_moment, _ = QuadGK.quadgk(
+    r -> 4π * r^2 * abs2(hamiltonian_wavefunction(r)),
+    0.0,
+    Inf,
+    rtol=1e-9,
+    atol=1e-11,
+  )
+
+  E = real(result.E[n])
+  variance = real(second_moment) - E^2
+  tolerance = 100eps(float(E)) * max(abs(second_moment), E^2, one(E))
+  variance >= -tolerance || throw(ErrorException("calculated energy variance is negative"))
+  variance = max(variance, zero(variance))
+  deviation = sqrt(variance)
+  return WeinsteinBound(E, variance, E - deviation, E + deviation)
 end
 
 Base.getproperty(result::ResultRayleighRitz, symbol::Symbol) = Base.getproperty(getfield(result,:data), symbol)
@@ -511,6 +574,12 @@ function element(o::Hamiltonian, B1::Basis, B2::Basis)
 end
 
 # docstring
+
+@doc raw"""
+`weinstein(result::ResultRayleighRitz; n=1)`
+
+Return the Weinstein energy interval for state `n`.
+""" weinstein
 
 @doc raw"""
 `solve(hamiltonian::Hamiltonian, basisset::BasisSet)`
