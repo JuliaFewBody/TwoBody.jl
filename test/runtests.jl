@@ -14,6 +14,7 @@ using Random
   include("FC.jl")
   include("Rayleigh-Ritz.jl")
   include("GEM.jl")
+  include("CSM.jl")
   include("FDM.jl")
   include("QTT.jl")
   include("VNN.jl")
