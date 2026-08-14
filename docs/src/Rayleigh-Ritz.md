@@ -292,6 +292,10 @@ println("  Reference: ", -0.495010)
 
 The results agree with those in Table 1 of the Supporting Information. The small differences between the calculated and reference values arise from rounding in the published parameters.
 
+## Acknowledgments
+
+We thank the participants of the [JuliaHEP Workshop 2025](https://indico.cern.ch/e/juliahep2025) for feedback on matrix assembly.
+
 ## API reference
 
 ### Solver
