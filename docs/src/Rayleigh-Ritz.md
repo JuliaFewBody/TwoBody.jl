@@ -136,14 +136,15 @@ BS = BasisSet(
 nothing # hide
 ```
 
-Solve the eigenvalue problem. You should find
+Configure the method and solve the eigenvalue problem. You should find
 ```math
 E_{n=1} = -0.499278~E_\mathrm{h},
 ```
 which is amazingly good for only four basis functions according to [Thijssen(2007)](https://doi.org/10.1017/CBO9781139171397). The exact ground-state energy is ``-0.5~E_\mathrm{h}``.
 
 ```@repl example
-solve(H, BS)
+method = RayleighRitzMethod(BS)
+solve(H, method)
 ```
 
 ## Example of Hydrogen Atom
@@ -297,12 +298,13 @@ The results agree with those in Table 1 of the Supporting Information. The small
 ### Solver
 
 ```@docs; canonical=false
-solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4)
-solve(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4)
-solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4)
-optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
-optimize(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=1, progress=true, optimizer=Optim.NelderMead(), options...)
-optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
+RayleighRitzMethod
+ResultRayleighRitz
+ResultOptimizationRayleighRitz
+solve(hamiltonian::Hamiltonian, method::RayleighRitzMethod; perturbation=Hamiltonian())
+optimize
+expectation
+verification
 ```
 
 ### Basis Set
