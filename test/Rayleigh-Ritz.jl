@@ -57,6 +57,35 @@
   @printf("%3d\t%.9f\t%.9f\t%s\n", 1, numerical, analytical, acceptance ? "✔" :  "✗")
   @test acceptance
 
+  @testset "charmonium" begin
+    masses = (1.836, 1.836)
+    spin = -3
+    Λ = 0.8321
+    λ = 0.1653
+    κ = 0.5069
+    κ′ = 1.8609
+    A = 1.6553
+    B = 0.2204
+    μ = inv(inv(masses[1]) + inv(masses[2]))
+    r₀ = A * (2masses[1] * masses[2] / sum(masses))^(-B)
+    charmonium = Hamiltonian(
+      RestEnergy(m=masses[1]),
+      RestEnergy(m=masses[2]),
+      Kinetic(hbar=1, m=μ),
+      Coulomb(coefficient=-κ),
+      Linear(coefficient=λ),
+      Constant(constant=-Λ),
+      Gaussian(
+        coefficient=2π * κ′ * spin /
+                    (3masses[1] * masses[2] * (sqrt(π) * r₀)^3),
+        exponent=inv(r₀^2),
+      ),
+    )
+
+    result = solve(charmonium, BS; info=0)
+    @test result.E[1] ≈ 3.006976036203 atol=1e-12
+  end
+
   @testset "Pérez-Torres STO-3G contraction" begin
     exponents = (0.109818, 0.405771, 2.227660)
     contraction = (0.444635, 0.535328, 0.154329)

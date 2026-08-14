@@ -254,6 +254,49 @@ save("assets/RR_SO.svg", fig) # hide
 ```
 ![](assets/RR_SO.svg)
 
+## Example of Charmonium
+
+This ``\eta_c`` calculation uses the Cornell potential and parameters of [Meng, Wang, and Oka (2024)](https://doi.org/10.48550/arXiv.2404.01238). Natural units are used, so the result is in GeV.
+
+```@example charmonium
+using TwoBody
+
+masses = (1.836, 1.836)
+spin = -3
+Λ = 0.8321
+λ = 0.1653
+κ = 0.5069
+κ′ = 1.8609
+A = 1.6553
+B = 0.2204
+μ = inv(inv(masses[1]) + inv(masses[2]))
+r₀ = A * (2masses[1] * masses[2] / sum(masses))^(-B)
+
+H = Hamiltonian(
+  RestEnergy(m=masses[1]),
+  RestEnergy(m=masses[2]),
+  Kinetic(hbar=1, m=μ),
+  Coulomb(coefficient=-κ),
+  Linear(coefficient=λ),
+  Constant(constant=-Λ),
+  Gaussian(
+    coefficient=2π * κ′ * spin /
+                (3masses[1] * masses[2] * (sqrt(π) * r₀)^3),
+    exponent=inv(r₀^2),
+  ),
+)
+
+BS = BasisSet(
+  SimpleGaussianBasis(13.00773),
+  SimpleGaussianBasis(1.962079),
+  SimpleGaussianBasis(0.444529),
+  SimpleGaussianBasis(0.1219492),
+)
+
+result = solve(H, BS; info=0)
+round(result.E[1]; digits=6)
+```
+
 ## STO-3G
 
 This example reproduces the STO-3G calculation for hydrogen reported by [Pérez-Torres (2019)](https://doi.org/10.1021/acs.jchemed.8b00959). In the contracted calculation, the published coefficients are held fixed, and the resulting contracted function is supplied to the solver. In the uncontracted calculation, the three primitive functions are supplied separately, allowing the Rayleigh–Ritz solver to optimize their linear coefficients.
