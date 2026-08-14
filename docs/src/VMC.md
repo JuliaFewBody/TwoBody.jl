@@ -100,8 +100,7 @@ Because successive Markov-chain samples are correlated, the naive `standard_erro
    arXiv:1607.07892 (2016).
 5. J. M. Thijssen,
    [*Computational Physics*, 2nd ed.](https://doi.org/10.1017/CBO9781139171397),
-   Cambridge University Press (2007);
-   邦訳: 松田和典, 道廣嘉隆, 谷村吉隆, 高須昌子, 吉江友照 訳, 『計算物理学』, 丸善出版 (2012).
+   Cambridge University Press (2007).
 
 ## API reference
 

@@ -98,7 +98,7 @@ To register a release in the [General](https://github.com/JuliaRegistries/Genera
 
 ## Architecture
 
-`src/TwoBody.jl` defines the `TwoBody` module and includes the source files in dependency order. `Hamiltonian.jl` defines the shared problem representation. `Basis.jl` supports the Rayleigh–Ritz implementation, and `FDM.jl` supplies the discretization used by the variational neural-network method. The solver files extend `solve` for their respective method types.
+`src/TwoBody.jl` defines the `TwoBody` module and includes the source files in dependency order. `Hamiltonian.jl` defines the shared problem representation. `Basis.jl` supports Rayleigh–Ritz and GEM, and `FDM.jl` supplies the discretization used by the variational neural-network method. The solver files extend `solve` for their respective method types.
 
 ```mermaid
 ---
@@ -111,6 +111,7 @@ flowchart TD
   D["DB.jl"]
   B["Basis.jl"]
   R["Rayleigh-Ritz.jl"]
+  G["GEM.jl"]
   F["FDM.jl"]
   Q["QTT.jl"]
   N["VNN.jl"]
@@ -118,8 +119,9 @@ flowchart TD
   T["TwoBody.jl"]
 
   H --> D
-  H --> R & F & Q & N & V
-  B --> R
+  H --> R & G & F & Q & N & V
+  B --> R & G
+  R --> G
   F --> N
-  H & D & B & R & F & Q & N & V --> T
+  H & D & B & R & G & F & Q & N & V --> T
 ```
