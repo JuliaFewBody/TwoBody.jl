@@ -254,47 +254,97 @@ save("assets/RR_SO.svg", fig) # hide
 ```
 ![](assets/RR_SO.svg)
 
-## Example of Charmonium
+## Examples of Hadron Spectroscopy
 
-This ``\eta_c`` calculation uses the Cornell potential and parameters of [Meng, Wang, and Oka (2024)](https://doi.org/10.48550/arXiv.2404.01238). Natural units are used, so the result is in GeV.
+Natural units are used below; masses are displayed in MeV.
 
-```@example charmonium
+### ``\Lambda_c(1/2^+)``
+
+Parameters follow [Kim, Hiyama, Oka, and Suzuki (2020)](https://doi.org/10.1103/PhysRevD.102.014004).
+
+```@example lambda_c
 using TwoBody
 
-masses = (1.836, 1.836)
-spin = -3
-Λ = 0.8321
-λ = 0.1653
-κ = 0.5069
-κ′ = 1.8609
-A = 1.6553
-B = 0.2204
-μ = inv(inv(masses[1]) + inv(masses[2]))
-r₀ = A * (2masses[1] * masses[2] / sum(masses))^(-B)
+Mqq = 0.725
+Mc = 1.750
+μ = inv(inv(Mqq) + inv(Mc))
+α = 0.06 / μ
 
 H = Hamiltonian(
-  RestEnergy(m=masses[1]),
-  RestEnergy(m=masses[2]),
+  RestEnergy(m=Mqq),
+  RestEnergy(m=Mc),
+  Kinetic(hbar=1, m=μ),
+  Coulomb(coefficient=-α),
+  Linear(coefficient=0.165),
+  Constant(constant=-0.83116597),
+)
+BS = GeometricBasisSet(GaussianBasis, 0.01, 9.0, 40)
+
+round(1000 * solve(H, BS; info=0).E[1]; digits=3)
+```
+
+### ``\eta_c(1S)``: Meng, Wang, and Oka
+
+Parameters follow [Meng, Wang, and Oka (2024)](https://doi.org/10.48550/arXiv.2404.01238).
+
+```@example meng_charmonium
+using TwoBody
+
+m₁ = 1.836
+m₂ = 1.836
+κ = 0.5069
+κ′ = 1.8609
+spin = -3
+μ = inv(inv(m₁) + inv(m₂))
+r₀ = 1.6553 * (2m₁ * m₂ / (m₁ + m₂))^(-0.2204)
+
+H = Hamiltonian(
+  RestEnergy(m=m₁),
+  RestEnergy(m=m₂),
   Kinetic(hbar=1, m=μ),
   Coulomb(coefficient=-κ),
-  Linear(coefficient=λ),
-  Constant(constant=-Λ),
+  Linear(coefficient=0.1653),
+  Constant(constant=-0.8321),
   Gaussian(
-    coefficient=2π * κ′ * spin /
-                (3masses[1] * masses[2] * (sqrt(π) * r₀)^3),
+    coefficient=2π * κ′ * spin / (3m₁ * m₂ * (sqrt(π) * r₀)^3),
     exponent=inv(r₀^2),
   ),
 )
+BS = GeometricBasisSet(GaussianBasis, 0.1, 80.0, 20)
 
-BS = BasisSet(
-  SimpleGaussianBasis(13.00773),
-  SimpleGaussianBasis(1.962079),
-  SimpleGaussianBasis(0.444529),
-  SimpleGaussianBasis(0.1219492),
+round(1000 * solve(H, BS; info=0).E[1]; digits=3)
+```
+
+### ``\eta_c(1S)``: Arifi, Happ, Ohno, and Oka
+
+Parameters follow [Arifi, Happ, Ohno, and Oka (2024)](https://arxiv.org/abs/2401.07933).
+
+```@example arifi_charmonium
+using TwoBody
+
+m₁ = 1.515
+m₂ = 1.515
+αs = 0.285
+spin = -3/4
+μ = inv(inv(m₁) + inv(m₂))
+λ = 1.437 * sqrt(μ)
+
+H = Hamiltonian(
+  RestEnergy(m=m₁),
+  RestEnergy(m=m₂),
+  RelativisticKinetic(m=m₁),
+  RelativisticKinetic(m=m₂),
+  Constant(constant=-0.189),
+  Linear(coefficient=0.092),
+  Coulomb(coefficient=-4αs/3),
+  Gaussian(
+    coefficient=32π * αs * (λ / sqrt(π))^3 * spin / (9m₁ * m₂),
+    exponent=λ^2,
+  ),
 )
+BS = GeometricBasisSet(GaussianBasis, 0.358, 2.720, 10)
 
-result = solve(H, BS; info=0)
-round(result.E[1]; digits=6)
+round(1000 * solve(H, BS; info=0).E[1]; digits=3)
 ```
 
 ## STO-3G
