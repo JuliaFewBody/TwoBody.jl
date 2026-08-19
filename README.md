@@ -1,11 +1,11 @@
 # TwoBody.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://ohno.github.io/TwoBody.jl/stable/)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://ohno.github.io/TwoBody.jl/dev/)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliafewbody.github.io/TwoBody.jl/stable/)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliafewbody.github.io/TwoBody.jl/dev/)
 [![Citation](https://img.shields.io/badge/citation-BibTeX-778899)](CITATION.bib)
-[![License](https://img.shields.io/github/license/ohno/TwoBody.jl)](LICENSE)
-[![Build Status](https://github.com/ohno/TwoBody.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/ohno/TwoBody.jl/actions/workflows/CI.yml?query=branch%3Amain)
-[![Coverage](https://codecov.io/gh/ohno/TwoBody.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/ohno/TwoBody.jl)
+[![License](https://img.shields.io/github/license/JuliaFewBody/TwoBody.jl)](LICENSE)
+[![Build Status](https://github.com/JuliaFewBody/TwoBody.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JuliaFewBody/TwoBody.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/JuliaFewBody/TwoBody.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaFewBody/TwoBody.jl)
 [![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-contributor's%20guide-blueviolet)](https://github.com/SciML/ColPrac)
 
 ## Quick Start
@@ -38,7 +38,7 @@ solve(H, BS)
 
 ## Documentation
 
-- Home: https://ohno.github.io/TwoBody.jl
+- Home: https://juliafewbody.github.io/TwoBody.jl
 - User Guide:
   - [Hamiltonian](https://juliafewbody.github.io/TwoBody.jl/dev/Hamiltonian/)
   - [Database](https://juliafewbody.github.io/TwoBody.jl/dev/DB/)
@@ -47,7 +47,7 @@ solve(H, BS)
   - [Free Complement Method](https://juliafewbody.github.io/TwoBody.jl/dev/Free-Complement/)
   - [Finite Difference Method](https://juliafewbody.github.io/TwoBody.jl/dev/FDM/)
   - [Quantics Tensor Train](https://juliafewbody.github.io/TwoBody.jl/dev/QTT/)
-  - [Variational Neural Network](https://juliafewbody.github.io/TwoBody.jl/dev/VMC/)
   - [Variational Monte Carlo](https://juliafewbody.github.io/TwoBody.jl/dev/VNN/)
-- Developer Guide: https://ohno.github.io/TwoBody.jl/dev/developer
-- API Reference: https://ohno.github.io/TwoBody.jl/dev/api
+  - [Variational Neural Network](https://juliafewbody.github.io/TwoBody.jl/dev/VMC/)
+- Developer Guide: https://juliafewbody.github.io/TwoBody.jl/dev/developer
+- API Reference: https://juliafewbody.github.io/TwoBody.jl/dev/api
