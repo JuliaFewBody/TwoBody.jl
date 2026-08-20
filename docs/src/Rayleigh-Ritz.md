@@ -200,6 +200,8 @@ save("assets/RR_HA.svg", fig) # hide
 ```
 ![](assets/RR_HA.svg)
 
+The numerical solution agrees well with the analytical solution even in the excited state.
+
 ## Example of Spherical Oscillator
 
 Analytical solutions are implemented in [spherical oscillator](https://ohno.github.io/Antique.jl/stable/SphericalOscillator/).
@@ -254,7 +256,9 @@ save("assets/RR_SO.svg", fig) # hide
 ```
 ![](assets/RR_SO.svg)
 
-## STO-3G
+The numerical solution agrees well with the analytical solution even in the excited state.
+
+## Example of STO-3G
 
 This example reproduces the STO-3G calculation for hydrogen reported by [Pérez-Torres (2019)](https://doi.org/10.1021/acs.jchemed.8b00959). In the contracted calculation, the published coefficients are held fixed, and the resulting contracted function is supplied to the solver. In the uncontracted calculation, the three primitive functions are supplied separately, allowing the Rayleigh–Ritz solver to optimize their linear coefficients.
 

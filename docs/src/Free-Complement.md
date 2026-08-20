@@ -153,17 +153,6 @@ for reference_energy in reference_energies
 end
 ```
 
-You can also generate a complement from one basis function:
-
-```@repl fc-single
-using TwoBody
-H = Hamiltonian(
-  Kinetic(hbar = 1, m = 1),
-  Coulomb(coefficient = -1),
-)
-FC(H, PowerSlaterBasis(0, 1.5))
-```
-
 ## Acknowledgments
 
 This work was developed on the basis of the fourth lecture in Section I of the

@@ -17,7 +17,7 @@ E[\psi_\theta] =
 where the grid, Hamiltonian matrix ``\pmb{H}``, and radial Jacobian ``\pmb{J}``
 are provided by `FiniteDifferenceMethod`.
 
-## Standard model
+## Usage
 
 The two-argument `solve` method constructs a Lux network from `architecture`.
 

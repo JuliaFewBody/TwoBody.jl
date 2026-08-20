@@ -49,7 +49,12 @@ nothing # hide
 Define the Gaussian basis set.
 
 ```@example gem
-BS = GeometricBasisSet(GaussianBasis, 0.1, 10.0, 20)
+BS = BasisSet(
+  GaussianBasis(13.00773),
+  GaussianBasis(1.962079),
+  GaussianBasis(0.444529),
+  GaussianBasis(0.1219492),
+)
 nothing # hide
 ```
 

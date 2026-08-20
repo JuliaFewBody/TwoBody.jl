@@ -38,6 +38,24 @@ BS = BasisSet(
 solve(H, BS)
 ```
 
+## Quick Start
+
+Install TwoBody.jl from the Julia REPL or a notebook:
+
+```julia
+import Pkg; Pkg.add(url="https://github.com/JuliaFewBody/TwoBody.jl.git")
+```
+
+Load the package and solve the hydrogen ground state:
+
+```julia
+using TwoBody
+
+H = Hamiltonian(Kinetic(hbar=1, m=1), Coulomb(coefficient=-1))
+BS = BasisSet(SimpleGaussianBasis(13.00773), SimpleGaussianBasis(1.962079))
+solve(H, BS; info=0).E[1]
+```
+
 ## Documentation
 
 - Home: https://juliafewbody.github.io/TwoBody.jl
