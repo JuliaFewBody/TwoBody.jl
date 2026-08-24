@@ -63,12 +63,19 @@ Thus, when the QTT ranks remain moderate, storage grows as ``O(\log N)`` instead
 
 ## Usage
 
+Install and load TensorTrainNumerics.jl to activate the QTT extension.
+
+```julia
+import Pkg; Pkg.add("TensorTrainNumerics")
+```
+
 For the three-dimensional spherical oscillator in atomic units, configure the QTT
 grid with `quantics`; the number of interior grid points is `2^quantics`. Here a
 coarse grid is used so the example runs quickly.
 
 ```@example qtt
 using TwoBody
+using TensorTrainNumerics
 using Random
 
 Random.seed!(1234)
@@ -152,8 +159,6 @@ organizers for their contributions and support.
 ```@docs; canonical=false
 QuanticsTensorTrainMethod
 solve(hamiltonian::Hamiltonian, method::QuanticsTensorTrainMethod)
-QTTVector
-QTTMatrix
 order
 ranks
 qttvalue

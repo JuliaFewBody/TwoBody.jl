@@ -12,6 +12,55 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
+  core:
+    name: Core installation without optional dependencies
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1.10'
+      - uses: julia-actions/cache@v2
+      - name: Install and load the core package
+        shell: julia --startup-file=no --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.activate(mktempdir())
+          Pkg.develop(path=pwd())
+          Pkg.instantiate()
+
+          optional = Set(["Lux", "Optimisers", "TensorTrainNumerics", "Zygote"])
+          installed = Set(info.name for info in values(Pkg.dependencies()))
+          @assert isempty(intersect(optional, installed))
+
+          using TwoBody
+          @assert Base.get_extension(TwoBody, :TwoBodyQTTExt) === nothing
+          @assert Base.get_extension(TwoBody, :TwoBodyVNNExt) === nothing
+          hamiltonian = TwoBody.Hamiltonian(TwoBody.Kinetic())
+
+          function assert_unavailable(f)
+            try
+              f()
+            catch exception
+              @assert exception isa ArgumentError
+              return
+            end
+            error("optional solver unexpectedly available")
+          end
+
+          assert_unavailable() do
+            TwoBody.solve(
+              hamiltonian,
+              TwoBody.QuanticsTensorTrainMethod(quantics=2),
+            )
+          end
+          assert_unavailable() do
+            TwoBody.solve(hamiltonian, TwoBody.VNN(maxiters=0))
+          end
+
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }}
     runs-on: ${{ matrix.os }}

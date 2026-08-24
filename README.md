@@ -2,6 +2,11 @@
 
 TwoBody.jl: a Julia package for quantum mechanical two-body problems
 
+QTT and variational-neural-network solvers are optional. Load
+TensorTrainNumerics.jl to activate QTT support, or load Lux.jl, Optimisers.jl,
+and Zygote.jl to activate VNN support. These packages are not installed with the
+TwoBody.jl core.
+
 ## Documentation
 
 - Home: https://juliafewbody.github.io/TwoBody.jl
