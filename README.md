@@ -1,5 +1,6 @@
 # TwoBody.jl
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1oc8hfyS4gaCxNvaY00rUiiDmGMPKpfxC?usp=sharing)
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliafewbody.github.io/TwoBody.jl/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliafewbody.github.io/TwoBody.jl/dev/)
 [![Citation](https://img.shields.io/badge/citation-BibTeX-778899)](CITATION.bib)
