@@ -263,7 +263,7 @@ is written as
 and the finite difference for the second derivative,
 
 ```math
-\frac{\mathrm{d}^{2}}{\mathrm{d}r^{2}}(r) = \frac{\psi(r+\Delta r) - 2f(r) + \psi(r-\Delta r)}{\Delta r^{2}} + O(\Delta r^{2}).
+\frac{\mathrm{d}^{2}\psi}{\mathrm{d}r^{2}}(r) = \frac{\psi(r+\Delta r) - 2\psi(r) + \psi(r-\Delta r)}{\Delta r^{2}} + O(\Delta r^{2}).
 ```
 
 is written as
