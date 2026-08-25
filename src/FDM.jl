@@ -327,7 +327,7 @@ is written as
        0 & 0 & 2/r_3 & \ldots \\
       \vdots & \vdots & \vdots & \ddots \\
     \end{array}\right)
-    \frac{1}{\Delta r}
+    \frac{1}{2\Delta r}
     \left(\begin{array}{ccccccc}
        0 &  1 &  0 & \ldots \\
       -1 &  0 &  1 & \ldots \\
