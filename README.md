@@ -52,6 +52,7 @@ TwoBody.jl core.
   - [Database](https://juliafewbody.github.io/TwoBody.jl/dev/DB/)
   - [Rayleigh-Ritz Method](https://juliafewbody.github.io/TwoBody.jl/dev/Rayleigh-Ritz/)
   - [Gaussian Expansion Method](https://juliafewbody.github.io/TwoBody.jl/dev/GEM)
+  - [Bayesian Variational Method](https://juliafewbody.github.io/TwoBody.jl/dev/BVM/)
   - [Free Complement Method](https://juliafewbody.github.io/TwoBody.jl/dev/Free-Complement/)
   - [Finite Difference Method](https://juliafewbody.github.io/TwoBody.jl/dev/FDM/)
   - [Quantics Tensor Train](https://juliafewbody.github.io/TwoBody.jl/dev/QTT/)
