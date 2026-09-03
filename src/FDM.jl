@@ -78,8 +78,37 @@ function solve(hamiltonian::Hamiltonian, method::FiniteDifferenceMethod; perturb
   if method.solver == :LinearAlgebra
     E, C = LinearAlgebra.eigen(Matrix{Float64}(H))
   elseif method.solver == :ArnoldiMethod
-    decomp, history = ArnoldiMethod.partialschur(H, nev=nₘₐₓ, tol=1e-9, which=:SR)
-    E, C = ArnoldiMethod.partialeigen(decomp)
+    matrix_size = size(H, 1)
+    mindim = min(matrix_size, max(50, 10 * nₘₐₓ))
+    maxdim = min(matrix_size, max(100, 20 * nₘₐₓ))
+    mindim <= maxdim || (mindim = maxdim = matrix_size)
+    decomp, history = ArnoldiMethod.partialschur(
+      H;
+      nev=nₘₐₓ,
+      tol=1e-9,
+      which=:SR,
+      mindim=mindim,
+      maxdim=maxdim,
+      restarts=500,
+    )
+    if !history.converged
+      @warn "ArnoldiMethod did not converge within the default Krylov subspace; retrying with a larger subspace."
+      decomp, history = ArnoldiMethod.partialschur(
+        H;
+        nev=nₘₐₓ,
+        tol=1e-9,
+        which=:SR,
+        mindim=min(matrix_size, max(100, 10 * nₘₐₓ)),
+        maxdim=min(matrix_size, max(200, 20 * nₘₐₓ)),
+        restarts=500,
+      )
+    end
+    if !history.converged
+      @warn "ArnoldiMethod did not converge; falling back to a dense LinearAlgebra solve."
+      E, C = LinearAlgebra.eigen(Matrix{Float64}(H))
+    else
+      E, C = ArnoldiMethod.partialeigen(decomp)
+    end
   else
     error("Unknown solver: $(method.solver)")
   end
