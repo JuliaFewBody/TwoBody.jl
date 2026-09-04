@@ -57,6 +57,66 @@
   @printf("%3d\t%.9f\t%.9f\t%s\n", 1, numerical, analytical, acceptance ? "✔" :  "✗")
   @test acceptance
 
+  @testset "hadron spectroscopy" begin
+    Mqq = 0.725
+    Mc = 1.750
+    μ = inv(inv(Mqq) + inv(Mc))
+    lambda_c = Hamiltonian(
+      RestEnergy(m=Mqq),
+      RestEnergy(m=Mc),
+      Kinetic(hbar=1, m=μ),
+      Coulomb(coefficient=-0.06 / μ),
+      Linear(coefficient=0.165),
+      Constant(constant=-0.83116597),
+    )
+    lambda_c_basis = GeometricBasisSet(GaussianBasis, 0.01, 9.0, 40)
+    @test solve(lambda_c, lambda_c_basis; info=0).E[1] ≈ 2.286 atol=1e-6
+
+    m₁ = 1.836
+    m₂ = 1.836
+    κ = 0.5069
+    κ′ = 1.8609
+    spin = -3
+    μ = inv(inv(m₁) + inv(m₂))
+    r₀ = 1.6553 * (2m₁ * m₂ / (m₁ + m₂))^(-0.2204)
+    meng = Hamiltonian(
+      RestEnergy(m=m₁),
+      RestEnergy(m=m₂),
+      Kinetic(hbar=1, m=μ),
+      Coulomb(coefficient=-κ),
+      Linear(coefficient=0.1653),
+      Constant(constant=-0.8321),
+      Gaussian(
+        coefficient=2π * κ′ * spin / (3m₁ * m₂ * (sqrt(π) * r₀)^3),
+        exponent=inv(r₀^2),
+      ),
+    )
+    meng_basis = GeometricBasisSet(GaussianBasis, 0.1, 80.0, 20)
+    @test solve(meng, meng_basis; info=0).E[1] ≈ 3.005 atol=1e-3
+
+    m₁ = 1.515
+    m₂ = 1.515
+    αs = 0.285
+    spin = -3/4
+    μ = inv(inv(m₁) + inv(m₂))
+    λ = 1.437 * sqrt(μ)
+    arifi = Hamiltonian(
+      RestEnergy(m=m₁),
+      RestEnergy(m=m₂),
+      RelativisticKinetic(m=m₁),
+      RelativisticKinetic(m=m₂),
+      Constant(constant=-0.189),
+      Linear(coefficient=0.092),
+      Coulomb(coefficient=-4αs/3),
+      Gaussian(
+        coefficient=32π * αs * (λ / sqrt(π))^3 * spin / (9m₁ * m₂),
+        exponent=λ^2,
+      ),
+    )
+    arifi_basis = GeometricBasisSet(GaussianBasis, 0.358, 2.720, 10)
+    @test solve(arifi, arifi_basis; info=0).E[1] ≈ 3.019 atol=2e-3
+  end
+
   @testset "Pérez-Torres STO-3G contraction" begin
     exponents = (0.109818, 0.405771, 2.227660)
     contraction = (0.444635, 0.535328, 0.154329)
