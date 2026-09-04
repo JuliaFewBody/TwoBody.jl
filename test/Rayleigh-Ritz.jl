@@ -57,6 +57,16 @@
   @printf("%3d\t%.9f\t%.9f\t%s\n", 1, numerical, analytical, acceptance ? "✔" :  "✗")
   @test acceptance
 
+  @testset "Weinstein bound" begin
+    bound = weinstein(res)
+    @test bound.E == res.E[1]
+    @test bound.lower < -0.5 < bound.upper
+    @test bound.variance >= 0
+    @test sprint(show, bound) == "WeinsteinBound(E=$(bound.E), lower=$(bound.lower), upper=$(bound.upper))"
+    @test_throws BoundsError weinstein(res; n=0)
+    @test_throws ArgumentError weinstein(solve(H, BS; info=0))
+  end
+
   @testset "Pérez-Torres STO-3G contraction" begin
     exponents = (0.109818, 0.405771, 2.227660)
     contraction = (0.444635, 0.535328, 0.154329)
