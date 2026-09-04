@@ -22,4 +22,5 @@ using Random
   include("QTT.jl")
   include("VNN.jl")
   include("VMC.jl")
+  include("DMC.jl")
 end
