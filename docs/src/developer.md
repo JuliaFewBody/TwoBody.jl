@@ -84,11 +84,32 @@ An unsupported operator–solver combination should fail explicitly rather than 
 
 ### Solvers
 
-1. Create `src/MethodName.jl` and define the method type and its `solve(hamiltonian::Hamiltonian, method::MethodName; ...)` implementation.
-2. Include the source file from `src/TwoBody.jl` after its dependencies.
-3. Create `test/MethodName.jl` and include it from `test/runtests.jl`.
-4. Create `docs/src/MethodName.md` and add it to the `pages` list in `docs/make.jl`.
-5. Run the complete test suite and documentation build as described in [Development Flow](@ref).
+Use this minimal structure in `src/MethodName.jl`:
+
+```julia
+export NewMethod
+
+struct NewMethod
+  # solver settings
+end
+
+struct ResultNewMethod
+  # calculation results
+end
+
+function solve(hamiltonian::Hamiltonian, method::NewMethod)
+  # calculation
+  return ResultNewMethod()
+end
+
+function expectation(result::ResultNewMethod, operator::Operator)
+  # calculation
+end
+```
+
+Add `Base.string`, `Base.show`, or `verification` only when the method needs custom output or diagnostics. Keep calculations outside these display methods.
+
+Include the source from `src/TwoBody.jl`, add a matching test file to `test/runtests.jl`, and add the method page to `docs/make.jl`. Then run the checks in [Development Flow](@ref).
 
 ## Versioning and Registering (for Maintainers)
 
