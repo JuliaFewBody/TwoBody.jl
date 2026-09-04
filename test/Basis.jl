@@ -29,6 +29,12 @@
     @test (@inferred TwoBody.φ(typed, 0.3)) isa Float64
   end
 
+  @testset "CustomBasis" begin
+    basis = CustomBasis(r -> exp(-r^2))
+    @test TwoBody.φ(basis, 0.3) ≈ exp(-0.3^2)
+    @test TwoBody.φ(CustomBasis(f=r -> r), 0.5) === 0.5
+  end
+
   @testset "ContractedBasis" begin
     primitives = PrimitiveBasis[SimpleGaussianBasis(1.0), SimpleGaussianBasis(2.0)]
     contracted = ContractedBasis(Number[1, 0.5], primitives)
