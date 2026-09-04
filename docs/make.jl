@@ -22,6 +22,7 @@ pages = gem_only ?
         "Database" => "DB.md",
         "Rayleigh-Ritz Method" => "Rayleigh-Ritz.md",
         "Gaussian Expansion Method" => "GEM.md",
+        "Explicitly Correlated Gaussians" => "ECG.md",
         "Free Complement Method" => "Free-Complement.md",
         "Finite Difference Method" => "FDM.md",
         "Quantics Tensor Train" => "QTT.md",
