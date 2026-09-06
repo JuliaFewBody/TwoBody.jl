@@ -5,22 +5,29 @@ jobs:
   runic:
     name: Runic
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v6
-      - uses: julia-actions/setup-julia@v2
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
         with:
           version: '1'
       - uses: fredrikekre/runic-action@v1
+        id: runic
         with:
           version: '1'
           format_files: true
       - name: Save formatting patch
-        if: ${{ !cancelled() }}
-        run: git diff --binary --output=runic.patch
-      - uses: actions/upload-artifact@v4
-        if: ${{ !cancelled() }}
+        id: patch
+        if: ${{ !cancelled() && steps.runic.outcome == 'failure' }}
+        run: |
+          git diff --binary --output=runic.patch
+          if test -s runic.patch; then
+            echo 'has_changes=true' >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() && steps.patch.outputs.has_changes == 'true' }}
         with:
           name: runic-formatting-patch
           path: runic.patch
