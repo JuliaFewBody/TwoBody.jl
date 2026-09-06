@@ -69,6 +69,33 @@ This is the typical workflow for making changes.
 
 8. Submit a pull request on GitHub.
 
+## GitHub Actions
+
+CI tests Julia 1.10 and 1.12, checks installation without optional solver dependencies,
+and builds the documentation. The Julia 1.10 test job collects coverage for `src` and
+`ext`, converts it to `lcov.info`, and uploads it to Codecov. Pushes and pull requests
+from this repository authenticate using GitHub OIDC; no `CODECOV_TOKEN` secret is
+needed. Fork pull requests use Codecov's tokenless upload support. Upload errors fail
+the job so that a broken integration is visible.
+
+To check formatting, run **Runic formatting** from the repository's Actions tab and
+select the branch to check. The workflow reports formatting differences as a failed
+check and saves a `runic-formatting-patch` artifact. Download and extract the artifact,
+then apply `runic.patch` with `git apply runic.patch` in a checkout of the same commit.
+Review and commit the changes as usual. Formatting runs only on manual dispatch.
+
+CompatHelper runs daily and can also be dispatched manually. In **Settings > Actions >
+General**, enable **Allow GitHub Actions to create and approve pull requests** so that
+it can open dependency updates. If GitHub disables its schedule after repository
+inactivity, re-enable the workflow in the Actions tab. The workflow uses
+`DOCUMENTER_KEY` as `COMPATHELPER_PRIV` so its pull requests can trigger CI.
+
+TagBot uses `GITHUB_TOKEN` to create releases and `DOCUMENTER_KEY` to push tags that
+trigger documentation builds. The key must be configured as a deploy key with write
+access. Releases for commits that modify workflow files may require manual creation
+or a personal access token with workflow scope; see the
+[TagBot troubleshooting guide](https://github.com/JuliaRegistries/TagBot#commits-that-modify-workflow-files).
+
 ## Adding New Operators and Solvers
 
 TwoBody.jl uses Julia's multiple dispatch to keep the physical problem separate from its numerical solution.

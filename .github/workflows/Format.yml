@@ -1,0 +1,28 @@
+name: Runic formatting
+on:
+  workflow_dispatch:
+jobs:
+  runic:
+    name: Runic
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v6
+      - uses: julia-actions/setup-julia@v2
+        with:
+          version: '1'
+      - uses: fredrikekre/runic-action@v1
+        with:
+          version: '1'
+          format_files: true
+      - name: Save formatting patch
+        if: ${{ !cancelled() }}
+        run: git diff --binary --output=runic.patch
+      - uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: runic-formatting-patch
+          path: runic.patch
+          retention-days: 7
+          if-no-files-found: error
