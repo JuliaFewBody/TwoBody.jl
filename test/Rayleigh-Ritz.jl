@@ -240,5 +240,11 @@
     gaussian_result = solve(gaussian_H, BS, info=1)
     @test custom_result.H ≈ gaussian_result.H rtol=1e-9
     @test custom_result.E ≈ gaussian_result.E rtol=1e-9
+
+    custom_basis = BasisSet((CustomBasis(r -> exp(-b.a * r^2)) for b in BS.basis)...)
+    custom_basis_result = solve(gaussian_H, custom_basis, info=1)
+    @test custom_basis_result.S ≈ gaussian_result.S rtol=1e-9
+    @test custom_basis_result.H ≈ gaussian_result.H rtol=1e-9
+    @test custom_basis_result.E ≈ gaussian_result.E rtol=1e-9
   end
 end
