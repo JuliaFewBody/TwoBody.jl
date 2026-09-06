@@ -1,3 +1,13 @@
+# For a spherical Gaussian, angular integration gives 4π j₀(kr).
+# Keep the radial integral numerical and compare it with the analytic transform.
+function gaussian_fourier_integral(b, k)
+  integral, _ = quadgk(
+    r -> r^2 * TwoBody.φ(b, r) * sphericalbesselj(0, k * r),
+    0, Inf; atol=1e-9, rtol=1e-8,
+  )
+  return sqrt(2 / π) * integral
+end
+
 @testset "Basis.jl" begin
 
   BS = BasisSet(
@@ -65,30 +75,34 @@
     @test_throws ArgumentError ContractedBasis([1.0], Any["invalid"])
   end
 
-  println("φ(r) = exp(-ar²)")
-  println("φ(k) = exp(-k²/4a) / (2a)^(3/2)")
-  println("φ(k) = 1/√2π³ ∫ φ(r) eⁱᵏʳ r²sin(θ)drdθdφ")
-  println("    a\t    k\t θk\t φk\tnumerical  \tanalytical")
-  for b in BS.basis
-    a = b.a
-    for k in [0.0, 3.0, 5.0]
-    for θk in [0.0, 0.5]
-    for φk in [0.0, 1.0]
-      numerical = abs(
-        quadgk(φ ->
-        quadgk(θ ->
-        quadgk(r ->
-          (2π)^(-3/2) * TwoBody.φ(b,r) * TwoBody.expikr(k,θk,φk,r,θ,φ) * r^2 * sin(θ)
-        , 0, Inf, maxevals=100)[1]
-        , 0,   π, maxevals=20)[1]
-        , 0,  2π, maxevals=40)[1]
-      )
+  @testset "Gaussian Fourier transform" begin
+    println("φ(k) = √(2/π) ∫ r² φ(r) j₀(kr) dr")
+    println("    a\t    k\tnumerical  \tanalytical")
+    for b in BS.basis, k in [0.0, 3.0, 5.0]
+      a = b.a
+      numerical = gaussian_fourier_integral(b, k)
       analytical = exp(-k^2/4/a) / (2*a)^(3/2)
       acceptance = abs(analytical)<1e-5 ? isapprox(analytical, numerical, atol=1e-2) : isapprox(analytical, numerical, rtol=1e-2)
       @test acceptance
-      @printf("%5.2f\t%5.2f\t%.1f\t%.1f\t%.9f\t%.9f\t%s\n", a, k, θk, φk, numerical, analytical, acceptance ? "✔" :  "✗")
+      @printf("%5.2f\t%5.2f\t%.9f\t%.9f\t%s\n", a, k, numerical, analytical, acceptance ? "✔" :  "✗")
     end
-    end
+  end
+
+  @testset "expikr" begin
+    # Include the original momentum directions, Cartesian axes, and an oblique
+    # spatial direction. Compare the complex phase, not only its magnitude.
+    momentum_directions = (
+      (0.0, 0.0), (0.0, 1.0), (0.5, 0.0), (0.5, 1.0),
+      (π / 2, π / 2), (π, 0.0),
+    )
+    spatial_directions = (
+      (0.0, 0.0), (π / 2, 0.0), (π / 2, π / 2), (π, 0.0), (1.2, 2.3),
+    )
+    for k in (0.0, 3.0, 5.0), r in (0.0, 0.3, 2.0)
+      for (θk, φk) in momentum_directions, (θr, φr) in spatial_directions
+        cosγ = cos(θk) * cos(θr) + sin(θk) * sin(θr) * cos(φk - φr)
+        @test TwoBody.expikr(k, θk, φk, r, θr, φr) ≈ cis(k * r * cosγ) atol=1e-12 rtol=1e-12
+      end
     end
   end
 

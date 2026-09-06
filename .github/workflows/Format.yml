@@ -1,0 +1,35 @@
+name: Runic formatting
+on:
+  workflow_dispatch:
+jobs:
+  runic:
+    name: Runic
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: '1'
+      - uses: fredrikekre/runic-action@v1
+        id: runic
+        with:
+          version: '1'
+          format_files: true
+      - name: Save formatting patch
+        id: patch
+        if: ${{ !cancelled() && steps.runic.outcome == 'failure' }}
+        run: |
+          git diff --binary --output=runic.patch
+          if test -s runic.patch; then
+            echo 'has_changes=true' >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/upload-artifact@v7
+        if: ${{ !cancelled() && steps.patch.outputs.has_changes == 'true' }}
+        with:
+          name: runic-formatting-patch
+          path: runic.patch
+          retention-days: 7
+          if-no-files-found: error
