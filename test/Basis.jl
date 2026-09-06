@@ -1,3 +1,27 @@
+# Tensor-product quadrature avoids compiling three nested adaptive integrators.
+# These orders resolve all exponents, momenta, and directions checked below.
+function gaussian_fourier_integral(b, k, θk, φk)
+  radial_nodes, radial_weights = QuadGK.gauss(192)
+  polar_nodes, polar_weights = QuadGK.gauss(64)
+  azimuthal_nodes, azimuthal_weights = QuadGK.gauss(64)
+  integral = 0.0im
+  for (x, wx) in zip(radial_nodes, radial_weights)
+    # Map [-1, 1] to [0, ∞) with r = t / (1 - t), t = (x + 1) / 2.
+    t = (x + 1) / 2
+    r = t / (1 - t)
+    radial_factor = wx / (2 * (1 - t)^2) * TwoBody.φ(b, r) * r^2
+    for (y, wy) in zip(polar_nodes, polar_weights)
+      θ = π * (y + 1) / 2
+      polar_factor = wy * π / 2 * sin(θ)
+      for (z, wz) in zip(azimuthal_nodes, azimuthal_weights)
+        φ = π * (z + 1)
+        integral += radial_factor * polar_factor * wz * π * TwoBody.expikr(k, θk, φk, r, θ, φ)
+      end
+    end
+  end
+  return abs((2π)^(-3/2) * integral)
+end
+
 @testset "Basis.jl" begin
 
   BS = BasisSet(
@@ -74,15 +98,7 @@
     for k in [0.0, 3.0, 5.0]
     for θk in [0.0, 0.5]
     for φk in [0.0, 1.0]
-      numerical = abs(
-        quadgk(φ ->
-        quadgk(θ ->
-        quadgk(r ->
-          (2π)^(-3/2) * TwoBody.φ(b,r) * TwoBody.expikr(k,θk,φk,r,θ,φ) * r^2 * sin(θ)
-        , 0, Inf, maxevals=100)[1]
-        , 0,   π, maxevals=20)[1]
-        , 0,  2π, maxevals=40)[1]
-      )
+      numerical = gaussian_fourier_integral(b, k, θk, φk)
       analytical = exp(-k^2/4/a) / (2*a)^(3/2)
       acceptance = abs(analytical)<1e-5 ? isapprox(analytical, numerical, atol=1e-2) : isapprox(analytical, numerical, rtol=1e-2)
       @test acceptance
