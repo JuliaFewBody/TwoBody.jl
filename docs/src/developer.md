@@ -132,7 +132,8 @@ To register a release in the [General](https://github.com/JuliaRegistries/Genera
 
 `src/TwoBody.jl` defines the `TwoBody` module and includes the source files in dependency order. `Hamiltonian.jl` defines the shared problem representation. `Basis.jl` supports the Rayleigh–Ritz implementation, and `FDM.jl` supplies the discretization used by the variational neural-network method. The solver files extend `solve` for their respective method types.
 
-```mermaid
+```@raw html
+<pre class="mermaid">
 ---
 config:
   layout: elk
@@ -150,8 +151,16 @@ flowchart TD
   T["TwoBody.jl"]
 
   H --> D
-  H --> R & F & Q & N & V
+  H --> R &amp; F &amp; Q &amp; N &amp; V
   B --> R
   F --> N
-  H & D & B & R & F & Q & N & V --> T
+  H &amp; D &amp; B &amp; R &amp; F &amp; Q &amp; N &amp; V --> T
+</pre>
+<script type="module">
+  // Use the pinned ESM conversion on this page only. The dist bundle's FastDOM
+  // dependency registers anonymous AMD modules and breaks Documenter's math loader.
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.17.2/+esm';
+  mermaid.initialize({ startOnLoad: false, theme: "neutral" });
+  await mermaid.run({ querySelector: '.mermaid' });
+</script>
 ```
