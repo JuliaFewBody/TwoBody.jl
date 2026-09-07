@@ -103,6 +103,12 @@ calculation reproduced here.
 
 ## Example of Charmonium
 
+!!! warning
+    This comparison is currently incorrect. It uses the SGA parameters and
+    result from Arifi et al. rather than reproducing their GEM calculation.
+    The example will be updated after the optimized GEM parameters have been
+    recovered from the calculation notes.
+
 The following calculation uses one Gaussian with ``\nu=0.2443`` and the SGA
 parameters of [Arifi et al.
 (2024)](https://arxiv.org/abs/2401.07933). Natural units are used, so energies
@@ -139,9 +145,6 @@ round(eta_c.E[1] * 1000; digits=6)
 |:--|--:|
 | TwoBody.jl with the parameters above | 3013.183414 |
 | Arifi et al. SGA, Table 2 | 3012 |
-
-The 1.18 MeV difference from the paper table is consistent with using the
-rounded parameters and rounded variational exponent shown above.
 
 ## API reference
 
