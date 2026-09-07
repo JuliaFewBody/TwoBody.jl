@@ -202,7 +202,7 @@ function element(o::Gaussian, b1::GaussianBasis, b2::GaussianBasis)
   return o.coefficient * _normalization_product(b1, b2) * SpecialFunctions.gamma(q) / (2 * (b1.a + b2.a + o.exponent)^q)
 end
 
-function _exp_gaussian_integral(n::Integer, σ::Real, a::Real)
+function _exp_gaussian_integral(n::Integer, σ::Number, a::Real)
   n ≥ 0 || throw(ArgumentError("integral power must be nonnegative"))
   a > 0 || throw(ArgumentError("Gaussian exponent must be positive"))
   i₀ = sqrt(π) * SpecialFunctions.erfcx(σ / (2 * sqrt(a))) / (2 * sqrt(a))
