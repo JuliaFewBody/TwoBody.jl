@@ -21,6 +21,7 @@ pages = gem_only ?
         "Hamiltonian" => "Hamiltonian.md",
         "Database" => "DB.md",
         "Rayleigh-Ritz Method" => "Rayleigh-Ritz.md",
+        "Faddeev-Yakubovsky Method" => "Faddeev-Yakubovsky.md",
         "Gaussian Expansion Method" => "GEM.md",
         "Free Complement Method" => "Free-Complement.md",
         "Finite Difference Method" => "FDM.md",
