@@ -365,11 +365,12 @@ end
 
 function matrix(hamiltonian::Hamiltonian, basisset::BasisSet)
   nₘₐₓ = length(basisset.basis)
-  # H = [element(hamiltonian, basisset.basis[i], basisset.basis[j]) for i=1:nₘₐₓ, j=1:nₘₐₓ]
-  H = Array{Float64}(undef, nₘₐₓ, nₘₐₓ)
-  for j in 1:nₘₐₓ
-    for i in 1:j
-      H[i,j] = element(hamiltonian, basisset.basis[i], basisset.basis[j])
+  H = zeros(Float64, nₘₐₓ, nₘₐₓ)
+  for operator in hamiltonian.terms
+    for j in 1:nₘₐₓ
+      for i in 1:j
+        H[i,j] += element(operator, basisset.basis[i], basisset.basis[j])
+      end
     end
   end
   return LinearAlgebra.Symmetric(H)
