@@ -14,6 +14,19 @@
     solver = :LinearAlgebra,
   )
   res = solve(H, FDM, info=4)
+
+  @test res isa ResultFiniteDifferenceMethod
+  @test occursin("# eigenvalue", string(res))
+  @test sprint(show, res) == string(res)
+
+  compact = solve(H, FDM, info=-1)
+  @test compact isa ResultFiniteDifferenceMethod
+  @test compact.E == res.E
+  @test string(compact) == "ResultFiniteDifferenceMethod(E=$(compact.E))"
+
+  trial = solve(H, r -> exp(-r), FDM, 0)
+  @test trial isa ResultFiniteDifferenceMethod
+  @test string(trial) == "ResultFiniteDifferenceMethod(E=$(trial.E))"
   
   println("<ψₙ|ψₙ> = cₙ' * cₙ = 1")
   println("  i\tnumerical  \tanalytical")
