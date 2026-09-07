@@ -52,9 +52,22 @@ function matrix(o::RestEnergy, method::FiniteDifferenceMethod)
 end
 
 function matrix(o::Kinetic, method::FiniteDifferenceMethod)
-  D  = FiniteDifferenceMatrices.fdmatrix(Int64(length(method.R)), n=1, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
-  D² = FiniteDifferenceMatrices.fdmatrix(Int64(length(method.R)), n=2, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
+  D, D² = _derivative_matrices(method)
   return -o.hbar^2/2/o.m * (D² + SparseArrays.spdiagm(2 ./ method.R) * D - method.l*(method.l+1) * SparseArrays.spdiagm(1 ./ method.R .^ 2))
+end
+
+function _derivative_matrices(method::FiniteDifferenceMethod)
+  n = Int64(length(method.R))
+  D = FiniteDifferenceMatrices.fdmatrix(n, n=1, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
+  D² = FiniteDifferenceMatrices.fdmatrix(n, n=2, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
+
+  if method.direction == :c && iseven(method.l) && 1 < n
+    D[1,1] = -2 / (3method.Δr)
+    D[1,2] = 2 / (3method.Δr)
+    D²[1,1] = -2 / (3method.Δr^2)
+    D²[1,2] = 2 / (3method.Δr^2)
+  end
+  return D, D²
 end
 
 function matrix(o::PotentialTerm, method::FiniteDifferenceMethod)
