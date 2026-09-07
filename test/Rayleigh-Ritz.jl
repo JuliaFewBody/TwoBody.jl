@@ -12,7 +12,14 @@
     SimpleGaussianBasis(0.444529),
     SimpleGaussianBasis(0.1219492),
   )
-  res = solve(H, BS)
+  method = RayleighRitzMethod(BS)
+  res = solve(H, method)
+
+  @test res.method === method
+  @test verification(res).norm ≈ ones(res.nₘₐₓ)
+  @test verification(res).residual ≈ zeros(res.nₘₐₓ) atol=1e-12
+  @test expectation(res, H) ≈ res.E atol=1e-12
+  @test occursin("# verification", string(res))
   
   println("4π×∫|ψ(r)|²r²dr = 1")
   println("  i\tnumerical  \tanalytical")
@@ -109,15 +116,15 @@
     @test uncontracted_result.E[1] ≈ -0.495010 atol=1e-6
     @test uncontracted_result.E[1] < contracted_result.E[1]
 
-    @test contracted_result.expectation[radius][1] ≈ 1.500392 atol=2e-6
-    @test contracted_result.expectation[radius_squared][1] ≈ 2.996124 atol=5e-6
-    @test contracted_result.expectation[inverse_radius][1] ≈ 0.989206 atol=2e-6
-    @test 2 * contracted_result.expectation[H.terms[1]][1] ≈ 0.988596 atol=2e-6
+    @test expectation(contracted_result, radius)[1] ≈ 1.500392 atol=2e-6
+    @test expectation(contracted_result, radius_squared)[1] ≈ 2.996124 atol=5e-6
+    @test expectation(contracted_result, inverse_radius)[1] ≈ 0.989206 atol=2e-6
+    @test 2 * expectation(contracted_result, H.terms[1])[1] ≈ 0.988596 atol=2e-6
 
-    @test uncontracted_result.expectation[radius][1] ≈ 1.514699 atol=1e-6
-    @test uncontracted_result.expectation[radius_squared][1] ≈ 3.046195 atol=1e-6
-    @test uncontracted_result.expectation[inverse_radius][1] ≈ 0.977070 atol=1e-6
-    @test 2 * uncontracted_result.expectation[H.terms[1]][1] ≈ 0.964119 atol=1e-6
+    @test expectation(uncontracted_result, radius)[1] ≈ 1.514699 atol=1e-6
+    @test expectation(uncontracted_result, radius_squared)[1] ≈ 3.046195 atol=1e-6
+    @test expectation(uncontracted_result, inverse_radius)[1] ≈ 0.977070 atol=1e-6
+    @test 2 * expectation(uncontracted_result, H.terms[1])[1] ≈ 0.964119 atol=1e-6
 
     @test contracted_result.S[1,1] ≈ 1.0 atol=2e-6
     @test 4π * quadgk(r -> r^2 * abs2(TwoBody.ψ(contracted_result, r)), 0, Inf)[1] ≈ 1.0 atol=1e-9
@@ -236,9 +243,18 @@
       Gaussian(coefficient=-1, exponent=1),
     )
 
-    custom_result = solve(custom_H, BS, info=1)
-    gaussian_result = solve(gaussian_H, BS, info=1)
+    custom_result = solve(custom_H, BS)
+    gaussian_result = solve(gaussian_H, BS)
     @test custom_result.H ≈ gaussian_result.H rtol=1e-9
     @test custom_result.E ≈ gaussian_result.E rtol=1e-9
+  end
+
+  @testset "Optimization result" begin
+    result = optimize(H, SimpleGaussianBasis(1); progress=false, iterations=5)
+    @test result isa ResultOptimizationRayleighRitz
+    @test result.result isa ResultRayleighRitz
+    @test result.E == result.result.E
+    @test isempty(result.history)
+    @test occursin("# optimizer", string(result))
   end
 end

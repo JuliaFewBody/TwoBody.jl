@@ -72,7 +72,7 @@
   ]
   energies = Float64[]
   for _ in eachindex(expected)
-    push!(energies, solve(hamiltonian, basisset, info=-1).E[1])
+    push!(energies, solve(hamiltonian, basisset).E[1])
     basisset = FC(hamiltonian, basisset)
   end
 
