@@ -333,7 +333,7 @@ function solve(
   perturbation::Hamiltonian=Hamiltonian(),
   info::Int=4,
 )
-  info >= 0 || throw(ArgumentError("BVM requires info to be nonnegative"))
+  # Forward `info` to Rayleigh-Ritz semantics (negative values are allowed there).
   _validate_bvm_candidates(candidates, method)
 
   selected = Int[]
