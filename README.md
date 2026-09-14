@@ -41,7 +41,7 @@ solve(H, BS)
 
 ## Documentation
 
-- Home: https://juliafewbody.github.io/TwoBody.jl
+- Home: https://juliafewbody.github.io/TwoBody.jl/dev/
 - User Guide:
   - [Hamiltonian](https://juliafewbody.github.io/TwoBody.jl/dev/Hamiltonian/)
   - [Database](https://juliafewbody.github.io/TwoBody.jl/dev/DB/)
