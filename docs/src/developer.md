@@ -116,7 +116,7 @@ An unsupported operator–solver combination should fail explicitly rather than 
 
 ### Solvers
 
-1. Create `src/MethodName.jl` and define the method type and its `solve(hamiltonian::Hamiltonian, method::MethodName; ...)` implementation.
+1. Create `src/MethodName.jl` and define the method type and its `solve(hamiltonian::Hamiltonian, method::MethodName; ...)` implementation. A method that searches for the nonlinear parameters of a basis set should subtype [`SolverMethod`](@ref) and score its trial basis sets with `TwoBody._variational_energy`, as `BVM.jl`, `SVM.jl`, and `GVM.jl` do.
 2. Include the source file from `src/TwoBody.jl` after its dependencies.
 3. Create `test/MethodName.jl` and include it from `test/runtests.jl`.
 4. Create `docs/src/MethodName.md` and add it to the `pages` list in `docs/make.jl`.
@@ -130,7 +130,7 @@ To register a release in the [General](https://github.com/JuliaRegistries/Genera
 
 ## Architecture
 
-`src/TwoBody.jl` defines the `TwoBody` module and includes the source files in dependency order. `Hamiltonian.jl` defines the shared problem representation. `Basis.jl` supports the Rayleigh–Ritz implementation, and `FDM.jl` supplies the discretization used by the variational neural-network method. The solver files extend `solve` for their respective method types.
+`src/TwoBody.jl` defines the `TwoBody` module and includes the source files in dependency order. `Hamiltonian.jl` defines the shared problem representation. `Basis.jl` supports the Rayleigh–Ritz implementation, and `FDM.jl` supplies the discretization used by the variational neural-network method. `Solver.jl` defines the `SolverMethod` interface and the trial-basis evaluation shared by the variational search methods. The solver files extend `solve` for their respective method types.
 
 ```@raw html
 <pre class="mermaid">

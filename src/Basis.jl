@@ -178,6 +178,7 @@ Base.length(::ContractedBasis{N}) where {N} = N
 
 _replace_exponent(b::SimpleGaussianBasis, a) = SimpleGaussianBasis(a)
 _replace_exponent(b::GaussianBasis, a) = GaussianBasis(a=a, l=b.l, m=b.m)
+_replace_exponent(b::PowerSlaterBasis, a) = PowerSlaterBasis(b.n, a)
 _replace_exponent(b::Basis, a) = typeof(b)(a)
 
 _multiply(basis::PowerSlaterBasis, g::PowerSlaterBasis) =
