@@ -4,7 +4,6 @@ import Optimisers
 import TensorTrainNumerics
 import Zygote
 using Documenter
-using DocumenterMermaid
 
 DocMeta.setdocmeta!(TwoBody, :DocTestSetup, :(using TwoBody); recursive=true)
 
