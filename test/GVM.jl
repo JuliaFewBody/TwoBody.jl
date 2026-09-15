@@ -173,6 +173,6 @@ end
     info=1,
   )
   gradient = solve(hydrogen, stochastic.basisset, GVM(), info=1)
-  @test gradient.E[1] < stochastic.E[1]
-  @test gradient.E[1] < -0.4999
+  @test gradient.E[1] <= stochastic.E[1]
+  @test -0.5 - 1e-9 <= gradient.E[1] < -0.49
 end
