@@ -21,6 +21,16 @@ The eigenvalue ``E`` is an approximation of the exact energy and the eigenvector
 ```
 A uniform grid spacing is used, ``r_{i+1} = r_{i} + \Delta r``. See the API reference for the expression of the matrix ``\pmb{H}``.
 
+## Boundary conditions
+
+For central differences, the wavefunction is extended across the origin with
+
+```math
+\psi(-r)=(-1)^l\psi(r).
+```
+
+Thus even ``l`` uses ``\psi'(0)=0``, while odd ``l`` uses ``\psi(0)=0``. The origin value for even ``l`` is eliminated with a second-order one-sided derivative, so the radial grid can continue to exclude ``r=0``.
+
 ## Usage
 
 Run the following code before each use.
