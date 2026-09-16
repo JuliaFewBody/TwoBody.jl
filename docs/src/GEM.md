@@ -143,6 +143,154 @@ round(eta_c.E[1] * 1000; digits=6)
 The 1.18 MeV difference from the paper table is consistent with using the
 rounded parameters and rounded variational exponent shown above.
 
+## Examples of Hadron Spectroscopy
+
+The following three examples use the parameters and basis ranges specified in
+[Issue #39](https://github.com/JuliaFewBody/TwoBody.jl/issues/39#issuecomment-5349154437).
+Natural units (``\hbar=c=1``) are used: energies and masses are in GeV,
+and Gaussian ranges are in GeV``^{-1}``. The displayed ground-state masses
+are converted to MeV. All three examples use ``l=0`` Gaussian basis functions.
+
+### ``\Lambda_c(1/2^+)``
+
+Parameters follow [Kim, Hiyama, Oka, and Suzuki (2020)](https://doi.org/10.1103/PhysRevD.102.014004).
+
+The charm quark and scalar diquark are treated as a two-body system, with
+``\mu=M_{qq}M_c/(M_{qq}+M_c)`` and
+
+```math
+\hat H = \frac{\boldsymbol p^2}{2\mu} + M_{qq} + M_c
+- \frac{\alpha}{r} + \lambda r + C.
+```
+
+```@example lambda_c
+using TwoBody
+
+Mqq = 0.725
+Mc = 1.750
+μ = inv(inv(Mqq) + inv(Mc))
+α = 0.06 / μ
+
+H = Hamiltonian(
+  RestEnergy(m=Mqq),
+  RestEnergy(m=Mc),
+  Kinetic(hbar=1, m=μ),
+  Coulomb(coefficient=-α),
+  Linear(coefficient=0.165),
+  Constant(constant=-0.83116597),
+)
+BS = GeometricBasisSet(GaussianBasis, 0.01, 9.0, 40)
+
+round(1000 * solve(H, BS; info=0).E[1]; digits=3)
+```
+
+### ``\eta_c(1S)``: Meng, Wang, and Oka
+
+Parameters follow [Meng, Wang, and Oka (2024)](https://doi.org/10.48550/arXiv.2404.01238).
+
+The AL1 Hamiltonian is
+
+```math
+\hat H = \frac{\boldsymbol p^2}{2\mu} + m_1 + m_2
+- \frac{\kappa}{r} + \lambda r - \Lambda
++ \frac{2\pi\kappa'}{3m_1m_2}
+  \frac{e^{-r^2/r_0^2}}{\pi^{3/2}r_0^3}
+  \boldsymbol\sigma_1\cdot\boldsymbol\sigma_2.
+```
+
+Here ``r_0=A(2\mu)^{-B}`` and
+``\langle\boldsymbol\sigma_1\cdot\boldsymbol\sigma_2\rangle=-3``
+for the spin-singlet state.
+
+```@example meng_charmonium
+using TwoBody
+
+m₁ = 1.836
+m₂ = 1.836
+κ = 0.5069
+κ′ = 1.8609
+spin = -3
+μ = inv(inv(m₁) + inv(m₂))
+r₀ = 1.6553 * (2m₁ * m₂ / (m₁ + m₂))^(-0.2204)
+
+H = Hamiltonian(
+  RestEnergy(m=m₁),
+  RestEnergy(m=m₂),
+  Kinetic(hbar=1, m=μ),
+  Coulomb(coefficient=-κ),
+  Linear(coefficient=0.1653),
+  Constant(constant=-0.8321),
+  Gaussian(
+    coefficient=2π * κ′ * spin / (3m₁ * m₂ * (sqrt(π) * r₀)^3),
+    exponent=inv(r₀^2),
+  ),
+)
+BS = GeometricBasisSet(GaussianBasis, 0.1, 80.0, 20)
+
+round(1000 * solve(H, BS; info=0).E[1]; digits=3)
+```
+
+### ``\eta_c(1S)``: Arifi, Happ, Ohno, and Oka
+
+Parameters follow [Arifi, Happ, Ohno, and Oka (2024)](https://arxiv.org/abs/2401.07933).
+
+The semirelativistic Hamiltonian is
+
+```math
+\hat H = \sqrt{m_1^2+\boldsymbol p^2}+\sqrt{m_2^2+\boldsymbol p^2}
++ a + br - \frac{4\alpha_s}{3r}
++ \frac{32\pi\alpha_s}{9m_1m_2}
+  \left(\frac{\lambda}{\sqrt{\pi}}\right)^3 e^{-\lambda^2r^2}
+  \boldsymbol S_1\cdot\boldsymbol S_2.
+```
+
+Here ``\lambda=\Lambda\sqrt{\mu}`` and
+``\langle\boldsymbol S_1\cdot\boldsymbol S_2\rangle=-3/4``.
+`RelativisticKinetic` represents ``\sqrt{m^2+\boldsymbol p^2}-m``,
+so each constituent also needs a `RestEnergy` term.
+
+```@example arifi_charmonium
+using TwoBody
+
+m₁ = 1.515
+m₂ = 1.515
+αs = 0.285
+spin = -3/4
+μ = inv(inv(m₁) + inv(m₂))
+λ = 1.437 * sqrt(μ)
+
+H = Hamiltonian(
+  RestEnergy(m=m₁),
+  RestEnergy(m=m₂),
+  RelativisticKinetic(m=m₁),
+  RelativisticKinetic(m=m₂),
+  Constant(constant=-0.189),
+  Linear(coefficient=0.092),
+  Coulomb(coefficient=-4αs/3),
+  Gaussian(
+    coefficient=32π * αs * (λ / sqrt(π))^3 * spin / (9m₁ * m₂),
+    exponent=λ^2,
+  ),
+)
+BS = GeometricBasisSet(GaussianBasis, 0.358, 2.720, 10)
+
+round(1000 * solve(H, BS; info=0).E[1]; digits=3)
+```
+
+### Comparison with the reference masses
+
+| Example | TwoBody.jl (MeV) | Reference quoted in Issue #39 (MeV) |
+|:--|--:|--:|
+| Kim, Hiyama, Oka, and Suzuki | 2286.000 | 2286 |
+| Meng, Wang, and Oka | 3005.252 | 3005 |
+| Arifi, Happ, Ohno, and Oka | 3020.148 | 3019 |
+
+The last example differs from the quoted reference by about 1.15 MeV with
+the supplied parameters and basis ranges; it does not reproduce 3019 MeV
+to the displayed precision. The regression tests allow 1 MeV for the Meng
+example and 2 MeV for the Arifi example. These tolerances compare with the
+quoted reference masses and are not estimates of numerical convergence.
+
 ## API reference
 
 ```@docs; canonical=false
@@ -152,3 +300,4 @@ TwoBody.ComplexGaussianBasisSet
 TwoBody.φp
 TwoBody.ψp
 ```
+
