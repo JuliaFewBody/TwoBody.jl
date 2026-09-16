@@ -52,7 +52,12 @@ nothing # hide
 Define the Gaussian basis set.
 
 ```@example gem
-BS = GeometricBasisSet(GaussianBasis, 0.1, 10.0, 20)
+BS = BasisSet(
+  GaussianBasis(a=13.00773, l=0, m=0),
+  GaussianBasis(a=1.962079, l=0, m=0),
+  GaussianBasis(a=0.444529, l=0, m=0),
+  GaussianBasis(a=0.1219492, l=0, m=0),
+)
 nothing # hide
 ```
 
@@ -62,9 +67,6 @@ Solve the generalized eigenvalue problem with the Rayleigh–Ritz solver.
 result = solve(H, BS)
 result.E[1]
 ```
-
-The position- and momentum-space definitions and unit conventions are given
-in the `GaussianBasis`, `φp`, and `ψp` docstrings in the API reference below.
 
 ## Example of Hydrogen Atom
 
@@ -85,80 +87,32 @@ H = Hamiltonian(
   Kinetic(hbar = 1, m = 1),
   Coulomb(coefficient = -1),
 )
+
 BS = GeometricBasisSet(GaussianBasis, 0.1, 80.0, 20)
-solve(H, BS)
+
+result = solve(H, BS)
+
+for i in 1:7
+  println(result.E[i])
+end
 ```
 
-| principal level ``n`` | TwoBody.jl (hartree) | Hiyama Table VII (hartree) | exact (hartree) |
-|:--:|--:|--:|--:|
-| 1 | ``-0.499~982`` | ``-0.499~982`` | ``-0.500~000`` |
-| 2 | ``-0.124~998`` | ``-0.124~998`` | ``-0.125~000`` |
-| 3 | ``-0.055~555`` | ``-0.055~555`` | ``-0.055~556`` |
-| 4 | ``-0.031~249`` | ``-0.031~249`` | ``-0.031~250`` |
-| 5 | ``-0.019~998`` | ``-0.019~998`` | ``-0.020~000`` |
-| 6 | ``-0.013~883`` | ``-0.013~883`` | ``-0.013~889`` |
-| 7 | ``-0.010~203`` | ``-0.010~203`` | ``-0.010~204`` |
+| ``n`` |     TwoBody.jl |      Reference |          Exact |
+| ----- | -------------- | -------------- | -------------- |
+|     1 | ``-0.499~982`` | ``-0.499~982`` | ``-0.500~000`` |
+|     2 | ``-0.124~998`` | ``-0.124~998`` | ``-0.125~000`` |
+|     3 | ``-0.055~555`` | ``-0.055~555`` | ``-0.055~556`` |
+|     4 | ``-0.031~249`` | ``-0.031~249`` | ``-0.031~250`` |
+|     5 | ``-0.019~998`` | ``-0.019~998`` | ``-0.020~000`` |
+|     6 | ``-0.013~883`` | ``-0.013~883`` | ``-0.013~889`` |
+|     7 | ``-0.010~203`` | ``-0.010~203`` | ``-0.010~204`` |
 
 The TwoBody.jl results agree with all seven values in Table VII at the six
-decimal places reported there. The complex-range hydrogen calculation in
-Appendix A.6.2 is a separate example for highly excited states and is not the
-calculation reproduced here.
+decimal places reported there.
 
-## Example of Charmonium
+## Example of ``\Lambda_c(1/2^+)``
 
-The following calculation uses one Gaussian with ``\nu=0.2443`` and the SGA
-parameters of [Arifi et al.
-(2024)](https://arxiv.org/abs/2401.07933). Natural units are used, so energies
-and masses are in GeV and lengths are in GeV``^{-1}``.
-
-```@example gem
-ν = 0.2443
-masses = (1.6324, 1.6324)
-a = -0.4235
-b = 0.1655
-αs = 0.4410
-Λ = 0.9639
-spin = -3/4
-
-reduced_mass = inv(inv(masses[1]) + inv(masses[2]))
-λ = Λ * sqrt(reduced_mass)
-hyperfine = 32π * αs * (λ / sqrt(π))^3 /
-            (9 * masses[1] * masses[2]) * spin
-
-H = Hamiltonian(
-  RestEnergy(m=masses[1]), RelativisticKinetic(m=masses[1]),
-  RestEnergy(m=masses[2]), RelativisticKinetic(m=masses[2]),
-  Constant(constant=a),
-  Linear(coefficient=b),
-  Coulomb(coefficient=-4αs/3),
-  Gaussian(coefficient=hyperfine, exponent=λ^2),
-)
-
-eta_c = solve(H, GaussianBasis(ν))
-round(eta_c.E[1] * 1000; digits=6)
-```
-
-| calculation | ``\eta_c`` mass (MeV) |
-|:--|--:|
-| TwoBody.jl with the parameters above | 3013.183414 |
-| Arifi et al. SGA, Table 2 | 3012 |
-
-The 1.18 MeV difference from the paper table is consistent with using the
-rounded parameters and rounded variational exponent shown above.
-
-## Examples of Hadron Spectroscopy
-
-The following three examples use the parameters and basis ranges specified in
-[Issue #39](https://github.com/JuliaFewBody/TwoBody.jl/issues/39#issuecomment-5349154437).
-Natural units (``\hbar=c=1``) are used: energies and masses are in GeV,
-and Gaussian ranges are in GeV``^{-1}``. The displayed ground-state masses
-are converted to MeV. All three examples use ``l=0`` Gaussian basis functions.
-
-### ``\Lambda_c(1/2^+)``
-
-Parameters follow [Kim, Hiyama, Oka, and Suzuki (2020)](https://doi.org/10.1103/PhysRevD.102.014004).
-
-The charm quark and scalar diquark are treated as a two-body system, with
+Parameters follow [Kim, Hiyama, Oka, and Suzuki (2020)](https://doi.org/10.1103/PhysRevD.102.014004). The charm quark and scalar diquark are treated as a two-body system, with
 ``\mu=M_{qq}M_c/(M_{qq}+M_c)`` and
 
 ```math
@@ -182,16 +136,17 @@ H = Hamiltonian(
   Linear(coefficient=0.165),
   Constant(constant=-0.83116597),
 )
+
 BS = GeometricBasisSet(GaussianBasis, 0.01, 9.0, 40)
 
 round(1000 * solve(H, BS; info=0).E[1]; digits=3)
 ```
 
-### ``\eta_c(1S)``: Meng, Wang, and Oka
+This result is in good agreement with the value of **2286 MeV** reported in Table II of the reference because the parameters were provided by the authors. Natural units (``\hbar=c=1``) are used: energies and masses are in GeV, and Gaussian ranges are in GeV``^{-1}``. The displayed ground-state masses are converted to MeV.
 
-Parameters follow [Meng, Wang, and Oka (2024)](https://doi.org/10.48550/arXiv.2404.01238).
+## Example of ``\eta_c(1S)``
 
-The AL1 Hamiltonian is
+Parameters follow [Meng, Wang, and Oka (2024)](https://doi.org/10.48550/arXiv.2404.01238). The AL1 Hamiltonian is
 
 ```math
 \hat H = \frac{\boldsymbol p^2}{2\mu} + m_1 + m_2
@@ -228,16 +183,17 @@ H = Hamiltonian(
     exponent=inv(r₀^2),
   ),
 )
+
 BS = GeometricBasisSet(GaussianBasis, 0.1, 80.0, 20)
 
 round(1000 * solve(H, BS; info=0).E[1]; digits=3)
 ```
 
-### ``\eta_c(1S)``: Arifi, Happ, Ohno, and Oka
+This result is in good agreement with the value of **3005 MeV** reported in Table 6 of the reference.
 
-Parameters follow [Arifi, Happ, Ohno, and Oka (2024)](https://arxiv.org/abs/2401.07933).
+### Example of ``J/\psi(1S)``
 
-The semirelativistic Hamiltonian is
+Parameters follow [Arifi, Happ, Ohno, and Oka (2024)](https://arxiv.org/abs/2401.07933). The semirelativistic Hamiltonian is
 
 ```math
 \hat H = \sqrt{m_1^2+\boldsymbol p^2}+\sqrt{m_2^2+\boldsymbol p^2}
@@ -255,44 +211,35 @@ so each constituent also needs a `RestEnergy` term.
 ```@example arifi_charmonium
 using TwoBody
 
-m₁ = 1.515
-m₂ = 1.515
-αs = 0.285
+m₁ = 1.5147
+m₂ = 1.5147
+αs = 0.2850
 spin = -3/4
 μ = inv(inv(m₁) + inv(m₂))
-λ = 1.437 * sqrt(μ)
+λ = 1.4376 * sqrt(μ)
+a = -0.1895
+b = 0.0924
 
 H = Hamiltonian(
   RestEnergy(m=m₁),
   RestEnergy(m=m₂),
   RelativisticKinetic(m=m₁),
   RelativisticKinetic(m=m₂),
-  Constant(constant=-0.189),
-  Linear(coefficient=0.092),
+  Constant(constant=a),
+  Linear(coefficient=b),
   Coulomb(coefficient=-4αs/3),
   Gaussian(
     coefficient=32π * αs * (λ / sqrt(π))^3 * spin / (9m₁ * m₂),
     exponent=λ^2,
   ),
 )
+
 BS = GeometricBasisSet(GaussianBasis, 0.358, 2.720, 10)
 
 round(1000 * solve(H, BS; info=0).E[1]; digits=3)
 ```
 
-### Comparison with the reference masses
-
-| Example | TwoBody.jl (MeV) | Reference quoted in Issue #39 (MeV) |
-|:--|--:|--:|
-| Kim, Hiyama, Oka, and Suzuki | 2286.000 | 2286 |
-| Meng, Wang, and Oka | 3005.252 | 3005 |
-| Arifi, Happ, Ohno, and Oka | 3020.148 | 3019 |
-
-The last example differs from the quoted reference by about 1.15 MeV with
-the supplied parameters and basis ranges; it does not reproduce 3019 MeV
-to the displayed precision. The regression tests allow 1 MeV for the Meng
-example and 2 MeV for the Arifi example. These tolerances compare with the
-quoted reference masses and are not estimates of numerical convergence.
+This result is in good agreement with the value of **3019 MeV** reported in Table 2 of the reference because the parameters were provided by the authors. Since the parameters in Table I are rounded, using the same values does not reproduce the result exactly.
 
 ## API reference
 

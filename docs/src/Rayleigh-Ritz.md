@@ -4,7 +4,20 @@ CurrentModule = TwoBody
 
 # Rayleigh-Ritz Method
 
-The Rayleigh-Ritz method is a variational method for approximating the eigenvalues and eigenfunctions of a Hamiltonian. The expectation value obtained from a trial wave function is an upper bound on the exact ground-state energy. Note that nonlinear parameters, such as the exponents of Gaussian basis functions, are not optimized by the linear procedure described below.
+This method is one of the variational method. It solves the generalized eigenvalue problem,
+```math
+\pmb{H} \pmb{c} = E \pmb{S} \pmb{c}.
+```
+The Hamiltonian matrix is defined as ``H_{ij} = \langle \phi_{i} | \hat{H} | \phi_{j} \rangle`` and the overlap matrix is defined as ``S_{ij} = \langle \phi_{i} | \phi_{j} \rangle``. The eigenvector ``\pmb{c}`` is the column of the optimal coefficients $c_i$ for the linear combination,
+
+```math
+\psi(r) = \sum_i c_i \phi_i(r),
+```
+to minmize the expectation value of the energy,
+```math
+E = \frac{\langle\psi|\hat{H}|\psi\rangle}{\langle\psi|\psi\rangle}.
+```
+Note that the nonlinear parameters (e.g., exponents of the Gaussian basis functions) are not optimized. The expectation by trial wavefunction is the upper bound for the exact energy.
 
 ## Theory
 
@@ -291,6 +304,41 @@ println("  Reference: ", -0.495010)
 ```
 
 The results agree with those in Table 1 of the Supporting Information. The small differences between the calculated and reference values arise from rounding in the published parameters.
+
+## Custom Potential
+
+The Hamiltonian can be flexibly customized for applications in [quark models](@ref GEM). If the potential you need is not implemented in [Hamiltonian.jl](@ref Hamiltonian), you can define it yourself using `Custom`. However, since this involves numerical integration, both speed and accuracy will be reduced.
+
+```@example
+using Printf
+using TwoBody
+
+H_coulomb = Hamiltonian(
+  Kinetic(hbar = 1, m = 1),
+  Coulomb(coefficient = -1),
+)
+
+H_custom = Hamiltonian(
+  Kinetic(hbar = 1, m = 1),
+  Custom(r -> -1/r),
+)
+
+BS = BasisSet(
+  SimpleGaussianBasis(13.00773),
+  SimpleGaussianBasis(1.962079),
+  SimpleGaussianBasis(0.444529),
+  SimpleGaussianBasis(0.1219492),
+)
+
+resutl_coulomb = solve(H_coulomb, BS)
+resutl_custom = solve(H_custom, BS)
+
+println(" n       Coulomb        Custom")
+println("--  ------------  ------------")
+for i in 1:4
+  @printf("%2d  %+.9f  %+.9f\n", i, resutl_coulomb.E[i], resutl_custom.E[i])
+end
+```
 
 ## API reference
 
