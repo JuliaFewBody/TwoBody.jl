@@ -142,7 +142,7 @@ reference_energies = [
 @printf("%5s  %-18s  %s\n", "M_n", "This work", "Ref.")
 println("-----  ------------------  ------------")
 for reference_energy in reference_energies
-  result = solve(H, basisset, info=-1)
+  result = solve(H, basisset)
   @printf(
     "%5d  %18.15f  %s\n",
     length(basisset),
