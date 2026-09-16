@@ -2,6 +2,9 @@
 CurrentModule = TwoBody
 ```
 
+!!! warning
+    This method was implemented by [GPT-5.6 Sol High](https://github.com/JuliaFewBody/TwoBody.jl/pull/38) based on [PoC by Shuhei Ohno and Lucas Arenstein](https://github.com/JuliaFewBody/TwoBody.jl/issues/26). A detailed review by Shuhei Ohno has not yet been completed.
+
 # Quantics Tensor Train
 
 The quantics tensor train (QTT) solver rewrites a radial grid of ``N=2^q`` points as

@@ -2,7 +2,10 @@
 CurrentModule = TwoBody
 ```
 
-# Gaussian Expansion Method
+!!! warning
+    This method was implemented by [GPT-5.6 Sol High](https://github.com/JuliaFewBody/TwoBody.jl/pull/42) based on the original code developed for [arXiv:2401.07933](https://arxiv.org/abs/2401.07933). A detailed review by Shuhei Ohno has not yet been completed.
+
+# [Gaussian Expansion Method](@id GEM)
 
 The Gaussian expansion method (GEM) uses the existing Rayleigh–Ritz solver
 with normalized Gaussian primitives,

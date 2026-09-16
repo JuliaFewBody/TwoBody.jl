@@ -2,6 +2,9 @@
 CurrentModule = TwoBody
 ```
 
+!!! warning
+    This method was implemented by [GPT-5.6 Sol High](https://github.com/JuliaFewBody/TwoBody.jl/pull/43) based on [PoC by Shuhei Ohno](https://github.com/JuliaFewBody/TwoBody.jl/issues/33). A detailed review by Shuhei Ohno has not yet been completed.
+
 # Variational Neural Network
 
 `VariationalNeuralNetwork` (`VNN`) uses a neural network defined with
