@@ -187,6 +187,7 @@ save("assets/FDM_SO.svg", fig) # hide
 
 ```@docs; canonical=false
 TwoBody.FiniteDifferenceMethod
+TwoBody.ResultFiniteDifferenceMethod
 TwoBody.solve(hamiltonian::Hamiltonian, method::FiniteDifferenceMethod)
 TwoBody.matrix(o::Hamiltonian, method::FiniteDifferenceMethod)
 TwoBody.matrix(o::RestEnergy, method::FiniteDifferenceMethod)
