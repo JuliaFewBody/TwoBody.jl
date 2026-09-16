@@ -1,4 +1,4 @@
-@testset "Free Complement" begin
+@testset "FC.jl" begin
   basis = PowerSlaterBasis(0, 1.5)
   @test TwoBody.φ(basis, 2.0) ≈ exp(-3.0)
 
