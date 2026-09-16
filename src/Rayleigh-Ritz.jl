@@ -4,6 +4,7 @@ import LinearAlgebra
 import Optim
 import Printf
 import QuadGK
+import ForwardDiff
 import SpecialFunctions
 import Subscripts
 
@@ -430,8 +431,12 @@ function element(o::Gaussian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBas
 end
 
 function element(o::Custom, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return _radial_integral(r -> φ(SGB1, r) * V(o, r) * φ(SGB2, r))
+end
+
+function _radial_integral(f)
   value, _ = QuadGK.quadgk(
-    r -> 4π * r^2 * φ(SGB1, r) * V(o, r) * φ(SGB2, r),
+    r -> 4π * r^2 * f(r),
     0.0,
     Inf,
     rtol=1e-10,
@@ -439,6 +444,31 @@ function element(o::Custom, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis
   )
   return value
 end
+
+
+_custom_overlap(B1::Basis, B2::Basis) =
+  _radial_integral(r -> conj(φ(B1, r)) * φ(B2, r))
+
+_custom_potential_element(o::PotentialTerm, B1::Basis, B2::Basis) =
+  _radial_integral(r -> conj(φ(B1, r)) * V(o, r) * φ(B2, r))
+
+_custom_kinetic_element(o::Kinetic, B1::Basis, B2::Basis) =
+  o.hbar^2 / (2o.m) * _radial_integral(
+    r -> conj(ForwardDiff.derivative(x -> φ(B1, x), r)) *
+         ForwardDiff.derivative(x -> φ(B2, x), r),
+  )
+
+element(B1::CustomBasis, B2::Union{CustomBasis,PrimitiveBasis}) = _custom_overlap(B1, B2)
+element(B1::PrimitiveBasis, B2::CustomBasis) = _custom_overlap(B1, B2)
+
+element(o::RestEnergy, B1::CustomBasis, B2::Union{CustomBasis,PrimitiveBasis}) = o.m * o.c^2 * _custom_overlap(B1, B2)
+element(o::RestEnergy, B1::PrimitiveBasis, B2::CustomBasis) = o.m * o.c^2 * _custom_overlap(B1, B2)
+
+element(o::Kinetic, B1::CustomBasis, B2::Union{CustomBasis,PrimitiveBasis}) = _custom_kinetic_element(o, B1, B2)
+element(o::Kinetic, B1::PrimitiveBasis, B2::CustomBasis) = _custom_kinetic_element(o, B1, B2)
+
+element(o::PotentialTerm, B1::CustomBasis, B2::Union{CustomBasis,PrimitiveBasis}) = _custom_potential_element(o, B1, B2)
+element(o::PotentialTerm, B1::PrimitiveBasis, B2::CustomBasis) = _custom_potential_element(o, B1, B2)
 
 @inline function element(B1::ContractedBasis, B2::Basis)
   return _contracted_bra_element(
