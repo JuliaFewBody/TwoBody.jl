@@ -110,6 +110,41 @@ end
 The TwoBody.jl results agree with all seven values in Table VII at the six
 decimal places reported there.
 
+## Example of Deuteron
+
+The deuteron is calculated in free space using the spin-triplet ``s``-wave
+Minnesota potential used in [Weiss-Attia, Schäfer, and Bazak
+(2024)](https://arxiv.org/abs/2402.04817). The relative-motion Hamiltonian is
+
+```math
+\hat H = -\frac{(\hbar c)^2}{2\mu}\nabla^2
++ 200.0\,e^{-1.487r^2} - 178.0\,e^{-0.639r^2}.
+```
+
+Distances are in fm, and energies and mass parameters are in MeV.
+The proton and neutron have equal mass ``m``, so ``\mu=m/2``.
+
+```@example deuteron
+using TwoBody
+
+ħc = 197.3269804
+m = (ħc)^2 / 41.471 # (ℏc)²/m ≃ 41.471 MeV fm²
+μ = 1/(1/m + 1/m)
+
+H = Hamiltonian(
+  Kinetic(hbar = ħc, m = μ),
+  Gaussian(coefficient =  200.0, exponent = 1.487),
+  Gaussian(coefficient = -178.0, exponent = 0.639),
+)
+
+BS = GeometricBasisSet(GaussianBasis, 0.1, 40.0, 30)
+
+result = solve(H, BS)
+result.E[1]
+```
+
+This result is in good agreement with the value of **-2.202 MeV** reported in Sec. V.1 of the reference.
+
 ## Example of ``\Lambda_c(1/2^+)``
 
 Parameters follow [Kim, Hiyama, Oka, and Suzuki (2020)](https://doi.org/10.1103/PhysRevD.102.014004). The charm quark and scalar diquark are treated as a two-body system, with
