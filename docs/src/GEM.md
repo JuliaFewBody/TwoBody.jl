@@ -83,6 +83,8 @@ The Gaussian ranges are placed in a geometric progression with
 ``n_{\max}=20``, ``r_1=0.1`` a.u., and ``r_{20}=80`` a.u.
 
 ```@example gem
+using TwoBody
+
 H = Hamiltonian(
   Kinetic(hbar = 1, m = 1),
   Coulomb(coefficient = -1),
@@ -112,27 +114,24 @@ decimal places reported there.
 
 ## Example of Deuteron
 
-The deuteron is calculated in free space using the spin-triplet ``s``-wave
-Minnesota potential used in [Weiss-Attia, Schäfer, and Bazak
-(2024)](https://arxiv.org/abs/2402.04817). The relative-motion Hamiltonian is
+We use the Minnesota ``NN`` potential introduced by [D. R. Thompson, M. Lemere, and Y. C. Tang, _Nucl. Phys. A_ **286**, 53 (1977)](https://doi.org/10.1016/0375-9474(77)90007-0). In the ``{}^3S_1`` state, the potential reduces to ``V_R + V_t``, with ``P^\sigma=P^r=+1``. For proton and neutron masses ``m_\mathrm{p}`` and ``m_\mathrm{n}``, the relative-motion Hamiltonian with ``1/\mu = 1/m_\mathrm{p} + 1/m_\mathrm{n}`` is
 
 ```math
-\hat H = -\frac{(\hbar c)^2}{2\mu}\nabla^2
-+ 200.0\,e^{-1.487r^2} - 178.0\,e^{-0.639r^2}.
+\hat{H}
+= -\frac{\hbar^2}{2\mu}\nabla^2
++ V_{0R}e^{-\kappa_R r^2}
+- V_{0t}e^{-\kappa_t r^2}.
 ```
 
-Distances are in fm, and energies and mass parameters are in MeV.
-The proton and neutron have equal mass ``m``, so ``\mu=m/2``.
+[Weiss-Attia, Schäfer, and Bazak (2024)](https://arxiv.org/abs/2402.04817) use the kinetic coefficient ``\frac{\hbar^2}{2\mu} = \frac{(\hbar c)^2}{m} \simeq 41.471~\mathrm{MeV\,fm^2}``, with ``m = m_\mathrm{p}c^2 = m_\mathrm{n}c^2`` implicitly assumed for equal proton and neutron masses. They report a free-space deuteron energy of ``E_d \simeq -2.202~\mathrm{MeV}`` in Sec. V.1. Distances are in fm, and energies are in MeV.
 
 ```@example deuteron
 using TwoBody
 
-ħc = 197.3269804
-m = (ħc)^2 / 41.471 # (ℏc)²/m ≃ 41.471 MeV fm²
-μ = 1/(1/m + 1/m)
+ℏ²c²m⁻¹ = 41.471
 
 H = Hamiltonian(
-  Kinetic(hbar = ħc, m = μ),
+  Laplacian(coefficient = -ℏ²c²m⁻¹),
   Gaussian(coefficient =  200.0, exponent = 1.487),
   Gaussian(coefficient = -178.0, exponent = 0.639),
 )
@@ -142,8 +141,6 @@ BS = GeometricBasisSet(GaussianBasis, 0.1, 40.0, 30)
 result = solve(H, BS)
 result.E[1]
 ```
-
-This result is in good agreement with the value of **-2.202 MeV** reported in Sec. V.1 of the reference.
 
 ## Example of ``\Lambda_c(1/2^+)``
 
