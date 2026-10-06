@@ -1,4 +1,4 @@
-export Operator, Hamiltonian, getindex, Kinetic, RestEnergy, RelativisticCorrection, RelativisticKinetic, Constant, Linear, Coulomb, PowerLaw, Gaussian, Exponential, Yukawa, Delta, Custom, Tabulated
+export Operator, Hamiltonian, getindex, Laplacian, Kinetic, RestEnergy, RelativisticCorrection, RelativisticKinetic, Constant, Linear, Coulomb, PowerLaw, Gaussian, Exponential, Yukawa, Delta, Custom, Tabulated
 
 # type
 

@@ -131,7 +131,7 @@ using TwoBody
 ℏ²c²m⁻¹ = 41.471
 
 H = Hamiltonian(
-  TwoBody.Laplacian(coefficient = -ℏ²c²m⁻¹),
+  Laplacian(coefficient = -ℏ²c²m⁻¹),
   Gaussian(coefficient =  200.0, exponent = 1.487),
   Gaussian(coefficient = -178.0, exponent = 0.639),
 )
