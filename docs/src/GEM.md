@@ -129,11 +129,15 @@ We use the Minnesota ``NN`` potential introduced by [D. R. Thompson, M. Lemere, 
 using TwoBody
 
 ℏ²c²m⁻¹ = 41.471
+V₀ᵣ = 200.0
+V₀ₜ = -178.0
+κᵣ = 1.487
+κₜ = 0.639
 
 H = Hamiltonian(
   Laplacian(coefficient = -ℏ²c²m⁻¹),
-  Gaussian(coefficient =  200.0, exponent = 1.487),
-  Gaussian(coefficient = -178.0, exponent = 0.639),
+  Gaussian(coefficient = V₀ᵣ, exponent = κᵣ),
+  Gaussian(coefficient = V₀ₜ, exponent = κₜ),
 )
 
 BS = GeometricBasisSet(GaussianBasis, 0.1, 40.0, 30)
