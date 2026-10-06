@@ -1,5 +1,19 @@
 @testset "FDM.jl" begin
 
+  @testset "boundary condition" begin
+    even = FiniteDifferenceMethod(Δr=0.1, rₘₐₓ=0.3, l=0)
+    odd = FiniteDifferenceMethod(Δr=0.1, rₘₐₓ=0.3, l=1)
+    D_even, D²_even = TwoBody._derivative_matrices(even)
+    D_odd, D²_odd = TwoBody._derivative_matrices(odd)
+
+    even_wavefunction = 1 .+ even.R .^ 2
+    odd_wavefunction = collect(odd.R)
+    @test (D_even * even_wavefunction)[1] ≈ 2even.R[1]
+    @test (D²_even * even_wavefunction)[1] ≈ 2
+    @test (D_odd * odd_wavefunction)[1] ≈ 1
+    @test (D²_odd * odd_wavefunction)[1] ≈ 0 atol=1e-12
+  end
+
   # Testing Results
 
   H = Hamiltonian(
