@@ -68,7 +68,15 @@ result = solve(H, BS)
 result.E[1]
 ```
 
-## Example of Hydrogen Atom
+## Example of H (p+e)
+
+The Hamiltonian of [hydrogen atom](https://ohno.github.io/Antique.jl/stable/HydrogenAtom/) is
+
+```math
+\hat{H} =
+- \frac{\hbar^2}{2\mu} \nabla^2
+- \frac{e^2}{4\pi\varepsilon_0 r}.
+```
 
 Appendix A.2 and Table VII of [Hiyama and Kamimura
 (2018)](https://link.springer.com/article/10.1007/s11467-018-0828-5)
@@ -112,7 +120,7 @@ end
 The TwoBody.jl results agree with all seven values in Table VII at the six
 decimal places reported there.
 
-## Example of Deuteron
+## Example of d (p+n)
 
 We use the Minnesota ``NN`` potential introduced by [D. R. Thompson, M. Lemere, and Y. C. Tang, _Nucl. Phys. A_ **286**, 53 (1977)](https://doi.org/10.1016/0375-9474(77)90007-0). In the ``{}^3S_1`` state, the potential reduces to ``V_R + V_t``, with ``P^\sigma=P^r=+1``. For proton and neutron masses ``m_\mathrm{p}`` and ``m_\mathrm{n}``, the relative-motion Hamiltonian with ``1/\mu = 1/m_\mathrm{p} + 1/m_\mathrm{n}`` is
 
@@ -146,9 +154,9 @@ result = solve(H, BS)
 result.E[1]
 ```
 
-## Example of ``\Lambda_c(1/2^+)``
+## Example of ``\Lambda_c`` (``ud+c``)
 
-Parameters follow [Kim, Hiyama, Oka, and Suzuki (2020)](https://doi.org/10.1103/PhysRevD.102.014004). The charm quark and scalar diquark are treated as a two-body system, with
+Parameters follow [Kim, Hiyama, Oka, and Suzuki (2020)](https://doi.org/10.1103/PhysRevD.102.014004) for ``\Lambda_c(1/2^+)``. The charm quark and scalar diquark are treated as a two-body system, with
 ``\mu=M_{qq}M_c/(M_{qq}+M_c)`` and
 
 ```math
@@ -180,9 +188,9 @@ round(1000 * solve(H, BS; info=0).E[1]; digits=3)
 
 This result is in good agreement with the value of **2286 MeV** reported in Table II of the reference because the parameters were provided by the authors. Natural units (``\hbar=c=1``) are used: energies and masses are in GeV, and Gaussian ranges are in GeV``^{-1}``. The displayed ground-state masses are converted to MeV.
 
-## Example of ``\eta_c(1S)``
+## Example of ``\eta_c`` (``c+\bar{\mathrm{c}}``)
 
-Parameters follow [Meng, Wang, and Oka (2024)](https://doi.org/10.48550/arXiv.2404.01238). The AL1 Hamiltonian is
+Parameters follow [Meng, Wang, and Oka (2024)](https://doi.org/10.48550/arXiv.2404.01238) for ``\eta_c(1S)``. The AL1 Hamiltonian is
 
 ```math
 \hat H = \frac{\boldsymbol p^2}{2\mu} + m_1 + m_2
@@ -227,9 +235,9 @@ round(1000 * solve(H, BS; info=0).E[1]; digits=3)
 
 This result is in good agreement with the value of **3005 MeV** reported in Table 6 of the reference.
 
-### Example of ``J/\psi(1S)``
+## Example of ``J/\psi`` (``c+\bar{\mathrm{c}}``)
 
-Parameters follow [Arifi, Happ, Ohno, and Oka (2024)](https://arxiv.org/abs/2401.07933). The semirelativistic Hamiltonian is
+Parameters follow [Arifi, Happ, Ohno, and Oka (2024)](https://arxiv.org/abs/2401.07933) for ``J/\psi(1S)``. The semirelativistic Hamiltonian is
 
 ```math
 \hat H = \sqrt{m_1^2+\boldsymbol p^2}+\sqrt{m_2^2+\boldsymbol p^2}
