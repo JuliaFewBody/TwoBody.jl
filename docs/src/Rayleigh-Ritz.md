@@ -159,6 +159,28 @@ which is amazingly good for only four basis functions according to [Thijssen(200
 solve(H, BS)
 ```
 
+`solve(H, BS)` is a shorthand for `solve(H, RayleighRitzMethod(BS))`. As with `FiniteDifferenceMethod`, the configuration of the method can be stored in a `RayleighRitzMethod`, which is kept in the result as `result.method`:
+
+```@repl example
+method = RayleighRitzMethod(BS)
+result = solve(H, method);
+result.E
+```
+
+The expectation values and the verification of the eigenpairs are calculated from the result for all states. The norms ``\langle \psi_n | \psi_n \rangle`` should be 1 and the residuals ``|\langle \psi_n | \hat{H} | \psi_n \rangle - E_n|`` should be 0:
+
+```@repl example
+expectation(result, Kinetic(hbar = 1, m = 1))
+expectation(result, H)
+verification(result)
+```
+
+The nonlinear parameters can be optimized with `optimize` using [Optim.jl](https://github.com/JuliaNLSolvers/Optim.jl). The result is a `ResultOptimizationRayleighRitz`, which keeps the optimization data and forwards the other properties (`E`, `C`, `basisset`, ...) to the final `ResultRayleighRitz` stored as `result.result`. For a single Gaussian function, the exact optimum is ``\alpha = 8/(9\pi) \approx 0.283`` with ``E = -4/(3\pi) \approx -0.424~E_\mathrm{h}``:
+
+```@repl example
+optimize(H, SimpleGaussianBasis(1.0); progress=false)
+```
+
 ## Weinstein bound
 
 For a normalized approximate eigenstate with energy ``E``, Weinstein's theorem guarantees that at least one exact eigenvalue lies in the interval
@@ -372,13 +394,25 @@ We thank the participants of the [JuliaHEP Workshop 2025](https://indico.cern.ch
 ### Solver
 
 ```@docs; canonical=false
+RayleighRitzMethod
+solve(hamiltonian::Hamiltonian, method::RayleighRitzMethod; perturbation=Hamiltonian(), info=4)
 solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4)
 solve(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=4)
 solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4)
+optimize(hamiltonian::Hamiltonian, method::RayleighRitzMethod; kwargs...)
 optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
 optimize(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=1, progress=true, optimizer=Optim.NelderMead(), options...)
 optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
 weinstein
+```
+
+### Result
+
+```@docs; canonical=false
+ResultRayleighRitz
+ResultOptimizationRayleighRitz
+expectation
+verification
 ```
 
 ### Basis Set
