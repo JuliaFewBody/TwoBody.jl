@@ -1,5 +1,25 @@
 @testset "FDM.jl" begin
 
+  @testset "origin boundary condition" begin
+    # At r₁ = Δr the ghost value ψ(0) cancels in D² + (2/r₁) D, so the kinetic
+    # matrix is the same for the Dirichlet padding ψ(0) = 0 of the difference
+    # matrices and for the even-l Neumann elimination ψ(0) = (4ψ(r₁) - ψ(r₂))/3.
+    for l in 0:2
+      method = FiniteDifferenceMethod(Δr=0.1, rₘₐₓ=0.5, l=l)
+      h = method.Δr
+      radial(D, D²) = D² + TwoBody.SparseArrays.spdiagm(2 ./ method.R) * D
+      D, D² = TwoBody._derivative_matrices(method)
+      dirichlet = radial(D, D²)
+      D[1,1] = -2 / (3h)
+      D[1,2] = 2 / (3h)
+      D²[1,1] = -2 / (3h^2)
+      D²[1,2] = 2 / (3h^2)
+      @test radial(D, D²) ≈ dirichlet
+      centrifugal = l * (l + 1) * TwoBody.SparseArrays.spdiagm(1 ./ method.R .^ 2)
+      @test TwoBody.matrix(Kinetic(hbar=1, m=1), method) ≈ -0.5 * (dirichlet - centrifugal)
+    end
+  end
+
   # Testing Results
 
   H = Hamiltonian(
