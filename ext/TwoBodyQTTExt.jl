@@ -1,7 +1,6 @@
 module TwoBodyQTTExt
 
 using TwoBody
-import Logging
 import TensorTrainNumerics
 import TwoBody: PotentialTerm, V, matrix
 
@@ -52,9 +51,10 @@ function _qttvector(f::Function, method::QuanticsTensorTrainMethod)
 
   algorithm = TensorTrainNumerics.MaxVol(
     tol=method.tolerance,
-    rmax=method.maxbonddim,
-    maxiter=method.maxiter,
-    verbose=false,
+    max_bond=method.maxbonddim,
+    max_sweeps=method.maxiter,
+    verbosity=0,
+    show_progress=false,
   )
   return TensorTrainNumerics.tt_cross(
     evaluate,
@@ -70,7 +70,7 @@ function _compress_vector(vector::QTTVector, method::QuanticsTensorTrainMethod)
   TensorTrainNumerics.tt_compress!(
     compressed,
     method.maxbonddim;
-    truncerr=method.tolerance,
+    trunc_tol=method.tolerance,
   )
   return compressed
 end
@@ -80,7 +80,7 @@ function _compress_operator(operator::QTTMatrix, method::QuanticsTensorTrainMeth
   TensorTrainNumerics.tt_compress!(
     fused,
     method.maxoperatorbonddim;
-    truncerr=method.tolerance,
+    trunc_tol=method.tolerance,
   )
   return TensorTrainNumerics.ttv_to_tto(fused)
 end
@@ -124,19 +124,19 @@ _ttdot(left::QTTVector, right::QTTVector) = TensorTrainNumerics.dot(left, right)
 
 function _dmrg_groundstate(operator::QTTMatrix, guess::QTTVector, method::QuanticsTensorTrainMethod)
   normalized_guess = guess / _ttnorm(guess)
-  history, state, rank_history = Logging.with_logger(Logging.NullLogger()) do
-    TensorTrainNumerics.dmrg_eigsolve(
-      operator,
-      normalized_guess;
-      N=2,
-      tol=method.tolerance,
-      sweep_schedule=[method.sweeps],
-      rmax_schedule=[method.maxbonddim],
-      it_solver=true,
-      linsolv_maxiter=method.maxiter,
-      linsolv_tol=max(sqrt(method.tolerance), 1e-8),
-    )
-  end
+  history, state, rank_history = TensorTrainNumerics.dmrg_eigsolve(
+    operator,
+    normalized_guess;
+    nsites=2,
+    trunc_tol=method.tolerance,
+    max_sweeps=method.sweeps,
+    max_bond=method.maxbonddim,
+    local_solver=:iterative,
+    local_maxiter=method.maxiter,
+    local_tol=max(sqrt(method.tolerance), 1e-8),
+    verbosity=0,
+    show_progress=false,
+  )
   state = state / _ttnorm(state)
   return last(history), state, history, rank_history
 end
