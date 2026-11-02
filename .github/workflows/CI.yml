@@ -12,6 +12,56 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
+  core:
+    name: Core installation without optional dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      actions: write
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: '1.10'
+      - uses: julia-actions/cache@v3
+      - name: Install and load the core package
+        shell: julia --startup-file=no --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.activate(mktempdir())
+          Pkg.develop(path=pwd())
+          Pkg.instantiate()
+
+          optional = Set(["Lux", "Optimisers", "TensorTrainNumerics", "Zygote"])
+          installed = Set(info.name for info in values(Pkg.dependencies()))
+          @assert isempty(intersect(optional, installed))
+
+          using TwoBody
+          @assert Base.get_extension(TwoBody, :TwoBodyQTTExt) === nothing
+          @assert Base.get_extension(TwoBody, :TwoBodyVNNExt) === nothing
+          hamiltonian = TwoBody.Hamiltonian(TwoBody.Kinetic())
+
+          function assert_unavailable(f)
+            try
+              f()
+            catch exception
+              @assert exception isa ArgumentError
+              return
+            end
+            error("optional solver unexpectedly available")
+          end
+
+          assert_unavailable() do
+            TwoBody.solve(
+              hamiltonian,
+              TwoBody.QuanticsTensorTrainMethod(quantics=2),
+            )
+          end
+          assert_unavailable() do
+            TwoBody.solve(hamiltonian, TwoBody.VNN(maxiters=0))
+          end
+
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }}
     runs-on: ${{ matrix.os }}
@@ -19,6 +69,10 @@ jobs:
     permissions: # needed to allow julia-actions/cache to proactively delete old caches that it has created
       actions: write
       contents: read
+      id-token: write # authenticate Codecov uploads with GitHub OIDC
+    env:
+      # Fork and Dependabot runs cannot rely on a writable OIDC token.
+      CODECOV_USE_OIDC: ${{ github.actor != 'dependabot[bot]' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) }}
     strategy:
       fail-fast: false
       matrix:
@@ -30,27 +84,43 @@ jobs:
         arch:
           - x64
     steps:
-      - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v2
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
-      - uses: julia-actions/cache@v2
+      - uses: julia-actions/cache@v3
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
+        with:
+          coverage: ${{ matrix.version == '1.10' }}
+      - uses: julia-actions/julia-processcoverage@v1
+        if: matrix.version == '1.10'
+        with:
+          directories: src,ext
+      - uses: codecov/codecov-action@v7
+        if: matrix.version == '1.10'
+        # Keep upload/service failures from blocking fork and Dependabot PRs.
+        continue-on-error: ${{ env.CODECOV_USE_OIDC != 'true' }}
+        with:
+          files: lcov.info
+          disable_search: true
+          use_oidc: ${{ env.CODECOV_USE_OIDC == 'true' }}
+          fail_ci_if_error: ${{ env.CODECOV_USE_OIDC == 'true' }}
   docs:
     name: Documentation
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       actions: write # needed to allow julia-actions/cache to proactively delete old caches that it has created
       contents: write
       statuses: write
     steps:
-      - uses: actions/checkout@v4
-      - uses: julia-actions/setup-julia@v2
+      - uses: actions/checkout@v7
+      - uses: julia-actions/setup-julia@v3
         with:
           version: '1'
-      - uses: julia-actions/cache@v2
+      - uses: julia-actions/cache@v3
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
         run: |

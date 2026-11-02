@@ -4,16 +4,23 @@ CurrentModule = TwoBody
 
 # TwoBody.jl
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliafewbody.github.io/TwoBody.jl/stable) [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliafewbody.github.io/TwoBody.jl/dev) [![Build Status](https://github.com/JuliaFewBody/TwoBody.jl/workflows/CI/badge.svg)](https://github.com/JuliaFewBody/TwoBody.jl/actions)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1oc8hfyS4gaCxNvaY00rUiiDmGMPKpfxC?usp=sharing)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://juliafewbody.github.io/TwoBody.jl/stable/)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://juliafewbody.github.io/TwoBody.jl/dev/)
+[![Citation](https://img.shields.io/badge/citation-BibTeX-778899)](https://github.com/JuliaFewBody/TwoBody.jl/blob/main/CITATION.bib)
+[![License](https://img.shields.io/github/license/JuliaFewBody/TwoBody.jl)](https://github.com/JuliaFewBody/TwoBody.jl/blob/main/LICENSE)
+[![Build Status](https://github.com/JuliaFewBody/TwoBody.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/JuliaFewBody/TwoBody.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Coverage](https://codecov.io/gh/JuliaFewBody/TwoBody.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaFewBody/TwoBody.jl)
+[![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-contributor's%20guide-blueviolet)](https://github.com/SciML/ColPrac)
 
-[TwoBody.jl](https://github.com/JuliaFewBody/TwoBody.jl): a Julia package for quantum mechanical two-body problems
+TwoBody.jl provides a flexible framework for constructing two-body Hamiltonians and solving the corresponding Schrödinger equation using a variety of numerical methods. It covers approaches ranging from basis-set and grid methods to tensor-network, stochastic, and neural-network methods. Beyond serving as a proof of concept for [FewBody.jl](https://github.com/JuliaFewBody/FewBody.jl), TwoBody.jl is designed to support practical, cross-scale calculations of quantum two-body systems, from hadrons to molecules.
 
 ## Install
 
-Run the following code on the REPL or Jupyter Notebook to install this package.
+Run the following command in the Julia REPL or a notebook:
 
 ```julia
-import Pkg; Pkg.add(url="https://github.com/JuliaFewBody/TwoBody.jl.git")
+import Pkg; Pkg.add("TwoBody")
 ```
 
 ## Usage
