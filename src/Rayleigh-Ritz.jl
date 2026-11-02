@@ -1,9 +1,10 @@
-export solve, optimize
+export solve, optimize, WeinsteinBound, weinstein
 
 import LinearAlgebra
 import Optim
 import Printf
 import QuadGK
+import ForwardDiff
 import SpecialFunctions
 import Subscripts
 
@@ -14,8 +15,79 @@ struct ResultRayleighRitz
   ResultRayleighRitz(; args...) = new(NamedTuple(Dict(args)))
 end
 
+struct WeinsteinBound{T<:Real}
+  E::T
+  variance::T
+  lower::T
+  upper::T
+end
+
 function ψ(result::ResultRayleighRitz, r; n::Int=1)
   return sum(result.C[i,n] * TwoBody.φ(result.basisset[i], r) for i in 1:result.nₘₐₓ)
+end
+
+Base.show(io::IO, bound::WeinsteinBound) = print(
+  io,
+  "WeinsteinBound(E=$(bound.E), lower=$(bound.lower), upper=$(bound.upper))",
+)
+
+_weinstein_laplacian(wavefunction, r, l) =
+  ForwardDiff.derivative(x -> ForwardDiff.derivative(wavefunction, x), r) +
+  2 / r * ForwardDiff.derivative(wavefunction, r) -
+  l * (l + 1) / r^2 * wavefunction(r)
+
+_weinstein_action(o::Laplacian, wavefunction, r, l) =
+  o.coefficient * _weinstein_laplacian(wavefunction, r, l)
+
+_weinstein_action(o::Kinetic, wavefunction, r, l) =
+  -o.hbar^2 / (2o.m) * _weinstein_laplacian(wavefunction, r, l)
+
+_weinstein_action(o::RestEnergy, wavefunction, r, l) = o.m * o.c^2 * wavefunction(r)
+_weinstein_action(o::PotentialTerm, wavefunction, r, l) = V(o, r) * wavefunction(r)
+# A contact term makes ⟨H²⟩ infinite and a table cannot be evaluated between its nodes.
+_weinstein_action(o::Union{Delta,Tabulated}, wavefunction, r, l) =
+  throw(ArgumentError("Weinstein bound does not support $(typeof(o))"))
+_weinstein_action(o::Operator, wavefunction, r, l) =
+  throw(ArgumentError("Weinstein bound does not support $(typeof(o))"))
+
+_weinstein_angular_momentum(basis::Basis) = hasproperty(basis, :l) ? basis.l : 0
+
+function _weinstein_angular_momentum(basis::ContractedBasis)
+  angular_momenta = unique(_weinstein_angular_momentum(primitive) for primitive in getfield(basis, :primitives))
+  length(angular_momenta) == 1 ||
+    throw(ArgumentError("all primitives of a contracted basis must have the same angular momentum"))
+  return only(angular_momenta)
+end
+
+function _weinstein_angular_momentum(basisset::BasisSet)
+  angular_momenta = unique(_weinstein_angular_momentum(basis) for basis in basisset.basis)
+  length(angular_momenta) == 1 ||
+    throw(ArgumentError("all basis functions must have the same angular momentum"))
+  return only(angular_momenta)
+end
+
+function weinstein(result::ResultRayleighRitz; n::Int=1)
+  haskey(result, :hamiltonian) || throw(ArgumentError("the full solver result is required"))
+  1 <= n <= result.nₘₐₓ || throw(BoundsError(result.E, n))
+
+  l = _weinstein_angular_momentum(result.basisset)
+  wavefunction = r -> ψ(result, r; n=n)
+  hamiltonian_wavefunction = r -> sum(
+    _weinstein_action(term, wavefunction, r, l)
+    for term in result.hamiltonian.terms
+  )
+  # σ² = ‖(H - E)ψ‖²/‖ψ‖², which equals ⟨H²⟩ - E² for the Rayleigh-Ritz
+  # eigenvector (E is its Rayleigh quotient) but avoids the cancellation of two
+  # large numbers and is never negative. The radial measure (4π r² dr for the
+  # unnormalized s-wave bases, r² dr for the normalized GEM primitives) cancels
+  # in the ratio, so the result does not depend on the normalization
+  # convention of the basis set.
+  E = real(result.E[n])
+  residual = r -> hamiltonian_wavefunction(r) - E * wavefunction(r)
+  quadrature(f) = first(QuadGK.quadgk(r -> r^2 * f(r), 0.0, Inf, rtol=1e-9, atol=1e-11))
+  variance = real(quadrature(r -> abs2(residual(r))) / quadrature(r -> abs2(wavefunction(r))))
+  deviation = sqrt(variance)
+  return WeinsteinBound(E, variance, E - deviation, E + deviation)
 end
 
 Base.getproperty(result::ResultRayleighRitz, symbol::Symbol) = Base.getproperty(getfield(result,:data), symbol)
@@ -390,7 +462,7 @@ function element(o::RestEnergy, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianB
 end
 
 function element(o::Laplacian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-  return - 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
+  return - o.coefficient * 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
 end
 
 function element(o::Kinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
@@ -511,6 +583,30 @@ function element(o::Hamiltonian, B1::Basis, B2::Basis)
 end
 
 # docstring
+
+@doc raw"""
+`WeinsteinBound`
+
+Result of `weinstein` with the fields `E` (the Rayleigh–Ritz eigenvalue),
+`variance` (``\sigma^2``), `lower` (``E-\sigma``), and `upper` (``E+\sigma``).
+""" WeinsteinBound
+
+@doc raw"""
+`weinstein(result::ResultRayleighRitz; n=1)`
+
+Return the Weinstein energy interval ``[E-\sigma, E+\sigma]`` for state `n`,
+where ``\sigma^2=\|(\hat{H}-E)\psi\|^2/\langle\psi|\psi\rangle
+=\langle H^2\rangle-E^2`` is evaluated from the radial action of the
+Hamiltonian on the Rayleigh–Ritz wavefunction. The ratio makes the result
+independent of the normalization convention of the basis set. Weinstein's
+theorem guarantees that at least one exact eigenvalue of the Hamiltonian lies
+in the interval; it is the ``n``-th eigenvalue only when ``\sigma`` is smaller
+than the distance to the neighbouring levels.
+
+The Hamiltonian may contain `Laplacian`, `Kinetic`, `RestEnergy`, and the
+potential terms with an analytic `V(o, r)`; `Delta` and `Tabulated` are
+rejected. All basis functions must share the same angular momentum.
+""" weinstein
 
 @doc raw"""
 `solve(hamiltonian::Hamiltonian, basisset::BasisSet)`

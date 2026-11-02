@@ -159,6 +159,25 @@ which is amazingly good for only four basis functions according to [Thijssen(200
 solve(H, BS)
 ```
 
+## Weinstein bound
+
+For a normalized approximate eigenstate with energy ``E``, Weinstein's theorem guarantees that at least one exact eigenvalue lies in the interval
+
+```math
+[E-\sigma, E+\sigma],
+\qquad
+\sigma^2=\|(\hat{H}-E)\psi\|^2=\langle H^2\rangle-E^2.
+```
+
+It is the eigenvalue approximated by ``E`` when ``\sigma`` is smaller than the distance to the neighbouring levels. `weinstein` evaluates ``\sigma^2`` by applying the non-relativistic radial Hamiltonian to the Rayleigh–Ritz wavefunction. The Hamiltonian may contain `Laplacian`, `Kinetic`, `RestEnergy`, and potential terms defined by `V`.
+
+```@example example
+bound = weinstein(solve(H, BS))
+(bound.lower, bound.upper)
+```
+
+Reference: D. H. Weinstein, [*Proc. Natl. Acad. Sci. U.S.A.* **20**, 529–532 (1934)](https://doi.org/10.1073/pnas.20.9.529).
+
 ## Example of Hydrogen Atom
 
 Analytical solutions are implemented in [Antique.jl](https://ohno.github.io/Antique.jl/stable/HydrogenAtom/).
@@ -351,6 +370,7 @@ solve(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamilt
 optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
 optimize(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltonian(), info=1, progress=true, optimizer=Optim.NelderMead(), options...)
 optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
+weinstein
 ```
 
 ### Basis Set
