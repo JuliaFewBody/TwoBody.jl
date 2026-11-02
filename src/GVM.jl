@@ -103,7 +103,9 @@ Alias for [`GradientVariationalMethod`](@ref).
 const GVM = GradientVariationalMethod
 
 # The energy of a rejected basis set. A finite value keeps the line search of
-# the optimizer working, while `Inf` is recorded in the optimization log.
+# the optimizer working, while `Inf` is recorded in the optimization log. The
+# penalty is raised above the scale of the initial energy, so that it stays
+# above every admissible energy in large units such as eV.
 const _gvm_penalty = 1e+10
 
 # gradient
@@ -208,6 +210,7 @@ function solve(
   )
 
   history = NamedTuple[]
+  penalty = max(_gvm_penalty, 100 * abs(initial.energy))
 
   function objective!(F, G, x)
     exponents = exp.(x)
@@ -221,7 +224,7 @@ function solve(
     if !evaluation.valid
       isnothing(G) || fill!(G, 0)
       push!(history, (energy=Inf, parameters=exponents))
-      return isnothing(F) ? nothing : _gvm_penalty
+      return isnothing(F) ? nothing : penalty
     end
     isnothing(G) || _gvm_gradient!(
       G, hamiltonian, basis, exponents, evaluation.energy, evaluation.coefficients,
@@ -247,7 +250,8 @@ function solve(
   )
   final.valid || error(
     "GVM did not find a valid basis set: $(final.message); " *
-    "narrow [amin, amax] or increase overlap_tol=$(method.overlap_tol)",
+    "the optimizer ended on a rejected basis set, start from a different " *
+    "basis set or lower overlap_tol=$(method.overlap_tol)",
   )
 
   # result
