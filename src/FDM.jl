@@ -61,8 +61,9 @@ function _derivative_matrices(method::FiniteDifferenceMethod)
   D = FiniteDifferenceMatrices.fdmatrix(n, n=1, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
   D² = FiniteDifferenceMatrices.fdmatrix(n, n=2, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
   # The grid excludes the origin, so the first central stencil reaches r = 0.
-  # No explicit condition is imposed there: at r₁ = Δr the value ψ(0) cancels
-  # in D² + (2/r₁) D, see the documentation of the boundary conditions.
+  # No explicit condition is imposed there: for central differences at r₁ = Δr
+  # the value ψ(0) cancels in D² + (2/r₁) D, see the documentation of the
+  # boundary conditions. Values outside the grid are zero.
   return D, D²
 end
 

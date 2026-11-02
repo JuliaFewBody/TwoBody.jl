@@ -23,7 +23,7 @@ A uniform grid spacing is used, ``r_{i+1} = r_{i} + \Delta r``. See the API refe
 
 ## Boundary conditions
 
-The radial function satisfies ``\psi(-r)=(-1)^l\psi(r)``, so even ``l`` has ``\psi'(0)=0`` and odd ``l`` has ``\psi(0)=0``. With the second-order central differences on the default grid ``r_1=\Delta r``, the only stencil that reaches the origin is the first row, and there the value ``\psi(0)`` cancels exactly in the radial Laplacian,
+For a potential that is regular at the origin, the radial function behaves as ``r^l`` near ``r=0`` and can be extended with ``\psi(-r)=(-1)^l\psi(r)``, so even ``l`` has ``\psi'(0)=0`` and odd ``l`` has ``\psi(0)=0``. For the Coulomb potential the even-``l`` functions have a cusp instead, ``\psi'(0)=-Z\mu\,\psi(0)`` in atomic units, so the Neumann condition does not hold there. With the second-order central differences (`direction = :c`) on the default grid ``r_1=\Delta r``, the only stencil that reaches the origin is the first row, and there the value ``\psi(0)`` cancels exactly in the radial Laplacian,
 
 ```math
 \frac{\psi(r_2)-2\psi(r_1)+\psi(0)}{\Delta r^2}
@@ -31,7 +31,7 @@ The radial function satisfies ``\psi(-r)=(-1)^l\psi(r)``, so even ``l`` has ``\p
 =\frac{2\psi(r_2)-2\psi(r_1)}{\Delta r^2}.
 ```
 
-Therefore no explicit condition at the origin is needed, and even and odd ``l`` are distinguished by the centrifugal term alone; any elimination of ``\psi(0)``, for example the Neumann condition ``\psi(0)=(4\psi(r_1)-\psi(r_2))/3`` for even ``l``, gives the same Hamiltonian matrix. The parity condition would matter only for higher-order stencils, which reach ``r=-\Delta r``, or for a grid that does not start at ``r_1=\Delta r``. At the outer edge the grid is padded with ``\psi(r_\mathrm{max}+\Delta r)=0``.
+Therefore no explicit condition at the origin is needed, and even and odd ``l`` are distinguished by the centrifugal term alone; any elimination of ``\psi(0)``, for example the Neumann condition ``\psi(0)=(4\psi(r_1)-\psi(r_2))/3`` for even ``l``, gives the same Hamiltonian matrix. An origin condition would matter only for higher-order stencils, which reach ``r=-\Delta r``, or for a grid that does not start at ``r_1=\Delta r``; it would then have to be the parity condition for regular potentials and the cusp condition for the Coulomb potential. The one-sided stencils (`direction = :f` or `:b`) reach further outside the grid, and those values are set to zero. At the outer edge the grid is padded with ``\psi(r_N+\Delta r)=0``, where ``r_N`` is the last grid point.
 
 ## Usage
 
