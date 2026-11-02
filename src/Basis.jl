@@ -310,10 +310,15 @@ BS = GeometricBasisSet(GaussianBasis, 0.1, 80.0, 20)
 `CustomBasis(f)`
 
 An s-wave basis function defined by `f(r)`. Rayleigh–Ritz overlap,
-non-relativistic kinetic, rest-energy, and central-potential matrix elements
-are evaluated by radial quadrature. The function must be real-valued,
-square-integrable, differentiable by ForwardDiff.jl, and regular at the
-origin.
+non-relativistic kinetic, rest-energy, central-potential, and `Delta` matrix
+elements are evaluated by radial quadrature with the measure ``4\pi r^2
+\mathrm{d}r``. The function must be real-valued, square-integrable,
+differentiable by ForwardDiff.jl, and regular at the origin.
+
+A `CustomBasis` can be combined with `SimpleGaussianBasis` and
+`PowerSlaterBasis`, which share this convention. It cannot be combined with
+the normalized GEM primitives `GaussianBasis` and `ComplexGaussianBasis`,
+whose matrix elements use the radial measure ``r^2 \mathrm{d}r``.
 """ CustomBasis
 
 @doc raw"""

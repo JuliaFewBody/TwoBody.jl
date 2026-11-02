@@ -306,5 +306,23 @@
     @test custom_basis_result.S ≈ gaussian_result.S rtol=1e-9
     @test custom_basis_result.H ≈ gaussian_result.H rtol=1e-9
     @test custom_basis_result.E ≈ gaussian_result.E rtol=1e-9
+
+    # mixed with the unnormalized Gaussians that share the 4π r² measure
+    mixed = BasisSet(CustomBasis(r -> exp(-BS.basis[1].a * r^2)), BS.basis[2:end]...)
+    mixed_result = solve(gaussian_H, mixed, info=1)
+    @test mixed_result.S ≈ gaussian_result.S rtol=1e-9
+    @test mixed_result.E ≈ gaussian_result.E rtol=1e-9
+
+    # a contact term evaluates the functions at the origin
+    delta = Delta(coefficient=0.7)
+    c1 = CustomBasis(r -> exp(-r^2))
+    c2 = CustomBasis(r -> (1 + r) * exp(-2r))
+    @test TwoBody.element(delta, c1, c2) ≈ 0.7
+    @test TwoBody.element(delta, c1, SimpleGaussianBasis(2.0)) ≈ 0.7
+    @test TwoBody.element(delta, PowerSlaterBasis(1, 1.0), c1) ≈ 0
+
+    # the normalized GEM primitives use a different measure and are rejected
+    @test_throws MethodError TwoBody.element(c1, GaussianBasis(1.0))
+    @test_throws MethodError TwoBody.element(gaussian_H.terms[1], GaussianBasis(1.0), c1)
   end
 end
