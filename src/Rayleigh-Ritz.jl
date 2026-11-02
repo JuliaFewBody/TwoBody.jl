@@ -350,6 +350,10 @@ end
 
 function optimize(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
 
+  # `method` is Optim's name for the algorithm; the right-most keyword would
+  # silently override `optimizer` in the call below
+  haskey(options, :method) && throw(ArgumentError("pass the optimizer with the `optimizer` keyword, not `method`"))
+
   # optimize
   history = []
   res = Optim.optimize(
@@ -393,6 +397,10 @@ function optimize(hamiltonian::Hamiltonian, basis::Basis; perturbation=Hamiltoni
 end
 
 function optimize(hamiltonian::Hamiltonian, basisset::GeometricBasisSet; perturbation=Hamiltonian(), info=4, progress=true, optimizer=Optim.NelderMead(), options...)
+
+  # `method` is Optim's name for the algorithm; the right-most keyword would
+  # silently override `optimizer` in the call below
+  haskey(options, :method) && throw(ArgumentError("pass the optimizer with the `optimizer` keyword, not `method`"))
 
   # optimize
   history = []

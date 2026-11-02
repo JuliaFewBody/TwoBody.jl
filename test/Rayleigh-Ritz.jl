@@ -418,6 +418,8 @@
     @test optimized_method isa ResultOptimizationRayleighRitz
     @test optimized_method.E ≈ optimized.E
 
+    @test_throws ArgumentError optimize(H, SimpleGaussianBasis(1.0); method=TwoBody.Optim.NelderMead())
+
     optimized_minimal = optimize(H, SimpleGaussianBasis(1.0); info=-1, iterations=5)
     @test optimized_minimal isa ResultOptimizationRayleighRitz
     @test optimized_minimal.E[1] ≈ optimized.E[1]
