@@ -332,7 +332,10 @@ function element(o::Gaussian, b1::ComplexGaussianBasis, b2::ComplexGaussianBasis
     b1,
     b2,
   )
-  return real(o.coefficient * _complex_normalization_product(b1, b2) * raw)
+  value = o.coefficient * _complex_normalization_product(b1, b2) * raw
+  # The pair sum is real for a real range. A complex range, as produced by the
+  # complex scaling method, keeps its imaginary part.
+  return o.exponent isa Real ? real(value) : value
 end
 
 @doc raw"""

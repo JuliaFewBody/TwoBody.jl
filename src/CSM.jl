@@ -22,6 +22,8 @@ end
 
 Base.getproperty(result::ResultComplexScaling, symbol::Symbol) =
   Base.getproperty(getfield(result, :data), symbol)
+Base.haskey(result::ResultComplexScaling, symbol::Symbol) =
+  Base.haskey(getfield(result, :data), symbol)
 Base.show(io::IO, method::ComplexScalingMethod) = print(io, Base.string(method))
 Base.show(io::IO, result::ResultComplexScaling) = print(io, Base.string(result))
 
@@ -93,8 +95,13 @@ function solve(hamiltonian::Hamiltonian, method::ComplexScalingMethod)
   H = matrix(hamiltonian, method)
   decomposition = LinearAlgebra.eigen(H, S)
   order = sortperm(decomposition.values; by=real)
-  E = decomposition.values[order]
-  C = decomposition.vectors[:,order]
+  E = complex.(decomposition.values[order])
+  C = Matrix{ComplexF64}(decomposition.vectors[:,order])
+  # The eigenvectors of the complex-symmetric pencil are normalized with the
+  # bilinear product cᵀ S c = 1 (LAPACK scales them arbitrarily for θ > 0).
+  for n in axes(C, 2)
+    C[:,n] ./= sqrt(transpose(C[:,n]) * S * C[:,n])
+  end
   return ResultComplexScaling(;
     hamiltonian, method, basisset, nₘₐₓ=length(basisset), H, S, E, C,
   )
@@ -109,11 +116,18 @@ Configure complex scaling by the angle ``θ``.
 @doc raw"""
 `ResultComplexScaling`
 
-Result of a complex-scaled generalized eigenvalue problem.
+Result of a complex-scaled generalized eigenvalue problem with the properties
+`hamiltonian`, `method`, `basisset`, `nₘₐₓ`, `H`, `S`, `E`, and `C`. The
+complex eigenvalues `E` are sorted by their real part, and the columns of `C`
+are normalized with the bilinear product ``\pmb{c}^\top \pmb{S} \pmb{c} = 1``
+of the complex-symmetric problem.
 """ ResultComplexScaling
 
 @doc raw"""
 `solve(hamiltonian, method::ComplexScalingMethod)`
 
-Solve the complex-scaled Hamiltonian in the configured basis.
+Solve the complex-scaled Hamiltonian in the configured basis. Every term is
+continued analytically by `r → r e^{iθ}`; `Tabulated` potentials and
+`RelativisticKinetic` are not supported, and a `Custom` potential must be an
+analytic function that accepts complex arguments.
 """ solve(hamiltonian::Hamiltonian, method::ComplexScalingMethod)

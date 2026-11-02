@@ -28,7 +28,13 @@ result.E[1]
 ```
 
 `Tabulated` potentials are not supported because their analytic continuation is
-undefined.
+undefined, and `RelativisticKinetic` is not supported. A `Custom` potential
+must be an analytic function that accepts complex arguments; a piecewise or
+non-analytic `f` gives a meaningless continuation. A `Gaussian` potential is
+continued as ``\exp(-b e^{2iθ} r^2)``, so its matrix elements with Gaussian
+basis functions remain convergent only while the real part of the total
+exponent stays positive, which bounds the useful angle (``θ < π/4`` for the
+potential term alone).
 
 ## API reference
 
