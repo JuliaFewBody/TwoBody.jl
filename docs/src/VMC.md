@@ -2,6 +2,9 @@
 CurrentModule = TwoBody
 ```
 
+!!! warning
+    This method was implemented by [GPT-5.6 Sol High](https://github.com/JuliaFewBody/TwoBody.jl/pull/22) based on [PoC by Shuhei Ohno](https://github.com/JuliaFewBody/TwoBody.jl/issues/7). A detailed review by Shuhei Ohno has not yet been completed.
+
 # Variational Monte Carlo
 
 VMC estimates ``\langle E\rangle`` by averaging the local energy over positions sampled from the normalized density ``P(\mathbf{r})``:

@@ -2,6 +2,9 @@
 CurrentModule = TwoBody
 ```
 
+!!! warning
+    This method was implemented by [GPT-5.6 Sol High](https://github.com/JuliaFewBody/TwoBody.jl/pull/38) based on [PoC by Shuhei Ohno and Lucas Arenstein](https://github.com/JuliaFewBody/TwoBody.jl/issues/26). A detailed review by Shuhei Ohno has not yet been completed.
+
 # Quantics Tensor Train
 
 The quantics tensor train (QTT) solver rewrites a radial grid of ``N=2^q`` points as
@@ -63,12 +66,19 @@ Thus, when the QTT ranks remain moderate, storage grows as ``O(\log N)`` instead
 
 ## Usage
 
+Install and load TensorTrainNumerics.jl to activate the QTT extension.
+
+```julia
+import Pkg; Pkg.add("TensorTrainNumerics")
+```
+
 For the three-dimensional spherical oscillator in atomic units, configure the QTT
 grid with `quantics`; the number of interior grid points is `2^quantics`. Here a
 coarse grid is used so the example runs quickly.
 
 ```@example qtt
 using TwoBody
+using TensorTrainNumerics
 using Random
 
 Random.seed!(1234)
@@ -81,7 +91,7 @@ H = Hamiltonian(
 method = QuanticsTensorTrainMethod(
   quantics=5,
   r₀=0.0,
-  rₘₐₓ=8.0,
+  rₘₐₓ=50.0,
   l=0,
   tolerance=1e-8,
   maxbonddim=16,
@@ -152,8 +162,6 @@ organizers for their contributions and support.
 ```@docs; canonical=false
 QuanticsTensorTrainMethod
 solve(hamiltonian::Hamiltonian, method::QuanticsTensorTrainMethod)
-QTTVector
-QTTMatrix
 order
 ranks
 qttvalue
