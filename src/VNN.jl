@@ -1,10 +1,6 @@
 export VariationalNeuralNetwork, VNN
 
-import Lux
-import Optimisers
-import Printf
 import Random
-import Zygote
 
 _softplus(x) = max(x, zero(x)) + log1p(exp(-abs(x)))
 
@@ -29,8 +25,8 @@ struct VariationalNeuralNetwork{F<:FiniteDifferenceMethod,A,I,O,T<:AbstractFloat
     solver::Union{Nothing,Symbol}=nothing,
     architecture::AbstractVector{<:Integer}=[2],
     activation=_softplus,
-    init=Lux.glorot_normal,
-    optimizer=Optimisers.Adam(0.01),
+    init=nothing,
+    optimizer=nothing,
     maxiters::Int=1_000,
     abstol::Real=1e-8,
     patience::Int=10,
@@ -105,57 +101,18 @@ Base.string(method::VariationalNeuralNetwork) =
   ")"
 Base.show(io::IO, method::VariationalNeuralNetwork) = print(io, Base.string(method))
 
-function _neural_network(method::VariationalNeuralNetwork)
-  dimensions = [1; method.architecture; 1]
-  layers = [
-    Lux.Dense(
-      dimensions[index],
-      dimensions[index + 1],
-      method.activation;
-      init_weight=method.init,
-    ) for index in 1:(length(dimensions) - 1)
-  ]
-  return Lux.Chain(layers...)
-end
-
-_parameter_eltype(x::AbstractArray) = eltype(x)
-_parameter_eltype(x::Number) = typeof(x)
-
-function _parameter_eltype(x::Union{NamedTuple,Tuple})
-  for value in values(x)
-    type = _parameter_eltype(value)
-    isnothing(type) || return type
-  end
-  return nothing
-end
-
-_parameter_eltype(x) = nothing
-
-function _network_input(parameters, R)
-  type = _parameter_eltype(parameters)
-  isnothing(type) && throw(ArgumentError("the Lux model must contain at least one parameter"))
-  type <: Real || throw(ArgumentError("the Lux model parameters must be real-valued"))
-  return reshape(type.(R), 1, :)
-end
-
-function _trial_values(model, parameters, states, input, trial)
-  output, updated_states = Lux.apply(model, input, parameters, states)
-  length(output) == length(input) || throw(DimensionMismatch(
-    "the Lux model must return one wavefunction value for each radial-grid point",
+function _vnn_unavailable()
+  throw(ArgumentError(
+    "VNN support requires Lux.jl, Optimisers.jl, and Zygote.jl. Run " *
+    "`Pkg.add([\"Lux\", \"Optimisers\", \"Zygote\"])`, then load them with " *
+    "`using Lux, Optimisers, Zygote`.",
   ))
-  values = trial.(vec(input), vec(output))
-  eltype(values) <: Real ||
-    throw(ArgumentError("the trial wavefunction must be real-valued"))
-  return values, updated_states
 end
 
-function _validate_trial(values, energy)
-  all(isfinite, values) ||
-    throw(ArgumentError("the trial wavefunction must contain only finite values"))
-  any(value -> !iszero(value), values) ||
-    throw(ArgumentError("the trial wavefunction must not be identically zero"))
-  isfinite(energy) || throw(ArgumentError("the variational energy must be finite"))
-  return nothing
+function _vnn_extension()
+  extension = Base.get_extension(@__MODULE__, :TwoBodyVNNExt)
+  isnothing(extension) && _vnn_unavailable()
+  return extension
 end
 
 function solve(
@@ -163,7 +120,7 @@ function solve(
   method::VariationalNeuralNetwork;
   kwargs...,
 )
-  return solve(hamiltonian, _neural_network(method), method; kwargs...)
+  return _vnn_extension().solve_vnn(hamiltonian, method; kwargs...)
 end
 
 function solve(
@@ -177,110 +134,34 @@ function solve(
   trial=(r, value) -> value,
   info::Int=0,
 )
-  !isnothing(optimizer_state) && isnothing(parameters) &&
-    throw(ArgumentError("parameters must be supplied with optimizer_state"))
-
-  if isnothing(parameters) || isnothing(states)
-    initialized_parameters, initialized_states = Lux.setup(rng, model)
-    parameters = isnothing(parameters) ? initialized_parameters : parameters
-    states = isnothing(states) ? initialized_states : states
-  end
-
-  fdm = method.fdm
-  H = matrix(hamiltonian, fdm)
-  J = _jacobian(fdm)
-  input = _network_input(parameters, fdm.R)
-
-  values, states = _trial_values(model, parameters, states, input, trial)
-  energy = _rayleigh_quotient(values, H, J)
-  _validate_trial(values, energy)
-
-  history = [energy]
-  optimizer_state = isnothing(optimizer_state) ?
-    Optimisers.setup(method.optimizer, parameters) : optimizer_state
-  converged = false
-  stable_steps = 0
-  n_iterations = 0
-
-  if 0 < info
-    println("\n# method\n")
-    println(method)
-    println("\n# optimization\n")
-    Printf.@printf("%9s\t%14s\n", "iteration", "energy")
-    Printf.@printf("%9d\t%+.12e\n", 0, energy)
-  end
-
-  for iteration in 1:method.maxiters
-    gradients = first(Zygote.gradient(parameters) do candidate_parameters
-      candidate_values, _ =
-        _trial_values(model, candidate_parameters, states, input, trial)
-      _rayleigh_quotient(candidate_values, H, J)
-    end)
-    optimizer_state, parameters =
-      Optimisers.update(optimizer_state, parameters, gradients)
-
-    previous_energy = energy
-    values, states = _trial_values(model, parameters, states, input, trial)
-    energy = _rayleigh_quotient(values, H, J)
-    _validate_trial(values, energy)
-    push!(history, energy)
-    n_iterations = iteration
-
-    if abs(energy - previous_energy) <= method.abstol
-      stable_steps += 1
-      converged = method.patience <= stable_steps
-    else
-      stable_steps = 0
-    end
-
-    if 0 < info && (iteration % method.every == 0 || converged || iteration == method.maxiters)
-      Printf.@printf("%9d\t%+.12e\n", iteration, energy)
-    end
-    converged && break
-  end
-
-  normalization = _normalization(values, fdm, J)
-  normalized_values = normalization * values
-  parameter_type = _parameter_eltype(parameters)
-  wavefunction = function (r::Real)
-    scalar_input = reshape(parameter_type[r], 1, 1)
-    output, _ = Lux.apply(model, scalar_input, parameters, states)
-    return normalization * trial(r, only(output))
-  end
-
-  return (
-    hamiltonian=hamiltonian,
-    method=method,
-    model=model,
+  return _vnn_extension().solve_vnn(
+    hamiltonian,
+    model,
+    method;
+    rng=rng,
     parameters=parameters,
     states=states,
     optimizer_state=optimizer_state,
-    H=H,
-    J=J,
-    E=energy,
-    ψ=normalized_values,
-    raw_ψ=values,
-    wavefunction=wavefunction,
-    history=history,
-    n_iterations=n_iterations,
-    converged=converged,
+    trial=trial,
+    info=info,
   )
 end
 
 @doc raw"""
-`VariationalNeuralNetwork(; fdm=nothing, Δr=nothing, rₘₐₓ=nothing, R=nothing, l=nothing, direction=nothing, solver=nothing, architecture=[2], activation=softplus, init=Lux.glorot_normal, optimizer=Optimisers.Adam(0.01), maxiters=1000, abstol=1e-8, patience=10, every=100)`
+    VariationalNeuralNetwork(; fdm=nothing, Δr=nothing, rₘₐₓ=nothing,
+      R=nothing, l=nothing, direction=nothing, solver=nothing,
+      architecture=[2], activation=softplus, init=nothing, optimizer=nothing,
+      maxiters=1000, abstol=1e-8, patience=10, every=100)
 
 Options for optimizing a Lux neural network as a radial trial wavefunction.
-`VNN` is an abbreviation for `VariationalNeuralNetwork`.
-
-Pass an existing `FiniteDifferenceMethod` as `fdm`, or use the finite-difference
-keywords directly. `architecture` defines the hidden-layer widths of the
-standard Lux model used by `solve(hamiltonian, method)`. A custom Lux model can
-instead be supplied with `solve(hamiltonian, model, method)`.
+`VNN` is an abbreviation for `VariationalNeuralNetwork`. VNN support is activated
+by loading Lux.jl, Optimisers.jl, and Zygote.jl. If `init` or `optimizer` is
+`nothing`, the extension uses `Lux.glorot_normal` or `Optimisers.Adam(0.01)`,
+respectively.
 """ VariationalNeuralNetwork
 
 @doc raw"""
-`solve(hamiltonian, method::VariationalNeuralNetwork; kwargs...)`
+    solve(hamiltonian, method::VariationalNeuralNetwork; kwargs...)
 
 Build the standard Lux model specified by `method.architecture` and minimize its
 finite-difference Rayleigh quotient. See the three-argument overload to supply a
@@ -288,24 +169,14 @@ custom Lux model.
 """ solve(hamiltonian::Hamiltonian, method::VariationalNeuralNetwork; kwargs...)
 
 @doc raw"""
-`solve(hamiltonian, model, method::VariationalNeuralNetwork; rng=Random.MersenneTwister(123), parameters=nothing, states=nothing, optimizer_state=nothing, trial=(r, value) -> value, info=0)`
+    solve(hamiltonian, model, method::VariationalNeuralNetwork;
+          rng=Random.MersenneTwister(123), parameters=nothing, states=nothing,
+          optimizer_state=nothing, trial=(r, value) -> value, info=0)
 
-Minimize the finite-difference Rayleigh quotient
-
-```math
-E[\psi_\theta] =
-\frac{\pmb{\psi}_\theta^\mathsf{T}\pmb{J}\pmb{H}\pmb{\psi}_\theta}
-     {\pmb{\psi}_\theta^\mathsf{T}\pmb{J}\pmb{\psi}_\theta}
-```
-
-with respect to the parameters of a Lux model. The model receives the complete
-radial grid as a batch and must return one real value per grid point. `trial`
-can impose an envelope or boundary condition on the raw output. Pass returned
-`parameters`, `states`, and optionally `optimizer_state` to continue training.
-
-The result contains the energy `E`, normalized grid values `ψ`, raw values
-`raw_ψ`, a callable `wavefunction`, Lux variables, optimizer state, energy
-`history`, `n_iterations`, and `converged`.
+Minimize the finite-difference Rayleigh quotient with respect to the parameters of
+a Lux model. The model receives the complete radial grid as a batch and must return
+one real value per grid point. Pass returned `parameters`, `states`, and optionally
+`optimizer_state` to continue training.
 """ solve(
   hamiltonian::Hamiltonian,
   model,
