@@ -340,6 +340,10 @@ for i in 1:4
 end
 ```
 
+## Acknowledgments
+
+We thank the participants of the [JuliaHEP Workshop 2025](https://indico.cern.ch/e/juliahep2025) at Princeton for feedback on matrix assembly.
+
 ## API reference
 
 ### Solver

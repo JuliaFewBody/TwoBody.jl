@@ -13,6 +13,8 @@
     SimpleGaussianBasis(0.1219492),
   )
   res = solve(H, BS)
+
+  @test TwoBody.matrix(H, BS) ≈ sum(TwoBody.matrix(term, BS) for term in H.terms)
   
   println("4π×∫|ψ(r)|²r²dr = 1")
   println("  i\tnumerical  \tanalytical")
