@@ -13,6 +13,13 @@
   complex_scaling = solve(coulomb, ComplexScalingMethod(basisset))
   @test complex_scaling.E ≈ rayleigh_ritz.E rtol=1e-11
 
+  # the bound state is stable under the rotation while the continuum rotates
+  # into the lower half-plane
+  rotated = solve(coulomb, ComplexScalingMethod(basisset; θ=θ))
+  @test abs(rotated.E[1] - rayleigh_ritz.E[1]) < 1e-2
+  @test abs(imag(rotated.E[1])) < 1e-2
+  @test minimum(imag, rotated.E) < -0.1
+
   gaussian = Gaussian(coefficient=-2, exponent=0.7)
   simple = SimpleGaussianBasis(0.4)
   method = ComplexScalingMethod(simple; θ=θ)
