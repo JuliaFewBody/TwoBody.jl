@@ -39,9 +39,6 @@ end
 ECGCoulomb(coefficient::Real, w::AbstractVector{<:Real}) =
   ECGCoulomb(coefficient, collect(w))
 
-Base.string(basis::ExplicitlyCorrelatedGaussianBasis) =
-  "ECGBasis(A=$(basis.A), rank=$(length(basis.prefactors)))"
-
 function _ecg_coordinates(coordinates::AbstractMatrix, n::Int)
   size(coordinates) == (n, 3) || throw(DimensionMismatch("coordinates must have size ($n, 3)"))
   return vec(permutedims(coordinates))
