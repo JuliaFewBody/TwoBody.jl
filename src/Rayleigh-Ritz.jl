@@ -86,7 +86,7 @@ function Base.string(result::ResultRayleighRitz)
     end
     # eigenfunction
     text *= "\n# eigenfunction\n\n"
-    for n in 1:result.nₘₐₓ
+    for n in 1:min(result.nₘₐₓ, result.info)
       text *= Printf.@sprintf("ψ%s(r) = ", Subscripts.sub("$n"))
       if result.nₘₐₓ > 5
         text *= "( "
@@ -113,7 +113,7 @@ function Base.string(result::ResultRayleighRitz)
     end
     # eigenvalue
     text *= "\n# eigenvalue\n\n"
-    for n in 1:result.nₘₐₓ
+    for n in 1:min(result.nₘₐₓ, result.info)
       text *= Printf.@sprintf("E%s = %s\n", Subscripts.sub("$n"), "$(result.E[n])")
     end
     if 0 < result.info
