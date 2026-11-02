@@ -2,6 +2,9 @@
 CurrentModule = TwoBody
 ```
 
+!!! warning
+    This method was implemented by [GPT-5.6 Sol High](https://github.com/JuliaFewBody/TwoBody.jl/pull/43) based on [PoC by Shuhei Ohno](https://github.com/JuliaFewBody/TwoBody.jl/issues/33). A detailed review by Shuhei Ohno has not yet been completed.
+
 # Variational Neural Network
 
 `VariationalNeuralNetwork` (`VNN`) uses a neural network defined with
@@ -17,12 +20,22 @@ E[\psi_\theta] =
 where the grid, Hamiltonian matrix ``\pmb{H}``, and radial Jacobian ``\pmb{J}``
 are provided by `FiniteDifferenceMethod`.
 
+Install and load the optional dependencies to activate the VNN extension.
+
+```julia
+import Pkg; Pkg.add(["Lux", "Optimisers", "Zygote"])
+using Lux, Optimisers, Zygote
+```
+
 ## Standard model
 
 The two-argument `solve` method constructs a Lux network from `architecture`.
 
 ```@example vnn
 using TwoBody
+using Lux
+using Optimisers
+using Zygote
 
 H = Hamiltonian(
   Kinetic(hbar=1, m=1),
@@ -57,6 +70,7 @@ An arbitrary Lux model can be passed explicitly. The model receives radii as a
 using Lux
 using Optimisers
 using Random
+using Zygote
 
 model = Lux.Chain(
   Lux.Dense(1 => 8, tanh),
