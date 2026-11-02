@@ -110,7 +110,7 @@ currently available.
 |:---|---:|---:|
 | [RR](@ref Rayleigh-Ritz-Method) | -0.499981735104 | -0.124997703473 |
 | [FC](@ref Free-Complement-Method) | -0.499999999978 | -0.123665583532 |
-| [GEM](@ref Gaussian-Expansion-Method) | -0.499981735103 | -0.124997703473 |
+| [GEM](@ref GEM) | -0.499981735103 | -0.124997703473 |
 | [FDM](@ref Finite-Difference-Method) | -0.498756211209 | -0.124921972504 |
 | [QTT+DMRG](@ref Quantics-Tensor-Train) | -0.499702911360 | -0.124981415403 |
 | [VNN](@ref Variational-Neural-Network) | -0.468779111883 | — |
