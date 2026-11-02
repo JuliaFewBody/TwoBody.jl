@@ -342,7 +342,7 @@ end
 
 ## Acknowledgments
 
-We thank the participants of the [JuliaHEP Workshop 2025](https://indico.cern.ch/e/juliahep2025) for feedback on matrix assembly.
+We thank the participants of the [JuliaHEP Workshop 2025](https://indico.cern.ch/e/juliahep2025) at Princeton for feedback on matrix assembly.
 
 ## API reference
 
