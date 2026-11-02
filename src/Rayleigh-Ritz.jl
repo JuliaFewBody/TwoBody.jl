@@ -481,6 +481,12 @@ element(o::PotentialTerm, B1::_SWaveBasis, B2::CustomBasis) = _custom_potential_
 
 element(o::Delta, B1::CustomBasis, B2::Union{CustomBasis,_SWaveBasis}) = _custom_delta_element(o, B1, B2)
 element(o::Delta, B1::_SWaveBasis, B2::CustomBasis) = _custom_delta_element(o, B1, B2)
+element(o::Delta, B1::_SWaveBasis, B2::_SWaveBasis) = _custom_delta_element(o, B1, B2)
+
+element(o::Tabulated, B1::CustomBasis, B2::Union{CustomBasis,_SWaveBasis}) =
+  throw(ArgumentError("CustomBasis does not support Tabulated potentials"))
+element(o::Tabulated, B1::_SWaveBasis, B2::CustomBasis) =
+  throw(ArgumentError("CustomBasis does not support Tabulated potentials"))
 
 @inline function element(B1::ContractedBasis, B2::Basis)
   return _contracted_bra_element(

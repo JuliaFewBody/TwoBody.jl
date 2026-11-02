@@ -52,7 +52,7 @@ Base.@kwdef struct SimpleGaussianBasis{T<:Real} <: PrimitiveBasis
   a::T = 1
 end
 
-Base.@kwdef struct CustomBasis{F<:Function} <: Basis
+Base.@kwdef struct CustomBasis{F<:Function} <: PrimitiveBasis
   f::F
 end
 
@@ -315,10 +315,12 @@ elements are evaluated by radial quadrature with the measure ``4\pi r^2
 \mathrm{d}r``. The function must be real-valued, square-integrable,
 differentiable by ForwardDiff.jl, and regular at the origin.
 
-A `CustomBasis` can be combined with `SimpleGaussianBasis` and
-`PowerSlaterBasis`, which share this convention. It cannot be combined with
-the normalized GEM primitives `GaussianBasis` and `ComplexGaussianBasis`,
-whose matrix elements use the radial measure ``r^2 \mathrm{d}r``.
+A `CustomBasis` is a `PrimitiveBasis`: it can be combined with
+`SimpleGaussianBasis` and `PowerSlaterBasis`, which share this convention, in
+a `BasisSet` or a `ContractedBasis`. It cannot be combined with the normalized
+GEM primitives `GaussianBasis` and `ComplexGaussianBasis`, whose matrix
+elements use the radial measure ``r^2 \mathrm{d}r``, and `Tabulated`
+potentials are rejected because they cannot be evaluated between their nodes.
 """ CustomBasis
 
 @doc raw"""
