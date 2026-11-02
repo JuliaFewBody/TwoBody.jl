@@ -77,6 +77,22 @@
     exact = weinstein(solve(H, PowerSlaterBasis(0, 1.0)))
     @test exact.E ≈ -0.5 atol=1e-12
     @test exact.variance ≈ 0 atol=1e-7
+
+    # the centrifugal term enters through basis.l, also inside a contraction
+    p_wave = solve(H, BasisSet((GaussianBasis(a; l=1, m=0) for a in TwoBody.geometric(0.1, 80.0, 20))...))
+    p_bound = weinstein(p_wave)
+    @test p_bound.lower < -0.125 < p_bound.upper
+    @test 0 <= p_bound.variance < 0.1
+    contracted_p = ContractedBasis((1.0, 0.5), (GaussianBasis(1.0; l=1), GaussianBasis(2.0; l=1)))
+    @test TwoBody._weinstein_angular_momentum(BasisSet(contracted_p, GaussianBasis(0.5; l=1))) == 1
+    @test_throws ArgumentError TwoBody._weinstein_angular_momentum(BasisSet(GaussianBasis(1.0; l=1), GaussianBasis(2.0; l=0)))
+
+    # unsupported operators are rejected explicitly
+    contact = solve(Hamiltonian(Kinetic(hbar=1, m=1), Delta(coefficient=1.0)), GeometricBasisSet(GaussianBasis, 0.1, 10.0, 5))
+    @test_throws ArgumentError weinstein(contact)
+
+    # the Laplacian element honours its coefficient
+    @test TwoBody.element(Laplacian(coefficient=-0.5), BS[1], BS[2]) ≈ TwoBody.element(Kinetic(hbar=1, m=1), BS[1], BS[2])
   end
 
   @testset "hadron spectroscopy" begin

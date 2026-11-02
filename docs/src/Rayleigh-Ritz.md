@@ -161,15 +161,15 @@ solve(H, BS)
 
 ## Weinstein bound
 
-For a normalized approximate eigenstate, the Weinstein interval is
+For a normalized approximate eigenstate with energy ``E``, Weinstein's theorem guarantees that at least one exact eigenvalue lies in the interval
 
 ```math
-E-\sigma \le E_\mathrm{exact} \le E+\sigma,
+[E-\sigma, E+\sigma],
 \qquad
-\sigma^2=\langle H^2\rangle-E^2.
+\sigma^2=\|(\hat{H}-E)\psi\|^2=\langle H^2\rangle-E^2.
 ```
 
-`weinstein` evaluates ``\langle H^2\rangle`` by applying the non-relativistic radial Hamiltonian to the Rayleigh–Ritz wavefunction. The Hamiltonian may contain `Laplacian`, `Kinetic`, `RestEnergy`, and potential terms defined by `V`.
+It is the eigenvalue approximated by ``E`` when ``\sigma`` is smaller than the distance to the neighbouring levels. `weinstein` evaluates ``\sigma^2`` by applying the non-relativistic radial Hamiltonian to the Rayleigh–Ritz wavefunction. The Hamiltonian may contain `Laplacian`, `Kinetic`, `RestEnergy`, and potential terms defined by `V`.
 
 ```@example example
 bound = weinstein(solve(H, BS))
