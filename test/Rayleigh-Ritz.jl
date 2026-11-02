@@ -302,5 +302,50 @@
     gaussian_result = solve(gaussian_H, BS, info=1)
     @test custom_result.H ≈ gaussian_result.H rtol=1e-9
     @test custom_result.E ≈ gaussian_result.E rtol=1e-9
+
+    custom_basis = BasisSet((CustomBasis(r -> exp(-b.a * r^2)) for b in BS.basis)...)
+    custom_basis_result = solve(gaussian_H, custom_basis, info=1)
+    @test custom_basis_result.S ≈ gaussian_result.S rtol=1e-9
+    @test custom_basis_result.H ≈ gaussian_result.H rtol=1e-9
+    @test custom_basis_result.E ≈ gaussian_result.E rtol=1e-9
+
+    # mixed with the unnormalized Gaussians that share the 4π r² measure
+    mixed = BasisSet(CustomBasis(r -> exp(-BS.basis[1].a * r^2)), BS.basis[2:end]...)
+    mixed_result = solve(gaussian_H, mixed, info=1)
+    @test mixed_result.S ≈ gaussian_result.S rtol=1e-9
+    @test mixed_result.E ≈ gaussian_result.E rtol=1e-9
+
+    # a contact term evaluates the functions at the origin
+    delta = Delta(coefficient=0.7)
+    c1 = CustomBasis(r -> exp(-r^2))
+    c2 = CustomBasis(r -> (1 + r) * exp(-2r))
+    @test TwoBody.element(delta, c1, c2) ≈ 0.7
+    @test TwoBody.element(delta, c1, SimpleGaussianBasis(2.0)) ≈ 0.7
+    @test TwoBody.element(delta, PowerSlaterBasis(1, 1.0), c1) ≈ 0
+
+    # the normalized GEM primitives use a different measure and are rejected
+    @test_throws MethodError TwoBody.element(c1, GaussianBasis(1.0))
+    @test_throws MethodError TwoBody.element(gaussian_H.terms[1], GaussianBasis(1.0), c1)
+
+    # the order of custom and primitive functions does not matter, and a
+    # CustomBasis is a primitive that can be contracted
+    reversed = BasisSet(BS.basis[1:end-1]..., CustomBasis(r -> exp(-BS.basis[end].a * r^2)))
+    @test solve(gaussian_H, reversed, info=1).E ≈ gaussian_result.E rtol=1e-9
+    contracted_custom = ContractedBasis((1.0, 0.5), (SimpleGaussianBasis(1.0), CustomBasis(r -> exp(-2r^2))))
+    contracted_gaussian = ContractedBasis((1.0, 0.5), (SimpleGaussianBasis(1.0), SimpleGaussianBasis(2.0)))
+    @test TwoBody.element(contracted_custom, contracted_custom) ≈ TwoBody.element(contracted_gaussian, contracted_gaussian) rtol=1e-9
+    @test TwoBody.element(gaussian_H, contracted_custom, contracted_custom) ≈ TwoBody.element(gaussian_H, contracted_gaussian, contracted_gaussian) rtol=1e-9
+    @test TwoBody.element(RestEnergy(c=2.0, m=1.5), c1, SimpleGaussianBasis(2.0)) ≈ 6 * TwoBody.element(c1, SimpleGaussianBasis(2.0))
+    @test TwoBody.element(delta, SimpleGaussianBasis(1.0), SimpleGaussianBasis(2.0)) ≈ 0.7
+
+    # a Slater-type custom function: the exact hydrogen 1s orbital, also mixed
+    # with the analytic PowerSlaterBasis
+    hydrogen = Hamiltonian(Kinetic(hbar=1, m=1), Coulomb(coefficient=-1))
+    @test solve(hydrogen, CustomBasis(r -> exp(-r)), info=1).E[1] ≈ -0.5 atol=1e-8
+    slater_pair = BasisSet(PowerSlaterBasis(0, 1.0), CustomBasis(r -> exp(-1.5r)))
+    slater_reference = BasisSet(PowerSlaterBasis(0, 1.0), PowerSlaterBasis(0, 1.5))
+    @test solve(hydrogen, slater_pair, info=1).E ≈ solve(hydrogen, slater_reference, info=1).E rtol=1e-8
+
+    @test_throws ArgumentError TwoBody.element(Tabulated(0.0:0.1:1.0, ones(11)), c1, c2)
   end
 end

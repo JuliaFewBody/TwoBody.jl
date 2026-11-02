@@ -4,6 +4,7 @@ import LinearAlgebra
 import Optim
 import Printf
 import QuadGK
+import ForwardDiff
 import SpecialFunctions
 import Subscripts
 
@@ -431,8 +432,12 @@ function element(o::Gaussian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBas
 end
 
 function element(o::Custom, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
+  return _radial_integral(r -> φ(SGB1, r) * V(o, r) * φ(SGB2, r))
+end
+
+function _radial_integral(f)
   value, _ = QuadGK.quadgk(
-    r -> 4π * r^2 * φ(SGB1, r) * V(o, r) * φ(SGB2, r),
+    r -> 4π * r^2 * f(r),
     0.0,
     Inf,
     rtol=1e-10,
@@ -440,6 +445,49 @@ function element(o::Custom, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis
   )
   return value
 end
+
+
+_custom_overlap(B1::Basis, B2::Basis) =
+  _radial_integral(r -> conj(φ(B1, r)) * φ(B2, r))
+
+_custom_potential_element(o::PotentialTerm, B1::Basis, B2::Basis) =
+  _radial_integral(r -> conj(φ(B1, r)) * V(o, r) * φ(B2, r))
+
+_custom_kinetic_element(o::Kinetic, B1::Basis, B2::Basis) =
+  o.hbar^2 / (2o.m) * _radial_integral(
+    r -> conj(ForwardDiff.derivative(x -> φ(B1, x), r)) *
+         ForwardDiff.derivative(x -> φ(B2, x), r),
+  )
+
+# CustomBasis is a full three-dimensional s-wave function, so its matrix
+# elements use the measure 4π r² dr. It can be mixed with the unnormalized
+# s-wave bases that share this convention, but not with the GEM primitives,
+# whose radial functions are normalized with the measure r² dr.
+const _SWaveBasis = Union{SimpleGaussianBasis,PowerSlaterBasis}
+
+_custom_delta_element(o::Delta, B1::Basis, B2::Basis) =
+  o.coefficient * conj(φ(B1, 0.0)) * φ(B2, 0.0)
+
+element(B1::CustomBasis, B2::Union{CustomBasis,_SWaveBasis}) = _custom_overlap(B1, B2)
+element(B1::_SWaveBasis, B2::CustomBasis) = _custom_overlap(B1, B2)
+
+element(o::RestEnergy, B1::CustomBasis, B2::Union{CustomBasis,_SWaveBasis}) = o.m * o.c^2 * _custom_overlap(B1, B2)
+element(o::RestEnergy, B1::_SWaveBasis, B2::CustomBasis) = o.m * o.c^2 * _custom_overlap(B1, B2)
+
+element(o::Kinetic, B1::CustomBasis, B2::Union{CustomBasis,_SWaveBasis}) = _custom_kinetic_element(o, B1, B2)
+element(o::Kinetic, B1::_SWaveBasis, B2::CustomBasis) = _custom_kinetic_element(o, B1, B2)
+
+element(o::PotentialTerm, B1::CustomBasis, B2::Union{CustomBasis,_SWaveBasis}) = _custom_potential_element(o, B1, B2)
+element(o::PotentialTerm, B1::_SWaveBasis, B2::CustomBasis) = _custom_potential_element(o, B1, B2)
+
+element(o::Delta, B1::CustomBasis, B2::Union{CustomBasis,_SWaveBasis}) = _custom_delta_element(o, B1, B2)
+element(o::Delta, B1::_SWaveBasis, B2::CustomBasis) = _custom_delta_element(o, B1, B2)
+element(o::Delta, B1::_SWaveBasis, B2::_SWaveBasis) = _custom_delta_element(o, B1, B2)
+
+element(o::Tabulated, B1::CustomBasis, B2::Union{CustomBasis,_SWaveBasis}) =
+  throw(ArgumentError("CustomBasis does not support Tabulated potentials"))
+element(o::Tabulated, B1::_SWaveBasis, B2::CustomBasis) =
+  throw(ArgumentError("CustomBasis does not support Tabulated potentials"))
 
 @inline function element(B1::ContractedBasis, B2::Basis)
   return _contracted_bra_element(
