@@ -38,7 +38,9 @@ Finite time steps and walker populations introduce bias. Convergence should be
 checked by reducing ``\Delta t`` and increasing `n_walkers`. See
 [Reynolds et al. (1990)](https://doi.org/10.1063/1.4822960) and
 [Kosztin et al. (1996)](https://doi.org/10.1119/1.18168).
-The reported `standard_error` does not account for autocorrelation.
+The reported `standard_error` does not account for autocorrelation, and no
+importance sampling is used, so singular potentials such as the Coulomb
+potential carry an additional bias of a few percent at these settings.
 
 ## API reference
 
