@@ -18,5 +18,6 @@ include("./FDM.jl")
 include("./QTT.jl")
 include("./VNN.jl")
 include("./VMC.jl")
+include("./DMC.jl")
 
 end
