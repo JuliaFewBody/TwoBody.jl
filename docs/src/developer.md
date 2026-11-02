@@ -69,6 +69,38 @@ This is the typical workflow for making changes.
 
 8. Submit a pull request on GitHub.
 
+## GitHub Actions
+
+CI tests Julia 1.10 and 1.12, checks installation without optional solver dependencies,
+and builds the documentation. The Julia 1.10 test job collects coverage for `src` and
+`ext`, converts it to `lcov.info`, and uploads it to Codecov. Repository builds other
+than Dependabot runs authenticate using GitHub OIDC; no `CODECOV_TOKEN` secret is
+needed. Upload errors fail these jobs so that a broken integration is visible.
+Fork and Dependabot runs attempt tokenless uploads without OIDC; failures in the
+upload step do not fail their test jobs. Test and coverage-generation failures still
+fail CI. Codecov's action handles public fork PRs using prefixed branch names, so
+organization-wide token authentication can remain enabled; see
+[Codecov's token documentation](https://docs.codecov.com/docs/codecov-tokens#commits-on-unprotected-branches).
+
+To check formatting, run **Runic formatting** from the repository's Actions tab and
+select the branch to check. The workflow reports formatting differences as a failed
+check and saves a `runic-formatting-patch` artifact only when the patch is nonempty.
+Download and extract the artifact,
+then apply `runic.patch` with `git apply runic.patch` in a checkout of the same commit.
+Review and commit the changes as usual. Formatting runs only on manual dispatch.
+
+CompatHelper runs daily and can also be dispatched manually. In **Settings > Actions >
+General**, enable **Allow GitHub Actions to create and approve pull requests** so that
+it can open dependency updates. If GitHub disables its schedule after repository
+inactivity, re-enable the workflow in the Actions tab. The workflow uses
+`DOCUMENTER_KEY` as `COMPATHELPER_PRIV` so its pull requests can trigger CI.
+
+TagBot uses `GITHUB_TOKEN` to create releases and `DOCUMENTER_KEY` to push tags that
+trigger documentation builds. The key must be configured as a deploy key with write
+access. Releases for commits that modify workflow files may require manual creation
+or a personal access token with workflow scope; see the
+[TagBot troubleshooting guide](https://github.com/JuliaRegistries/TagBot#commits-that-modify-workflow-files).
+
 ## Adding New Operators and Solvers
 
 TwoBody.jl uses Julia's multiple dispatch to keep the physical problem separate from its numerical solution.
@@ -98,9 +130,10 @@ To register a release in the [General](https://github.com/JuliaRegistries/Genera
 
 ## Architecture
 
-`src/TwoBody.jl` defines the `TwoBody` module and includes the source files in dependency order. `Hamiltonian.jl` defines the shared problem representation. `Basis.jl` supports Rayleigh–Ritz and GEM, and `FDM.jl` supplies the discretization used by the variational neural-network method. The solver files extend `solve` for their respective method types.
+`src/TwoBody.jl` defines the `TwoBody` module and includes the source files in dependency order. `Hamiltonian.jl` defines the shared problem representation. `Basis.jl` supports the Rayleigh–Ritz and Gaussian expansion implementations, and `FDM.jl` supplies the discretization used by the variational neural-network method. The solver files extend `solve` for their respective method types.
 
-```mermaid
+```@raw html
+<pre class="mermaid">
 ---
 config:
   layout: elk
@@ -119,9 +152,17 @@ flowchart TD
   T["TwoBody.jl"]
 
   H --> D
-  H --> R & G & F & Q & N & V
-  B --> R & G
+  H --> R &amp; G &amp; F &amp; Q &amp; N &amp; V
+  B --> R &amp; G
   R --> G
   F --> N
-  H & D & B & R & G & F & Q & N & V --> T
+  H &amp; D &amp; B &amp; R &amp; G &amp; F &amp; Q &amp; N &amp; V --> T
+</pre>
+<script type="module">
+  // Use the pinned ESM conversion on this page only. The dist bundle's FastDOM
+  // dependency registers anonymous AMD modules and breaks Documenter's math loader.
+  import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11.17.2/+esm';
+  mermaid.initialize({ startOnLoad: false, theme: "neutral" });
+  await mermaid.run({ querySelector: '.mermaid' });
+</script>
 ```
