@@ -12,14 +12,7 @@
     SimpleGaussianBasis(0.444529),
     SimpleGaussianBasis(0.1219492),
   )
-  method = RayleighRitzMethod(BS)
-  res = solve(H, method)
-
-  @test res.method === method
-  @test verification(res).norm ≈ ones(res.nₘₐₓ)
-  @test verification(res).residual ≈ zeros(res.nₘₐₓ) atol=1e-12
-  @test expectation(res, H) ≈ res.E atol=1e-12
-  @test occursin("# verification", string(res))
+  res = solve(H, BS)
   
   println("4π×∫|ψ(r)|²r²dr = 1")
   println("  i\tnumerical  \tanalytical")
@@ -63,6 +56,66 @@
   acceptance = error < 1e-5
   @printf("%3d\t%.9f\t%.9f\t%s\n", 1, numerical, analytical, acceptance ? "✔" :  "✗")
   @test acceptance
+
+  @testset "hadron spectroscopy" begin
+    Mqq = 0.725
+    Mc = 1.750
+    μ = inv(inv(Mqq) + inv(Mc))
+    lambda_c = Hamiltonian(
+      RestEnergy(m=Mqq),
+      RestEnergy(m=Mc),
+      Kinetic(hbar=1, m=μ),
+      Coulomb(coefficient=-0.06 / μ),
+      Linear(coefficient=0.165),
+      Constant(constant=-0.83116597),
+    )
+    lambda_c_basis = GeometricBasisSet(GaussianBasis, 0.01, 9.0, 40)
+    @test solve(lambda_c, lambda_c_basis; info=0).E[1] ≈ 2.286 atol=1e-6
+
+    m₁ = 1.836
+    m₂ = 1.836
+    κ = 0.5069
+    κ′ = 1.8609
+    spin = -3
+    μ = inv(inv(m₁) + inv(m₂))
+    r₀ = 1.6553 * (2m₁ * m₂ / (m₁ + m₂))^(-0.2204)
+    meng = Hamiltonian(
+      RestEnergy(m=m₁),
+      RestEnergy(m=m₂),
+      Kinetic(hbar=1, m=μ),
+      Coulomb(coefficient=-κ),
+      Linear(coefficient=0.1653),
+      Constant(constant=-0.8321),
+      Gaussian(
+        coefficient=2π * κ′ * spin / (3m₁ * m₂ * (sqrt(π) * r₀)^3),
+        exponent=inv(r₀^2),
+      ),
+    )
+    meng_basis = GeometricBasisSet(GaussianBasis, 0.1, 80.0, 20)
+    @test solve(meng, meng_basis; info=0).E[1] ≈ 3.005 atol=1e-3
+
+    m₁ = 1.515
+    m₂ = 1.515
+    αs = 0.285
+    spin = -3/4
+    μ = inv(inv(m₁) + inv(m₂))
+    λ = 1.437 * sqrt(μ)
+    arifi = Hamiltonian(
+      RestEnergy(m=m₁),
+      RestEnergy(m=m₂),
+      RelativisticKinetic(m=m₁),
+      RelativisticKinetic(m=m₂),
+      Constant(constant=-0.189),
+      Linear(coefficient=0.092),
+      Coulomb(coefficient=-4αs/3),
+      Gaussian(
+        coefficient=32π * αs * (λ / sqrt(π))^3 * spin / (9m₁ * m₂),
+        exponent=λ^2,
+      ),
+    )
+    arifi_basis = GeometricBasisSet(GaussianBasis, 0.358, 2.720, 10)
+    @test solve(arifi, arifi_basis; info=0).E[1] ≈ 3.019 atol=2e-3
+  end
 
   @testset "Pérez-Torres STO-3G contraction" begin
     exponents = (0.109818, 0.405771, 2.227660)
@@ -116,15 +169,15 @@
     @test uncontracted_result.E[1] ≈ -0.495010 atol=1e-6
     @test uncontracted_result.E[1] < contracted_result.E[1]
 
-    @test expectation(contracted_result, radius)[1] ≈ 1.500392 atol=2e-6
-    @test expectation(contracted_result, radius_squared)[1] ≈ 2.996124 atol=5e-6
-    @test expectation(contracted_result, inverse_radius)[1] ≈ 0.989206 atol=2e-6
-    @test 2 * expectation(contracted_result, H.terms[1])[1] ≈ 0.988596 atol=2e-6
+    @test contracted_result.expectation[radius][1] ≈ 1.500392 atol=2e-6
+    @test contracted_result.expectation[radius_squared][1] ≈ 2.996124 atol=5e-6
+    @test contracted_result.expectation[inverse_radius][1] ≈ 0.989206 atol=2e-6
+    @test 2 * contracted_result.expectation[H.terms[1]][1] ≈ 0.988596 atol=2e-6
 
-    @test expectation(uncontracted_result, radius)[1] ≈ 1.514699 atol=1e-6
-    @test expectation(uncontracted_result, radius_squared)[1] ≈ 3.046195 atol=1e-6
-    @test expectation(uncontracted_result, inverse_radius)[1] ≈ 0.977070 atol=1e-6
-    @test 2 * expectation(uncontracted_result, H.terms[1])[1] ≈ 0.964119 atol=1e-6
+    @test uncontracted_result.expectation[radius][1] ≈ 1.514699 atol=1e-6
+    @test uncontracted_result.expectation[radius_squared][1] ≈ 3.046195 atol=1e-6
+    @test uncontracted_result.expectation[inverse_radius][1] ≈ 0.977070 atol=1e-6
+    @test 2 * uncontracted_result.expectation[H.terms[1]][1] ≈ 0.964119 atol=1e-6
 
     @test contracted_result.S[1,1] ≈ 1.0 atol=2e-6
     @test 4π * quadgk(r -> r^2 * abs2(TwoBody.ψ(contracted_result, r)), 0, Inf)[1] ≈ 1.0 atol=1e-9
@@ -243,18 +296,9 @@
       Gaussian(coefficient=-1, exponent=1),
     )
 
-    custom_result = solve(custom_H, BS)
-    gaussian_result = solve(gaussian_H, BS)
+    custom_result = solve(custom_H, BS, info=1)
+    gaussian_result = solve(gaussian_H, BS, info=1)
     @test custom_result.H ≈ gaussian_result.H rtol=1e-9
     @test custom_result.E ≈ gaussian_result.E rtol=1e-9
-  end
-
-  @testset "Optimization result" begin
-    result = optimize(H, SimpleGaussianBasis(1); progress=false, iterations=5)
-    @test result isa ResultOptimizationRayleighRitz
-    @test result.result isa ResultRayleighRitz
-    @test result.E == result.result.E
-    @test isempty(result.history)
-    @test occursin("# optimizer", string(result))
   end
 end

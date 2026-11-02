@@ -1,4 +1,4 @@
-@testset "Free Complement" begin
+@testset "FC.jl" begin
   basis = PowerSlaterBasis(0, 1.5)
   @test TwoBody.φ(basis, 2.0) ≈ exp(-3.0)
 
@@ -72,7 +72,7 @@
   ]
   energies = Float64[]
   for _ in eachindex(expected)
-    push!(energies, solve(hamiltonian, basisset).E[1])
+    push!(energies, solve(hamiltonian, basisset, info=-1).E[1])
     basisset = FC(hamiltonian, basisset)
   end
 

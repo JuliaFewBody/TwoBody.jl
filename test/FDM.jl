@@ -37,6 +37,25 @@
     @test acceptance
   end
   
+  @testset "Arnoldi convergence on a large grid" begin
+    H = Hamiltonian(
+      Kinetic(hbar = 1, m = 1),
+      Coulomb(coefficient = -1),
+    )
+    method = FiniteDifferenceMethod(
+      Δr = 0.01,
+      rₘₐₓ = 100.0,
+      R = 0.01:0.01:100.0,
+      l = 0,
+      direction = :c,
+      solver = :ArnoldiMethod,
+    )
+    result = solve(H, method, info = 0, nₘₐₓ = 4)
+    @test length(result.E) == 4
+    @test all(isfinite, result.E)
+    @test result.E[1] < 0
+  end
+
   # comparison with Antique.jl
   HA = Antique.HydrogenAtom(Z=1, mₑ=1.0, a₀=1.0, Eₕ=1.0, ℏ=1.0)
 
