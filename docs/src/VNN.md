@@ -27,7 +27,7 @@ import Pkg; Pkg.add(["Lux", "Optimisers", "Zygote"])
 using Lux, Optimisers, Zygote
 ```
 
-## Standard model
+## Usage
 
 The two-argument `solve` method constructs a Lux network from `architecture`.
 
