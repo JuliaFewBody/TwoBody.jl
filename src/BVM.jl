@@ -19,7 +19,7 @@ in the Hamiltonian's units, `patience` counts consecutive negligible steps, and
 `overlap_tol` rejects nearly linearly dependent subsets.
 
 """
-struct BayesianVariationalMethod{T<:AbstractFloat}
+struct BayesianVariationalMethod{T<:AbstractFloat} <: SolverMethod
   max_basis::Int
   pool_size::Int
   tuple_size::Int
@@ -87,15 +87,6 @@ end
 Alias for [`BayesianVariationalMethod`](@ref).
 """
 const BVM = BayesianVariationalMethod
-
-Base.string(method::BayesianVariationalMethod) =
-  "BayesianVariationalMethod(" *
-  join(
-    ("$(name)=$(getproperty(method, name))" for name in fieldnames(typeof(method))),
-    ", ",
-  ) *
-  ")"
-Base.show(io::IO, method::BayesianVariationalMethod) = print(io, string(method))
 
 function _all_bvm_tuples(pool::AbstractVector{<:Integer}, tuple_size::Int)
   length(unique(pool)) == length(pool) ||
@@ -196,22 +187,6 @@ function _predict_bvm_gp(model::NamedTuple, tuple::Tuple)
   return (mean=mean, std=std)
 end
 
-_invalid_bvm_evaluation(reason::Symbol, message::AbstractString, basis_indices) = (
-  valid=false,
-  energy=Inf,
-  reason=reason,
-  message=String(message),
-  basis_indices=collect(basis_indices),
-)
-
-function _is_expected_bvm_numerical_error(error)
-  return error isa ArgumentError ||
-         error isa DomainError ||
-         error isa LinearAlgebra.PosDefException ||
-         error isa LinearAlgebra.SingularException ||
-         error isa LinearAlgebra.LAPACKException
-end
-
 function _evaluate_bvm_tuple(
   hamiltonian::Hamiltonian,
   candidates::BasisSet,
@@ -222,63 +197,19 @@ function _evaluate_bvm_tuple(
 )
   basis_indices = vcat(Int.(selected), collect(tuple))
   basisset = BasisSet((candidates[index] for index in basis_indices)...)
-
-  try
-    overlap = matrix(basisset)
-    hamiltonian_matrix = matrix(hamiltonian, basisset)
-    if !all(isfinite, overlap) || !all(isfinite, hamiltonian_matrix)
-      return _invalid_bvm_evaluation(
-        :nonfinite_matrix, "Hamiltonian or overlap matrix is non-finite", basis_indices,
-      )
-    end
-
-    diagonal = LinearAlgebra.diag(overlap)
-    if any(value -> !isfinite(value) || value <= 0, diagonal)
-      return _invalid_bvm_evaluation(
-        :nonpositive_overlap_diagonal,
-        "overlap diagonal entries must be positive and finite",
-        basis_indices,
-      )
-    end
-
-    scale = LinearAlgebra.Diagonal(inv.(sqrt.(diagonal)))
-    normalized_overlap = LinearAlgebra.Symmetric(scale * overlap * scale)
-    minimum_overlap = LinearAlgebra.eigmin(normalized_overlap)
-    if minimum_overlap < method.overlap_tol
-      return _invalid_bvm_evaluation(
-        :ill_conditioned_overlap,
-        "normalized overlap eigenvalue $(minimum_overlap) is below $(method.overlap_tol)",
-        basis_indices,
-      )
-    end
-
-    energy = first(LinearAlgebra.eigen(hamiltonian_matrix, overlap).values)
-    isfinite(energy) || return _invalid_bvm_evaluation(
-      :nonfinite_energy, "generalized eigenvalue is non-finite", basis_indices,
-    )
-
-    if !isnothing(current_energy)
-      tolerance = 100eps(Float64) * max(1, abs(current_energy))
-      energy <= current_energy + tolerance || return _invalid_bvm_evaluation(
-        :energy_increase,
-        "candidate energy $(energy) exceeds current energy $(current_energy)",
-        basis_indices,
-      )
-    end
-
-    return (
-      valid=true,
-      energy=energy,
-      reason=nothing,
-      message="",
-      basis_indices=basis_indices,
-    )
-  catch error
-    _is_expected_bvm_numerical_error(error) || rethrow()
-    return _invalid_bvm_evaluation(
-      :numerical_failure, sprint(showerror, error), basis_indices,
-    )
-  end
+  evaluation = _variational_energy(
+    hamiltonian,
+    basisset;
+    overlap_tol=method.overlap_tol,
+    reference=current_energy,
+  )
+  return (
+    valid=evaluation.valid,
+    energy=evaluation.energy,
+    reason=evaluation.reason,
+    message=evaluation.message,
+    basis_indices=basis_indices,
+  )
 end
 
 function _validate_bvm_candidates(candidates::BasisSet, method::BayesianVariationalMethod)
