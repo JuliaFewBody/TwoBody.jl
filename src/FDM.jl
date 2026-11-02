@@ -107,9 +107,19 @@ function matrix(o::RestEnergy, method::FiniteDifferenceMethod)
 end
 
 function matrix(o::Kinetic, method::FiniteDifferenceMethod)
-  D  = FiniteDifferenceMatrices.fdmatrix(Int64(length(method.R)), n=1, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
-  D² = FiniteDifferenceMatrices.fdmatrix(Int64(length(method.R)), n=2, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
+  D, D² = _derivative_matrices(method)
   return -o.hbar^2/2/o.m * (D² + SparseArrays.spdiagm(2 ./ method.R) * D - method.l*(method.l+1) * SparseArrays.spdiagm(1 ./ method.R .^ 2))
+end
+
+function _derivative_matrices(method::FiniteDifferenceMethod)
+  n = Int64(length(method.R))
+  D = FiniteDifferenceMatrices.fdmatrix(n, n=1, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
+  D² = FiniteDifferenceMatrices.fdmatrix(n, n=2, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
+  # The grid excludes the origin, so the first central stencil reaches r = 0.
+  # No explicit condition is imposed there: for central differences at r₁ = Δr
+  # the value ψ(0) cancels in D² + (2/r₁) D, see the documentation of the
+  # boundary conditions. Values outside the grid are zero.
+  return D, D²
 end
 
 function matrix(o::PotentialTerm, method::FiniteDifferenceMethod)
