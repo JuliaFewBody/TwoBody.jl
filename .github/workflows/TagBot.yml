@@ -8,8 +8,16 @@ jobs:
   TagBot:
     if: github.event_name == 'workflow_dispatch' || github.actor == 'JuliaTagBot'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write # create tags and GitHub releases
+      issues: write # report releases that require manual intervention
+      pull-requests: read # include pull requests in changelogs
     steps:
       - uses: JuliaRegistries/TagBot@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+          # SSH enables tag-triggered CI. GitHub releases for commits that modify
+          # workflows may still require a PAT with workflow scope or manual creation:
+          # https://github.com/JuliaRegistries/TagBot#commits-that-modify-workflow-files
           ssh: ${{ secrets.DOCUMENTER_KEY }}
