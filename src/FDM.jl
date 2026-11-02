@@ -60,13 +60,9 @@ function _derivative_matrices(method::FiniteDifferenceMethod)
   n = Int64(length(method.R))
   D = FiniteDifferenceMatrices.fdmatrix(n, n=1, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
   D² = FiniteDifferenceMatrices.fdmatrix(n, n=2, m=2, d=method.direction, h=method.Δr, t=typeof(method.Δr))
-
-  if method.direction == :c && iseven(method.l) && 1 < n
-    D[1,1] = -2 / (3method.Δr)
-    D[1,2] = 2 / (3method.Δr)
-    D²[1,1] = -2 / (3method.Δr^2)
-    D²[1,2] = 2 / (3method.Δr^2)
-  end
+  # The grid excludes the origin, so the first central stencil reaches r = 0.
+  # No explicit condition is imposed there: at r₁ = Δr the value ψ(0) cancels
+  # in D² + (2/r₁) D, see the documentation of the boundary conditions.
   return D, D²
 end
 

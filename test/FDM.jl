@@ -1,17 +1,23 @@
 @testset "FDM.jl" begin
 
-  @testset "boundary condition" begin
-    even = FiniteDifferenceMethod(Δr=0.1, rₘₐₓ=0.3, l=0)
-    odd = FiniteDifferenceMethod(Δr=0.1, rₘₐₓ=0.3, l=1)
-    D_even, D²_even = TwoBody._derivative_matrices(even)
-    D_odd, D²_odd = TwoBody._derivative_matrices(odd)
-
-    even_wavefunction = 1 .+ even.R .^ 2
-    odd_wavefunction = collect(odd.R)
-    @test (D_even * even_wavefunction)[1] ≈ 2even.R[1]
-    @test (D²_even * even_wavefunction)[1] ≈ 2
-    @test (D_odd * odd_wavefunction)[1] ≈ 1
-    @test (D²_odd * odd_wavefunction)[1] ≈ 0 atol=1e-12
+  @testset "origin boundary condition" begin
+    # At r₁ = Δr the ghost value ψ(0) cancels in D² + (2/r₁) D, so the kinetic
+    # matrix is the same for the Dirichlet padding ψ(0) = 0 of the difference
+    # matrices and for the even-l Neumann elimination ψ(0) = (4ψ(r₁) - ψ(r₂))/3.
+    for l in 0:2
+      method = FiniteDifferenceMethod(Δr=0.1, rₘₐₓ=0.5, l=l)
+      h = method.Δr
+      radial(D, D²) = D² + TwoBody.SparseArrays.spdiagm(2 ./ method.R) * D
+      D, D² = TwoBody._derivative_matrices(method)
+      dirichlet = radial(D, D²)
+      D[1,1] = -2 / (3h)
+      D[1,2] = 2 / (3h)
+      D²[1,1] = -2 / (3h^2)
+      D²[1,2] = 2 / (3h^2)
+      @test radial(D, D²) ≈ dirichlet
+      centrifugal = l * (l + 1) * TwoBody.SparseArrays.spdiagm(1 ./ method.R .^ 2)
+      @test TwoBody.matrix(Kinetic(hbar=1, m=1), method) ≈ -0.5 * (dirichlet - centrifugal)
+    end
   end
 
   # Testing Results

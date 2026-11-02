@@ -23,13 +23,15 @@ A uniform grid spacing is used, ``r_{i+1} = r_{i} + \Delta r``. See the API refe
 
 ## Boundary conditions
 
-For central differences, the wavefunction is extended across the origin with
+The radial function satisfies ``\psi(-r)=(-1)^l\psi(r)``, so even ``l`` has ``\psi'(0)=0`` and odd ``l`` has ``\psi(0)=0``. With the second-order central differences on the default grid ``r_1=\Delta r``, the only stencil that reaches the origin is the first row, and there the value ``\psi(0)`` cancels exactly in the radial Laplacian,
 
 ```math
-\psi(-r)=(-1)^l\psi(r).
+\frac{\psi(r_2)-2\psi(r_1)+\psi(0)}{\Delta r^2}
++\frac{2}{r_1}\,\frac{\psi(r_2)-\psi(0)}{2\Delta r}
+=\frac{2\psi(r_2)-2\psi(r_1)}{\Delta r^2}.
 ```
 
-Thus even ``l`` uses ``\psi'(0)=0``, while odd ``l`` uses ``\psi(0)=0``. The origin value for even ``l`` is eliminated with a second-order one-sided derivative, so the radial grid can continue to exclude ``r=0``.
+Therefore no explicit condition at the origin is needed, and even and odd ``l`` are distinguished by the centrifugal term alone; any elimination of ``\psi(0)``, for example the Neumann condition ``\psi(0)=(4\psi(r_1)-\psi(r_2))/3`` for even ``l``, gives the same Hamiltonian matrix. The parity condition would matter only for higher-order stencils, which reach ``r=-\Delta r``, or for a grid that does not start at ``r_1=\Delta r``. At the outer edge the grid is padded with ``\psi(r_\mathrm{max}+\Delta r)=0``.
 
 ## Usage
 
