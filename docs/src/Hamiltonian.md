@@ -2,7 +2,7 @@
 CurrentModule = TwoBody
 ```
 
-# Hamiltonian
+# [Hamiltonian](@id Hamiltonian)
 
 ```@docs; canonical=false
 TwoBody.Hamiltonian
