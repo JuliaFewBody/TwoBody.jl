@@ -301,4 +301,141 @@
     @test custom_result.H ≈ gaussian_result.H rtol=1e-9
     @test custom_result.E ≈ gaussian_result.E rtol=1e-9
   end
+
+  @testset "RayleighRitzMethod and results" begin
+    @test :RayleighRitzMethod in names(TwoBody)
+    @test :ResultRayleighRitz in names(TwoBody)
+    @test :ResultOptimizationRayleighRitz in names(TwoBody)
+    @test :expectation in names(TwoBody)
+    @test :verification in names(TwoBody)
+
+    # method
+    method = RayleighRitzMethod(BS)
+    @test method.basisset === BS
+    @test sprint(show, method) == string(method)
+    @test startswith(string(method), "RayleighRitzMethod(BasisSet(")
+    single = RayleighRitzMethod(SimpleGaussianBasis(1.0))
+    @test single.basisset isa BasisSet
+    @test length(single.basisset) == 1
+    geometric = GeometricBasisSet(SimpleGaussianBasis, 0.1, 10.0, 5)
+    @test startswith(string(RayleighRitzMethod(geometric)), "RayleighRitzMethod(GeometricBasisSet(")
+
+    # solve
+    result = solve(H, method)
+    @test result isa ResultRayleighRitz
+    @test result.method === method
+    @test result.E ≈ res.E
+    @test res.method isa RayleighRitzMethod
+    @test res.method.basisset === BS
+    @test solve(H, SimpleGaussianBasis(1.0)).method.basisset isa BasisSet
+    geometric_result = solve(H, geometric)
+    @test geometric_result.geometricbasisset === geometric
+    @test geometric_result.method.basisset === geometric
+    @test geometric_result.basisset isa BasisSet
+    @test geometric_result.E ≈ solve(H, RayleighRitzMethod(geometric)).E
+
+    # info
+    minimal = solve(H, method; info=-1)
+    @test minimal.E ≈ res.E
+    @test !haskey(minimal, :C)
+    @test !haskey(minimal, :method)
+    @test_throws ArgumentError TwoBody.expectation(minimal, res.S)
+    @test_throws ArgumentError TwoBody.expectation(minimal, H)
+    @test_throws ArgumentError TwoBody.verification(minimal)
+    @test startswith(string(minimal), "ResultRayleighRitz:")
+    @test startswith(string(solve(H, BS; info=0)), "ResultRayleighRitz:")
+    @test startswith(string(solve(H, geometric; info=0)), "ResultRayleighRitz:")
+
+    # expectation
+    @test TwoBody.expectation(res, res.S) ≈ res.expectation[:S]
+    @test TwoBody.expectation(res, H) ≈ res.expectation[:H]
+    @test TwoBody.expectation(res, H) ≈ res.E
+    for term in H.terms
+      @test TwoBody.expectation(res, term) ≈ res.expectation[term]
+    end
+    @test_throws DimensionMismatch TwoBody.expectation(res, zeros(2, 2))
+    perturbed = solve(H, BS; perturbation=Hamiltonian(Linear(coefficient=1)), info=2)
+    @test length(perturbed.expectation[:perturbation]) == 2
+    @test TwoBody.expectation(perturbed, Linear(coefficient=1))[1:2] ≈ perturbed.expectation[:perturbation]
+
+    # verification
+    check = TwoBody.verification(res)
+    @test keys(check) == (:norm, :residual)
+    @test length(check.norm) == res.nₘₐₓ
+    @test length(check.residual) == res.nₘₐₓ
+    @test all(n -> isapprox(n, 1; atol=1e-8), check.norm)
+    @test all(r -> r < 1e-8, check.residual)
+    @test check.norm ≈ res.expectation[:S]
+    @test check.residual ≈ abs.(res.expectation[:0]) atol=1e-12
+
+    # string
+    text = string(res)
+    @test sprint(show, res) == text
+    for header in ["# method", "# basis function", "# eigenfunction", "# eigenvalue", "# verification", "# expectation value"]
+      @test occursin(header, text)
+    end
+    @test !occursin("# optimizer", text)
+    @test occursin("# geometric progression", string(geometric_result))
+
+    # results extended by other solvers (e.g. BVM) override `method` and add keys
+    extended = ResultRayleighRitz(; getfield(res, :data)..., method=:other, history=[1, 2, 3])
+    @test extended.method === :other
+    @test extended.E == res.E
+    @test string(extended) == text
+    legacy = ResultRayleighRitz(; getfield(res, :data)..., optimizer=:legacy, initialbasisset=BS, progress=false, history=[])
+    @test occursin("# optimizer", string(legacy))
+    @test occursin("# optimized basis function", string(legacy))
+
+    # optimize
+    optimized = optimize(H, SimpleGaussianBasis(1.0); progress=false, iterations=5)
+    @test optimized isa ResultOptimizationRayleighRitz
+    @test optimized.result isa ResultRayleighRitz
+    @test optimized.E == optimized.result.E
+    @test optimized.C == optimized.result.C
+    @test optimized.basisset === optimized.result.basisset
+    @test optimized.nₘₐₓ == 1
+    @test optimized.info == 1
+    @test optimized.expectation[:S] == optimized.result.expectation[:S]
+    @test optimized.method isa RayleighRitzMethod
+    @test optimized.initialbasisset[1].a == 1.0
+    @test optimized.progress == false
+    @test !isempty(optimized.history)
+    @test haskey(optimized, :optimizer)
+    @test haskey(optimized, :E)
+    @test !haskey(optimized, :geometricbasisset)
+    @test optimized.E[1] ≤ solve(H, SimpleGaussianBasis(1.0)).E[1] + 1e-10
+    @test TwoBody.ψ(optimized, 0.5) == TwoBody.ψ(optimized.result, 0.5)
+    @test TwoBody.expectation(optimized, H) ≈ optimized.E
+    @test TwoBody.verification(optimized).norm[1] ≈ 1 atol=1e-8
+    optimized_text = string(optimized)
+    @test sprint(show, optimized) == optimized_text
+    for header in ["# method", "# optimizer", "# initial basis function", "# optimized basis function", "# eigenvalue", "# verification"]
+      @test occursin(header, optimized_text)
+    end
+    @test !occursin("# optimization log", optimized_text)
+
+    optimized_method = optimize(H, RayleighRitzMethod(SimpleGaussianBasis(1.0)); progress=false, iterations=5)
+    @test optimized_method isa ResultOptimizationRayleighRitz
+    @test optimized_method.E ≈ optimized.E
+
+    @test_throws ArgumentError optimize(H, SimpleGaussianBasis(1.0); method=TwoBody.Optim.NelderMead())
+
+    optimized_minimal = optimize(H, SimpleGaussianBasis(1.0); info=-1, iterations=5)
+    @test optimized_minimal isa ResultOptimizationRayleighRitz
+    @test optimized_minimal.E[1] ≈ optimized.E[1]
+    @test !haskey(optimized_minimal, :C)
+    @test isempty(optimized_minimal.history)
+    @test startswith(string(optimized_minimal), "ResultOptimizationRayleighRitz:")
+
+    optimized_geometric = optimize(H, geometric; iterations=3)
+    @test optimized_geometric isa ResultOptimizationRayleighRitz
+    @test optimized_geometric.initialgeometricbasisset === geometric
+    @test optimized_geometric.initialbasisset isa BasisSet
+    @test haskey(optimized_geometric, :geometricbasisset)
+    @test optimized_geometric.E[1] ≤ geometric_result.E[1] + 1e-10
+    optimized_geometric_text = string(optimized_geometric)
+    for header in ["# optimizer", "# optimization log", "# initial geometric progression", "# optimized geometric progression", "# eigenvalue"]
+      @test occursin(header, optimized_geometric_text)
+    end
+  end
 end

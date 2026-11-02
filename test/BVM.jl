@@ -158,6 +158,9 @@ end
 
   @test first_result.selected_indices == second_result.selected_indices
   @test first_result.E == second_result.E
+  # the BVM method overrides the RayleighRitzMethod stored by solve
+  @test first_result.method === method
+  @test occursin("# eigenvalue", string(first_result))
   @test length(first_result.selected_indices) == 6
   @test length(unique(first_result.selected_indices)) == 6
 

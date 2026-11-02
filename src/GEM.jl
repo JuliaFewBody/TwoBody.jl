@@ -148,6 +148,11 @@ function ψ(result::ResultRayleighRitz, r, θ, ϕ; n::Int=1)
   return sum(result.C[i, n] * φ(result.basisset[i], r, θ, ϕ) for i in 1:result.nₘₐₓ)
 end
 
+# `optimize` returns the final Rayleigh–Ritz result wrapped in its `result` property.
+ψp(result::ResultOptimizationRayleighRitz, p; n::Int=1) = ψp(result.result, p; n=n)
+ψp(result::ResultOptimizationRayleighRitz, p, θ, ϕ; n::Int=1) = ψp(result.result, p, θ, ϕ; n=n)
+ψ(result::ResultOptimizationRayleighRitz, r, θ, ϕ; n::Int=1) = ψ(result.result, r, θ, ϕ; n=n)
+
 _same_channel(b1::GaussianBasis, b2::GaussianBasis) = b1.l == b2.l && b1.m == b2.m
 _same_channel(b1::ComplexGaussianBasis, b2::ComplexGaussianBasis) =
   b1.l == b2.l && b1.m == b2.m
