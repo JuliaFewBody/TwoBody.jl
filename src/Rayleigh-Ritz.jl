@@ -64,18 +64,22 @@ function weinstein(result::ResultRayleighRitz; n::Int=1)
     _weinstein_action(term, wavefunction, r, l)
     for term in result.hamiltonian.terms
   )
-  second_moment, _ = QuadGK.quadgk(
-    r -> 4π * r^2 * abs2(hamiltonian_wavefunction(r)),
-    0.0,
-    Inf,
-    rtol=1e-9,
-    atol=1e-11,
-  )
+  # ⟨H²⟩ = ⟨Hψ|Hψ⟩/⟨ψ|ψ⟩. The radial measure (4π r² dr for the unnormalized
+  # s-wave bases, r² dr for the normalized GEM primitives) cancels in the
+  # ratio, so the result does not depend on the normalization convention of
+  # the basis set.
+  quadrature(f) = first(QuadGK.quadgk(r -> r^2 * f(r), 0.0, Inf, rtol=1e-9, atol=1e-11))
+  second_moment = quadrature(r -> abs2(hamiltonian_wavefunction(r))) /
+                  quadrature(r -> abs2(wavefunction(r)))
 
   E = real(result.E[n])
   variance = real(second_moment) - E^2
-  tolerance = 100eps(float(E)) * max(abs(second_moment), E^2, one(E))
-  variance >= -tolerance || throw(ErrorException("calculated energy variance is negative"))
+  # An exact eigenfunction gives a variance that vanishes up to the quadrature
+  # error, which can be slightly negative; only a gross violation is an error.
+  tolerance = 1e-6 * max(abs(second_moment), E^2, one(E))
+  variance >= -tolerance || throw(ErrorException(
+    "calculated energy variance $(variance) is negative beyond the quadrature tolerance",
+  ))
   variance = max(variance, zero(variance))
   deviation = sqrt(variance)
   return WeinsteinBound(E, variance, E - deviation, E + deviation)
@@ -578,7 +582,11 @@ end
 @doc raw"""
 `weinstein(result::ResultRayleighRitz; n=1)`
 
-Return the Weinstein energy interval for state `n`.
+Return the Weinstein energy interval ``[E-\sigma, E+\sigma]`` for state `n`,
+where ``\sigma^2=\langle H^2\rangle-E^2`` is evaluated from the radial
+action of the Hamiltonian on the Rayleigh–Ritz wavefunction. The second moment
+is normalized by ``\langle\psi|\psi\rangle`` so that unnormalized s-wave
+bases and normalized GEM primitives are treated consistently.
 """ weinstein
 
 @doc raw"""

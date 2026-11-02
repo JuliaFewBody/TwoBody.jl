@@ -65,6 +65,18 @@
     @test sprint(show, bound) == "WeinsteinBound(E=$(bound.E), lower=$(bound.lower), upper=$(bound.upper))"
     @test_throws BoundsError weinstein(res; n=0)
     @test_throws ArgumentError weinstein(solve(H, BS; info=0))
+
+    # normalized GEM primitives use the radial measure without 4π
+    gem = solve(H, GeometricBasisSet(GaussianBasis, 0.1, 80.0, 20))
+    gem_bound = weinstein(gem)
+    @test gem_bound.lower < -0.5 < gem_bound.upper
+    @test 0 <= gem_bound.variance < 0.1
+    @test gem_bound.variance < bound.variance
+
+    # the exact 1s orbital has zero variance up to quadrature error
+    exact = weinstein(solve(H, PowerSlaterBasis(0, 1.0)))
+    @test exact.E ≈ -0.5 atol=1e-12
+    @test exact.variance ≈ 0 atol=1e-7
   end
 
   @testset "hadron spectroscopy" begin
