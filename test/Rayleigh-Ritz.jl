@@ -59,6 +59,44 @@
   @printf("%3d\t%.9f\t%.9f\t%s\n", 1, numerical, analytical, acceptance ? "✔" :  "✗")
   @test acceptance
 
+  @testset "Weinstein bound" begin
+    bound = weinstein(res)
+    @test bound.E == res.E[1]
+    @test bound.lower < -0.5 < bound.upper
+    @test bound.variance >= 0
+    @test sprint(show, bound) == "WeinsteinBound(E=$(bound.E), lower=$(bound.lower), upper=$(bound.upper))"
+    @test_throws BoundsError weinstein(res; n=0)
+    @test_throws ArgumentError weinstein(solve(H, BS; info=0))
+
+    # normalized GEM primitives use the radial measure without 4π
+    gem = solve(H, GeometricBasisSet(GaussianBasis, 0.1, 80.0, 20))
+    gem_bound = weinstein(gem)
+    @test gem_bound.lower < -0.5 < gem_bound.upper
+    @test 0 <= gem_bound.variance < 0.1
+    @test gem_bound.variance < bound.variance
+
+    # the exact 1s orbital has zero variance up to quadrature error
+    exact = weinstein(solve(H, PowerSlaterBasis(0, 1.0)))
+    @test exact.E ≈ -0.5 atol=1e-12
+    @test exact.variance ≈ 0 atol=1e-7
+
+    # the centrifugal term enters through basis.l, also inside a contraction
+    p_wave = solve(H, BasisSet((GaussianBasis(a; l=1, m=0) for a in TwoBody.geometric(0.1, 80.0, 20))...))
+    p_bound = weinstein(p_wave)
+    @test p_bound.lower < -0.125 < p_bound.upper
+    @test 0 <= p_bound.variance < 0.1
+    contracted_p = ContractedBasis((1.0, 0.5), (GaussianBasis(1.0; l=1), GaussianBasis(2.0; l=1)))
+    @test TwoBody._weinstein_angular_momentum(BasisSet(contracted_p, GaussianBasis(0.5; l=1))) == 1
+    @test_throws ArgumentError TwoBody._weinstein_angular_momentum(BasisSet(GaussianBasis(1.0; l=1), GaussianBasis(2.0; l=0)))
+
+    # unsupported operators are rejected explicitly
+    contact = solve(Hamiltonian(Kinetic(hbar=1, m=1), Delta(coefficient=1.0)), GeometricBasisSet(GaussianBasis, 0.1, 10.0, 5))
+    @test_throws ArgumentError weinstein(contact)
+
+    # the Laplacian element honours its coefficient
+    @test TwoBody.element(Laplacian(coefficient=-0.5), BS[1], BS[2]) ≈ TwoBody.element(Kinetic(hbar=1, m=1), BS[1], BS[2])
+  end
+
   @testset "hadron spectroscopy" begin
     Mqq = 0.725
     Mc = 1.750
