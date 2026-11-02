@@ -77,7 +77,7 @@ step = result.history[3]
 
 The exponents of the stochastic basis set are unstructured, unlike the
 geometric progression of the
-[Gaussian Expansion Method](@ref Gaussian-Expansion-Method). Refining them
+[Gaussian Expansion Method](@ref GEM). Refining them
 further with the [Gradient Variational Method](@ref Gradient-Variational-Method)
 is the recommended workflow:
 
