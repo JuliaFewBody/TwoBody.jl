@@ -69,7 +69,7 @@ Solve the eigenvalue problem. You should find reasonable approximations to [the 
 By default the eigenvalues and the expectation values are displayed.
 
 ```@repl example
-solve(H, FDM)
+res = solve(H, FDM);
 ```
 
 ## Example of Hydrogen Atom
@@ -187,6 +187,7 @@ save("assets/FDM_SO.svg", fig) # hide
 
 ```@docs; canonical=false
 TwoBody.FiniteDifferenceMethod
+TwoBody.ResultFiniteDifferenceMethod
 TwoBody.solve(hamiltonian::Hamiltonian, method::FiniteDifferenceMethod)
 TwoBody.matrix(o::Hamiltonian, method::FiniteDifferenceMethod)
 TwoBody.matrix(o::RestEnergy, method::FiniteDifferenceMethod)
