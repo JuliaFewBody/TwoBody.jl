@@ -20,6 +20,7 @@ using Random
   include("Faddeev-Yakubovsky.jl")
   include("GEM.jl")
   include("ECG.jl")
+  include("CSM.jl")
   include("BVM.jl")
   include("FDM.jl")
   include("QTT.jl")

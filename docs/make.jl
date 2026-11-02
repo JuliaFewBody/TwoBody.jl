@@ -23,6 +23,7 @@ pages = gem_only ?
         "Faddeev-Yakubovsky Method" => "Faddeev-Yakubovsky.md",
         "Gaussian Expansion Method" => "GEM.md",
         "Explicitly Correlated Gaussians" => "ECG.md",
+        "Complex Scaling Method" => "CSM.md",
         "Bayesian Variational Method" => "BVM.md",
         "Free Complement Method" => "FC.md",
         "Finite Difference Method" => "FDM.md",
