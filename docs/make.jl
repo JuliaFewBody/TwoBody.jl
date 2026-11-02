@@ -4,7 +4,6 @@ import Optimisers
 import TensorTrainNumerics
 import Zygote
 using Documenter
-using DocumenterMermaid
 
 DocMeta.setdocmeta!(TwoBody, :DocTestSetup, :(using TwoBody); recursive=true)
 
@@ -23,7 +22,8 @@ pages = gem_only ?
         "Rayleigh-Ritz Method" => "Rayleigh-Ritz.md",
         "Faddeev-Yakubovsky Method" => "Faddeev-Yakubovsky.md",
         "Gaussian Expansion Method" => "GEM.md",
-        "Free Complement Method" => "Free-Complement.md",
+        "Bayesian Variational Method" => "BVM.md",
+        "Free Complement Method" => "FC.md",
         "Finite Difference Method" => "FDM.md",
         "Quantics Tensor Train" => "QTT.md",
         "Variational Neural Network" => "VNN.md",

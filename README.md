@@ -9,7 +9,7 @@
 [![Coverage](https://codecov.io/gh/JuliaFewBody/TwoBody.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/JuliaFewBody/TwoBody.jl)
 [![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-contributor's%20guide-blueviolet)](https://github.com/SciML/ColPrac)
 
-[TwoBody.jl](https://github.com/JuliaFewBody/TwoBody.jl) is a Julia package for solving quantum-mechanical two-body problems. It provides a flexible framework for constructing two-body Hamiltonians and solving the corresponding Schrödinger equation using a variety of numerical methods. It covers approaches ranging from basis-set and grid methods to tensor-network, stochastic, and neural-network methods. Beyond serving as a PoC ot for [FewBody.jl](https://github.com/JuliaFewBody/FewBody.jl), TwoBody.jl is designed to support practical, cross-scale calculations of quantum-mechanical two-body systems, from hadrons to molecules.
+[TwoBody.jl](https://github.com/JuliaFewBody/TwoBody.jl) is a Julia package for solving quantum-mechanical two-body problems. It provides a flexible framework for constructing two-body Hamiltonians and solving the corresponding Schrödinger equation using a variety of numerical methods. It covers approaches ranging from basis-set and grid methods to tensor-network, stochastic, and neural-network methods. Beyond serving as a PoC for [FewBody.jl](https://github.com/JuliaFewBody/FewBody.jl), TwoBody.jl is designed to support practical, cross-scale calculations of quantum-mechanical two-body systems, from hadrons to molecules.
 
 ## Quick Start
 
@@ -41,13 +41,14 @@ solve(H, BS)
 
 ## Documentation
 
-- Home: https://juliafewbody.github.io/TwoBody.jl
+- Home: https://juliafewbody.github.io/TwoBody.jl/dev/
 - User Guide:
   - [Hamiltonian](https://juliafewbody.github.io/TwoBody.jl/dev/Hamiltonian/)
   - [Database](https://juliafewbody.github.io/TwoBody.jl/dev/DB/)
   - [Rayleigh-Ritz Method](https://juliafewbody.github.io/TwoBody.jl/dev/Rayleigh-Ritz/)
   - [Faddeev-Yakubovsky Method](https://juliafewbody.github.io/TwoBody.jl/dev/Faddeev-Yakubovsky/)
   - [Gaussian Expansion Method](https://juliafewbody.github.io/TwoBody.jl/dev/GEM)
+  - [Bayesian Variational Method](https://juliafewbody.github.io/TwoBody.jl/dev/BVM/)
   - [Free Complement Method](https://juliafewbody.github.io/TwoBody.jl/dev/Free-Complement/)
   - [Finite Difference Method](https://juliafewbody.github.io/TwoBody.jl/dev/FDM/)
   - [Quantics Tensor Train](https://juliafewbody.github.io/TwoBody.jl/dev/QTT/)

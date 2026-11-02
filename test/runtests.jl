@@ -19,6 +19,7 @@ using Random
   include("Rayleigh-Ritz.jl")
   include("Faddeev-Yakubovsky.jl")
   include("GEM.jl")
+  include("BVM.jl")
   include("FDM.jl")
   include("QTT.jl")
   include("VNN.jl")
