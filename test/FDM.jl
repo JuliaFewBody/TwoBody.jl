@@ -16,6 +16,8 @@
   res = solve(H, FDM, info=4)
 
   @test res isa ResultFiniteDifferenceMethod
+  @test hasproperty(res, :ψ) && hasproperty(res, :E)
+  @test :H in propertynames(res)
   @test occursin("# eigenvalue", string(res))
   @test sprint(show, res) == string(res)
 

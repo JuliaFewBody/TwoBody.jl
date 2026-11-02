@@ -30,6 +30,8 @@ Base.getproperty(result::ResultFiniteDifferenceMethod, symbol::Symbol) =
   Base.getproperty(getfield(result, :data), symbol)
 Base.haskey(result::ResultFiniteDifferenceMethod, symbol::Symbol) =
   Base.haskey(getfield(result, :data), symbol)
+Base.propertynames(result::ResultFiniteDifferenceMethod, private::Bool=false) =
+  propertynames(getfield(result, :data))
 Base.show(io::IO, result::ResultFiniteDifferenceMethod) = print(io, Base.string(result))
 
 function Base.string(result::ResultFiniteDifferenceMethod)

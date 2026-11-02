@@ -69,7 +69,7 @@ Solve the eigenvalue problem. You should find reasonable approximations to [the 
 By default the eigenvalues and the expectation values are displayed.
 
 ```@repl example
-solve(H, FDM)
+res = solve(H, FDM);
 ```
 
 ## Example of Hydrogen Atom
