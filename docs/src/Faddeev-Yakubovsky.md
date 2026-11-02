@@ -20,7 +20,7 @@ For ``H=T+V``, the Schrödinger equation can be written as
 ```
 
 This is the single-pair version of the component definition in
-[Lazauskas and Carbonell (2019), Eq. (21)](https://arxiv.org/html/1908.04861v1).
+[Lazauskas and Carbonell (2019), Eq. (21)](https://arxiv.org/abs/1908.04861).
 Expanding ``\psi=\sum_i c_i\phi_i`` with the same matrices as the
 [Rayleigh-Ritz Method](@ref Rayleigh-Ritz-Method) gives
 
@@ -79,8 +79,12 @@ can also be passed to `FaddeevYakubovsky`.
 The energy interval must bracket the lowest state and lie below the lowest
 free eigenvalue of ``(T,S)``. If the interval misses that state, or no such
 state exists, `solve` raises an error. Adjust the interval for the energy
-units and Hamiltonian in use. The default tolerance is `1e-10`, with at most
-100 bisection steps. This finite-basis two-body Coulomb example does not
+units and Hamiltonian in use. For a confining potential, such as the
+spherical oscillator or a linear potential, the lowest state lies above the
+free threshold; add a `Constant` term to shift the spectrum so that the
+state of interest becomes negative. The default tolerance is `1e-10` on the
+kernel eigenvalue, with at most 100 bisection steps; the corresponding energy
+error is about `tolerance` times ``\langle T\rangle - E``. This finite-basis two-body Coulomb example does not
 implement the long-range treatment needed in many-body Coulomb scattering.
 
 ## API reference

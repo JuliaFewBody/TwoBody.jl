@@ -151,8 +151,10 @@ basis sector and lie below the lowest eigenvalue of the free problem `(T, S)`.
 All `KineticTerm`s (including rest energies) form `T`; all `PotentialTerm`s form
 the single pair interaction `V`. The overlap matrix must be positive definite.
 Bisection stops when `abs(λ - 1) <= tolerance` or the interval width is at most
-`tolerance * max(1, abs(E))`. An invalid bracket or exhausted `maxiters` raises
-an error. Scattering and coupled three- or four-body equations are not implemented.
+`tolerance * max(1, abs(E))`; `tolerance` bounds the kernel eigenvalue, so the
+energy error is about `tolerance * (⟨T⟩ - E)`. An invalid bracket or exhausted
+`maxiters` raises an error. For a confining potential, shift the Hamiltonian
+with a `Constant` term so that the lowest state lies below the free threshold. Scattering and coupled three- or four-body equations are not implemented.
 """ FaddeevYakubovsky
 
 @doc raw"""
