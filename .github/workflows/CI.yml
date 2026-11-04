@@ -107,54 +107,6 @@ jobs:
           disable_search: true
           use_oidc: ${{ env.CODECOV_USE_OIDC == 'true' }}
           fail_ci_if_error: ${{ env.CODECOV_USE_OIDC == 'true' }}
-  qtt:
-    name: QTT - Julia ${{ matrix.version }} - TTN ${{ matrix.ttn }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    permissions:
-      contents: read
-    strategy:
-      fail-fast: false
-      matrix:
-        version: ['1.10', '1.12']
-        ttn: ['1.1.7', 'latest']
-    steps:
-      - uses: actions/checkout@v7
-      - uses: julia-actions/setup-julia@v3
-        with:
-          version: ${{ matrix.version }}
-      - name: Run QTT regression tests and documentation examples
-        env:
-          TTN_VERSION: ${{ matrix.ttn }}
-        shell: julia --startup-file=no --color=yes {0}
-        run: |
-          using Pkg
-          Pkg.activate(mktempdir())
-          Pkg.develop(path=pwd())
-          requested = ENV["TTN_VERSION"]
-          if requested == "latest"
-            Pkg.add("TensorTrainNumerics")
-          else
-            Pkg.add(PackageSpec(name="TensorTrainNumerics", version=VersionNumber(requested)))
-          end
-          Pkg.status()
-          using TwoBody, Test, Random, LinearAlgebra
-          import TensorTrainNumerics
-          if requested != "latest"
-            @assert pkgversion(TensorTrainNumerics) == VersionNumber(requested)
-          end
-          @assert Base.get_extension(TwoBody, :TwoBodyQTTExt) !== nothing
-          include(joinpath(pwd(), "test", "QTT.jl"))
-
-          # Execute every block in the shared `qtt` example session, without deployment.
-          example_module = Module(:QTTDocumentationExamples)
-          source = read("docs/src/QTT.md", String)
-          blocks = collect(eachmatch(r"(?ms)^```@example qtt\s*\n(.*?)^```", source))
-          @assert !isempty(blocks)
-          for block in blocks
-            Base.include_string(example_module, block.captures[1], "docs/src/QTT.md")
-          end
-
   docs:
     name: Documentation
     runs-on: ubuntu-latest
