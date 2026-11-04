@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg
+  version="1.1"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  width="325pt"
+  height="300pt"
+  viewBox="0 0 325 300"
+>
+
+  <!-- Auxiliary -->
+  <!-- <rect width="325" height="300" fill="#FFFFFF"/> -->
+  <!-- <circle cx="162.5" cy="150.0" r="125" stroke="#24292E" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none"/> -->
+
+  <!-- Circle -->
+  <circle cx="74.11165235168157" cy="238.38834764831842" r="36" fill="#CB3C33"/>
+  <circle cx="250.88834764831842" cy="61.61165235168157" r="36" fill="#4063D8"/>
+  <!-- <circle cx="74.11165235168157" cy="61.61165235168157" r="36" fill="#389826"/> -->
+  <!-- <circle cx="250.88834764831842" cy="238.38834764831842" r="36" fill="#9558B2"/> -->
+
+  <!-- Defs -->
+  <defs>
+    <marker id="arrow" markerWidth="4" markerHeight="4" refX="0" refY="2.0" orient="auto">
+      <polygon points="0,0 0,4 4,2.0" fill="#24292E"/>
+    </marker>
+  </defs>
+
+  <!-- Arrow -->
+  <path d="M74.11165235168157,238.38834764831842 L225.4325035256027,87.06749647439729)" stroke="#24292E" stroke-width="9" stroke-linecap="round"  marker-end="url(#arrow)"/>
+  <!-- <path d="M74.11165235168157,238.38834764831842 L74.11165235168157,97.61165235168157)" stroke="#24292E" stroke-width="9" stroke-linecap="round"  marker-end="url(#arrow)"/> -->
+  <!-- <path d="M74.11165235168157,238.38834764831842 L214.88834764831842,238.38834764831842)" stroke="#24292E" stroke-width="9" stroke-linecap="round"  marker-end="url(#arrow)"/> -->
+
+</svg>
