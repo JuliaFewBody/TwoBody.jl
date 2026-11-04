@@ -4,12 +4,12 @@ using TwoBody
 import TensorTrainNumerics
 import TwoBody: PotentialTerm, V, matrix
 
-const QTTVector = TensorTrainNumerics.TTvector
-const QTTMatrix = TensorTrainNumerics.TToperator
+const QTTVector = TensorTrainNumerics.TTVector
+const QTTMatrix = TensorTrainNumerics.TTOperator
 
-TwoBody.order(tt::Union{QTTVector,QTTMatrix}) = tt.N
-TwoBody.ranks(tt::QTTVector) = copy(tt.ttv_rks)
-TwoBody.ranks(tt::QTTMatrix) = copy(tt.tto_rks)
+TwoBody.order(tt::Union{QTTVector,QTTMatrix}) = TensorTrainNumerics.nsites(tt)
+TwoBody.ranks(tt::QTTVector) = copy(tt.ranks)
+TwoBody.ranks(tt::QTTMatrix) = copy(tt.ranks)
 
 function TwoBody.qttvalue(tt::QTTVector{T}, index::Integer) where {T}
   n = 1 << TwoBody.order(tt)
@@ -18,7 +18,7 @@ function TwoBody.qttvalue(tt::QTTVector{T}, index::Integer) where {T}
   index0 = index - 1
   for site in 1:TwoBody.order(tt)
     physical = Int((index0 >> (TwoBody.order(tt) - site)) & 1) + 1
-    state = vec(reshape(state, 1, :) * @view(tt.ttv_vec[site][physical, :, :]))
+    state = vec(reshape(state, 1, :) * @view(tt.cores[site][physical, :, :]))
   end
   return only(state)
 end
@@ -32,7 +32,7 @@ function TwoBody.qttvalue(tt::QTTMatrix{T}, row::Integer, column::Integer) where
   for site in 1:TwoBody.order(tt)
     rowbit = Int((row0 >> (TwoBody.order(tt) - site)) & 1) + 1
     columnbit = Int((column0 >> (TwoBody.order(tt) - site)) & 1) + 1
-    state = vec(reshape(state, 1, :) * @view(tt.tto_vec[site][rowbit, columnbit, :, :]))
+    state = vec(reshape(state, 1, :) * @view(tt.cores[site][rowbit, columnbit, :, :]))
   end
   return only(state)
 end
@@ -76,13 +76,13 @@ function _compress_vector(vector::QTTVector, method::QuanticsTensorTrainMethod)
 end
 
 function _compress_operator(operator::QTTMatrix, method::QuanticsTensorTrainMethod)
-  fused = TensorTrainNumerics.tto_to_ttv(operator)
+  fused = TensorTrainNumerics.tto_to_tt(operator)
   TensorTrainNumerics.tt_compress!(
     fused,
     method.maxoperatorbonddim;
     trunc_tol=method.tolerance,
   )
-  return TensorTrainNumerics.ttv_to_tto(fused)
+  return TensorTrainNumerics.tt_to_tto(fused)
 end
 
 function matrix(term::Kinetic, method::QuanticsTensorTrainMethod)
@@ -95,16 +95,16 @@ function matrix(term::Kinetic, method::QuanticsTensorTrainMethod)
     r -> term.hbar^2 * method.l * (method.l + 1) / (2 * term.m * r^2),
     method,
   )
-  return kinetic + TensorTrainNumerics.ttv_to_diag_tto(centrifugal)
+  return kinetic + TensorTrainNumerics.tt_to_diag_tto(centrifugal)
 end
 
 matrix(term::RestEnergy, method::QuanticsTensorTrainMethod) =
-  TensorTrainNumerics.ttv_to_diag_tto(_qttvector(_ -> term.m * term.c^2, method))
+  TensorTrainNumerics.tt_to_diag_tto(_qttvector(_ -> term.m * term.c^2, method))
 
 const QTTPotentialTerm = Union{Constant,Linear,Coulomb,PowerLaw,Gaussian,Exponential,Yukawa,Custom}
 
 matrix(term::QTTPotentialTerm, method::QuanticsTensorTrainMethod) =
-  TensorTrainNumerics.ttv_to_diag_tto(_qttvector(r -> V(term, r), method))
+  TensorTrainNumerics.tt_to_diag_tto(_qttvector(r -> V(term, r), method))
 
 matrix(term::PotentialTerm, ::QuanticsTensorTrainMethod) =
   throw(ArgumentError("$(typeof(term)) is not supported by QuanticsTensorTrainMethod"))

@@ -1,4 +1,5 @@
 [deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Antique = "be6e5d0e-34a5-4c8f-af83-e1b5389203d8"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 Lux = "b2108857-7c20-44ae-9111-449ecde12c47"
