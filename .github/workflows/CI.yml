@@ -144,7 +144,7 @@ jobs:
             @assert pkgversion(TensorTrainNumerics) == VersionNumber(requested)
           end
           @assert Base.get_extension(TwoBody, :TwoBodyQTTExt) !== nothing
-          include("test/QTT.jl")
+          include(joinpath(pwd(), "test", "QTT.jl"))
 
           # Execute every block in the shared `qtt` example session, without deployment.
           example_module = Module(:QTTDocumentationExamples)
