@@ -11,6 +11,21 @@
 
 [TwoBody.jl](https://github.com/JuliaFewBody/TwoBody.jl) is a Julia package for solving quantum-mechanical two-body problems. It provides a flexible framework for constructing two-body Hamiltonians and solving the corresponding Schrödinger equation using a variety of numerical methods. It covers approaches ranging from basis-set and grid methods to tensor-network, stochastic, and neural-network methods. Beyond serving as a PoC for [FewBody.jl](https://github.com/JuliaFewBody/FewBody.jl), TwoBody.jl is designed to support practical, cross-scale calculations of quantum-mechanical two-body systems, from hadrons to molecules.
 
+Hamiltonians constructed with [FewBodyHamiltonians.jl](https://github.com/JuliaFewBody/FewBodyHamiltonians.jl)
+can also be passed directly to TwoBody's solvers:
+
+```julia
+import FewBodyHamiltonians as FBH
+import TwoBody
+H = FBH.Kinetic([1.0, 1.0]) + FBH.Coulomb([1, -1]) # positronium, reduced mass 1/2
+basis = TwoBody.GeometricBasisSet(TwoBody.GaussianBasis, 0.1, 80.0, 20)
+result = TwoBody.solve(H, basis; info=0)
+```
+
+The existing TwoBody constructors remain supported. See the
+[Hamiltonian documentation](https://juliafewbody.github.io/TwoBody.jl/dev/Hamiltonian/)
+for the shared unit convention and supported terms.
+
 ## Quick Start
 
 Run the following command in the Julia REPL or a notebook:

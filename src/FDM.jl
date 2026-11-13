@@ -64,6 +64,7 @@ end
 # solver
 
 function solve(hamiltonian::Hamiltonian, method::FiniteDifferenceMethod; perturbation=Hamiltonian(), info=4, nₘₐₓ=4)
+  perturbation = _native_hamiltonian(perturbation)
   
   # Initialization
   nₘₐₓ = min(nₘₐₓ, length(method.R))

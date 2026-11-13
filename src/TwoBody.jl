@@ -1,5 +1,7 @@
 module TwoBody
 
+import FewBodyHamiltonians as FBH
+
 # Hamiltonian
 include("./Hamiltonian.jl")
 
@@ -18,5 +20,6 @@ include("./FDM.jl")
 include("./QTT.jl")
 include("./VNN.jl")
 include("./VMC.jl")
+include("./SharedHamiltonian.jl")
 
 end

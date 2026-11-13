@@ -171,6 +171,7 @@ end
 # solver
 
 function solve(hamiltonian::Hamiltonian, basisset::BasisSet; perturbation=Hamiltonian(), info=4)
+  perturbation = _native_hamiltonian(perturbation)
 
   # initialization
   nₘₐₓ = length(basisset.basis)
