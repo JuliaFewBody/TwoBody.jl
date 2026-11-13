@@ -13,6 +13,7 @@ using Random
 
 @testset verbose = true "TwoBody.jl" begin
   include("Hamiltonian.jl")
+  include("SharedHamiltonian.jl")
   include("DB.jl")
   include("Basis.jl")
   include("FC.jl")

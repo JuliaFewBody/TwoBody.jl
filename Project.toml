@@ -6,6 +6,7 @@ version = "0.0.13"
 [deps]
 ArnoldiMethod = "ec485272-7323-5ecc-a04f-4719b315124d"
 FiniteDifferenceMatrices = "a7a66f33-e7b8-47af-b618-f9b5bea05f3d"
+FewBodyHamiltonians = "3a126c26-e5d7-4a95-83c3-3b69f8a11ded"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Logging = "56ddb016-857b-54e1-b83d-db4d58db5568"
@@ -30,6 +31,7 @@ TwoBodyVNNExt = ["Lux", "Optimisers", "Zygote"]
 [compat]
 ArnoldiMethod = "0.4.0"
 FiniteDifferenceMatrices = "0.1.0"
+FewBodyHamiltonians = "0.1"
 ForwardDiff = "0.10, 1"
 Lux = "0.5, 1"
 Optim = "1.9.4"

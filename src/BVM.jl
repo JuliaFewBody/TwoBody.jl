@@ -330,10 +330,11 @@ function solve(
   candidates::BasisSet,
   method::BayesianVariationalMethod;
   rng::Random.AbstractRNG=Random.MersenneTwister(123),
-  perturbation::Hamiltonian=Hamiltonian(),
+  perturbation::Union{Hamiltonian,FBH.Hamiltonian}=Hamiltonian(),
   info::Int=4,
 )
   # Forward `info` to Rayleigh-Ritz semantics (negative values are allowed there).
+  perturbation = _native_hamiltonian(perturbation)
   _validate_bvm_candidates(candidates, method)
 
   selected = Int[]

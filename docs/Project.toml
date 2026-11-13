@@ -2,6 +2,7 @@
 Antique = "be6e5d0e-34a5-4c8f-af83-e1b5389203d8"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+FewBodyHamiltonians = "3a126c26-e5d7-4a95-83c3-3b69f8a11ded"
 Printf = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 Lux = "b2108857-7c20-44ae-9111-449ecde12c47"
 Optimisers = "3bd65402-5787-11e9-1adc-39752487f4e2"
@@ -11,3 +12,4 @@ Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]
 Antique = "0.15"
+FewBodyHamiltonians = "0.1"
