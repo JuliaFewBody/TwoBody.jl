@@ -25,3 +25,6 @@ Manifest.toml
 
 # Local git worktrees used for isolated feature development
 .worktrees/
+
+# Proposed provider checkout used only by pull-request CI.
+/.ci/FewBodyHamiltonians/

@@ -11,6 +11,7 @@ concurrency:
   # Cancel intermediate builds: only if it is a pull request build.
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+# shortcut: pin the proposed shared API for PR CI, remove after 0.1 is registered.
 jobs:
   core:
     name: Core installation without optional dependencies
@@ -21,6 +22,14 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@v7
+      - name: Check out proposed Hamiltonians
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v7
+        with:
+          repository: JuliaFewBody/FewBodyHamiltonians.jl
+          ref: e67bc19ca413849c244384fe0ce028da00fb323c
+          path: .ci/FewBodyHamiltonians
+          persist-credentials: false
       - uses: julia-actions/setup-julia@v3
         with:
           version: '1.10'
@@ -30,7 +39,11 @@ jobs:
         run: |
           using Pkg
           Pkg.activate(mktempdir())
-          Pkg.develop(path=pwd())
+          packages = [PackageSpec(path=pwd())]
+          if get(ENV, "GITHUB_EVENT_NAME", "") == "pull_request"
+            push!(packages, PackageSpec(path=joinpath(pwd(), ".ci", "FewBodyHamiltonians")))
+          end
+          Pkg.develop(packages)
           Pkg.instantiate()
 
           optional = Set(["Lux", "Optimisers", "TensorTrainNumerics", "Zygote"])
@@ -85,11 +98,25 @@ jobs:
           - x64
     steps:
       - uses: actions/checkout@v7
+      - name: Check out proposed Hamiltonians
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v7
+        with:
+          repository: JuliaFewBody/FewBodyHamiltonians.jl
+          ref: e67bc19ca413849c244384fe0ce028da00fb323c
+          path: .ci/FewBodyHamiltonians
+          persist-credentials: false
       - uses: julia-actions/setup-julia@v3
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
       - uses: julia-actions/cache@v3
+      - name: Use proposed Hamiltonians
+        if: github.event_name == 'pull_request'
+        shell: julia --project=. --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.develop(path=joinpath(pwd(), ".ci", "FewBodyHamiltonians"))
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
         with:
@@ -117,10 +144,33 @@ jobs:
       statuses: write
     steps:
       - uses: actions/checkout@v7
+      - name: Check out proposed Hamiltonians
+        if: github.event_name == 'pull_request'
+        uses: actions/checkout@v7
+        with:
+          repository: JuliaFewBody/FewBodyHamiltonians.jl
+          ref: e67bc19ca413849c244384fe0ce028da00fb323c
+          path: .ci/FewBodyHamiltonians
+          persist-credentials: false
       - uses: julia-actions/setup-julia@v3
         with:
           version: '1'
       - uses: julia-actions/cache@v3
+      - name: Use proposed Hamiltonians
+        if: github.event_name == 'pull_request'
+        shell: julia --project=. --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.develop(path=joinpath(pwd(), ".ci", "FewBodyHamiltonians"))
+      - name: Use proposed Hamiltonians in docs
+        if: github.event_name == 'pull_request'
+        shell: julia --project=docs --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.develop([
+            PackageSpec(path=pwd()),
+            PackageSpec(path=joinpath(pwd(), ".ci", "FewBodyHamiltonians")),
+          ])
       - name: Configure doc environment
         shell: julia --project=docs --color=yes {0}
         run: |
