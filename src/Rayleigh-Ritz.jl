@@ -390,7 +390,7 @@ function element(o::RestEnergy, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianB
 end
 
 function element(o::Laplacian, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
-  return - 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
+  return - o.coefficient * 6*π^(3/2)*SGB1.a*SGB2.a/(SGB1.a+SGB2.a)^(5/2)
 end
 
 function element(o::Kinetic, SGB1::SimpleGaussianBasis, SGB2::SimpleGaussianBasis)
@@ -642,9 +642,9 @@ Integral Formula:
 
 ```math
 \begin{aligned}
-  \langle \phi_{i} | \nabla^2 | \phi_{j} \rangle
+  \langle \phi_{i} | a\nabla^2 | \phi_{j} \rangle
   = \underline{
-      -6 \frac{\alpha_i \alpha_j \pi^{\frac{3}{2}}}{(\alpha_i + \alpha_j)^{\frac{5}{2}}}
+      -6 a \frac{\alpha_i \alpha_j \pi^{\frac{3}{2}}}{(\alpha_i + \alpha_j)^{\frac{5}{2}}}
     }
 \end{aligned}
 ```
